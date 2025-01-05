@@ -29,7 +29,7 @@ struct RadioStation: Codable {
 }
 
 extension RadioStation {
-    var client: ACWebSocketClient { ACWebSocketClient.shared }
+    var client: ACEventHandler { ACEventHandler.shared }
 
     var shoutout: String {
         if client.status.album.isEmpty {

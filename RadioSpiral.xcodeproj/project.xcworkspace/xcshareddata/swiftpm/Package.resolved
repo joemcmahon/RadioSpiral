@@ -1,5 +1,5 @@
 {
-  "originHash" : "d7746270620e53e123e5e179f8e01dd0326b9e5638c6d3383db787fb441201f4",
+  "originHash" : "8b6575fbd8f68a01747b1697f4aba66d8260b8f2d7e0df01b8427690e3f2a4a7",
   "pins" : [
     {
       "identity" : "fradioplayer",
@@ -35,6 +35,15 @@
       "state" : {
         "branch" : "master",
         "revision" : "63d6b2b4339606181617caddea3a988aa65bcadd"
+      }
+    },
+    {
+      "identity" : "swift-eventsource",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/launchdarkly/swift-eventsource",
+      "state" : {
+        "revision" : "57051701c58a93603ffa2051f8e9cf0c8cff7814",
+        "version" : "3.3.0"
       }
     }
   ],

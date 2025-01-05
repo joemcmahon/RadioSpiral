@@ -22,7 +22,6 @@ protocol NowPlayingViewControllerDelegate: AnyObject {
 class NowPlayingViewController: UIViewController {
     
     weak var delegate: NowPlayingViewControllerDelegate?
-    let client = ACWebSocketClient.shared
     
     // MARK: - IB UI
     
@@ -92,8 +91,9 @@ class NowPlayingViewController: UIViewController {
         nextButton.isHidden = Config.hideNextPreviousButtons
         
         // Connect websocket client
+        let client = ACEventHandler.shared
         client.configurationDidChange(serverName: "Spiral.radio", shortCode: "radiospiral")
-        client.setDefaultDJ(name: "Spud the Ambient Robot")
+        client.defaultDJ = "Spud the Ambient Robot"
         client.addSubscriber(callback: updatedUI)
         client.connect()
         
@@ -101,6 +101,7 @@ class NowPlayingViewController: UIViewController {
     }
     
     func updatedUI(status: ACStreamStatus) {
+        let client = ACEventHandler.shared
         if !client.status.changed { return }
         artistLabel.text = client.status.artist
         songLabel.text = client.status.track
