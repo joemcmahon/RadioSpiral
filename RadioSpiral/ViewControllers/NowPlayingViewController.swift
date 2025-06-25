@@ -11,6 +11,7 @@ import MediaPlayer
 import AVKit
 import Spring
 import FRadioPlayer
+import Kingfisher
 
 protocol NowPlayingViewControllerDelegate: AnyObject {
     func didTapCompanyButton(_ nowPlayingViewController: NowPlayingViewController)
@@ -21,6 +22,7 @@ protocol NowPlayingViewControllerDelegate: AnyObject {
 class NowPlayingViewController: UIViewController {
     
     weak var delegate: NowPlayingViewControllerDelegate?
+    let client = ACWebSocketClient.shared
     
     // MARK: - IB UI
     
@@ -58,12 +60,12 @@ class NowPlayingViewController: UIViewController {
         player.addObserver(self)
         manager.addObserver(self)
         
+        let viewSize = CGSize(width:  self.view.bounds.width, height:  self.view.bounds.height)
+        optimizeForDeviceSize(size: viewSize)
+        
         // Create Now Playing BarItem
         createNowPlayingAnimation()
         
-        // Set AlbumArtwork Constraints
-        optimizeForDeviceSize()
-
         // Set View Title
         self.title = manager.currentStation?.name
         
@@ -89,9 +91,52 @@ class NowPlayingViewController: UIViewController {
         previousButton.isHidden = Config.hideNextPreviousButtons
         nextButton.isHidden = Config.hideNextPreviousButtons
         
+        // Connect websocket client
+        client.configurationDidChange(serverName: "Spiral.radio", shortCode: "radiospiral")
+        client.setDefaultDJ(name: "Spud the Ambient Robot")
+        client.addSubscriber(callback: updatedUI)
+        client.connect()
+        
         isPlayingDidChange(player.isPlaying)
     }
     
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        
+        coordinator.animate(alongsideTransition: { _ in
+            print("rotating")
+            self.optimizeForDeviceSize(size: size)
+        })
+    }
+    
+    func updatedUI(status: ACStreamStatus) {
+        if !client.status.changed { return }
+        artistLabel.text = client.status.artist
+        songLabel.text = client.status.track
+        releaseLabel.text = client.status.album
+        djName.text = client.status.dj
+        
+        Task {
+            let processor = DownsamplingImageProcessor(size: albumImageView.bounds.size)
+            albumImageView.kf.indicatorType = .activity
+            albumImageView.kf.setImage(with: client.status.artwork,
+                                       options: [.processor(processor),
+                                                 .scaleFactor(UIScreen.main.scale),
+                                                 .transition(.fade(1))
+                                       ])
+            StationsManager.shared.updateLockscreenStatus(status: client.status)
+        }
+        //albumImageView.load(url: client.status.artwork!) { [weak self] in
+        //    self?.albumImageView.animation = "wobble"
+        //    self?.albumImageView.duration = 2
+        //    self?.albumImageView.animate()
+        //
+        //    // Force app to update display
+        //    self?.view.setNeedsDisplay()
+        //}
+
+    }
+              
     // MARK: - Setup
     
     func setupVolumeSlider() {
@@ -135,13 +180,16 @@ class NowPlayingViewController: UIViewController {
     // MARK: - Player Controls (Play/Pause/Volume)
         
     @IBAction func playingPressed(_ sender: Any) {
-        player.togglePlaying()
+        if player.isPlaying {
+            ACWebSocketClient.shared.disconnect()
+            player.stop()
+        } else {
+            ACWebSocketClient.shared.connect()
+            _ = StationsManager.reloadCurrent(StationsManager.shared)
+            player.play()
+        }
     }
-    
-    @IBAction func stopPressed(_ sender: Any) {
-        player.stop()
-    }
-    
+        
     @IBAction func nextPressed(_ sender: Any) {
         manager.setNext()
     }
@@ -152,20 +200,44 @@ class NowPlayingViewController: UIViewController {
     
     // Update track with new artwork
     func updateTrackArtwork() {
-        guard let artworkURL = player.currentArtworkURL else {
+        let status = ACWebSocketClient.shared.status
+        if let artworkURL = status.artwork {
+            print("loading client artwork")
+            let processor = DownsamplingImageProcessor(size: albumImageView.bounds.size)
+            Task {
+                albumImageView.kf.indicatorType = .activity
+                albumImageView.kf.setImage(with: artworkURL,
+                                           options: [.processor(processor),
+                                                     .scaleFactor(UIScreen.main.scale),
+                                                     .transition(.fade(1))
+                                           ])
+                // Force app to update display
+                self.view.setNeedsDisplay()
+            }
+            
+            return
+        }
+        
+        guard let artworkURL = status.artwork else {
+            print("loading station artwork")
             manager.currentStation?.getImage { [weak self] image in
                 self?.albumImageView.image = image
             }
             return
         }
-        
-        albumImageView.load(url: artworkURL) { [weak self] in
-            self?.albumImageView.animation = "wobble"
-            self?.albumImageView.duration = 2
-            self?.albumImageView.animate()
+
+        print("loading player artwork")
+        let processor = DownsamplingImageProcessor(size: albumImageView.bounds.size)
+        Task {
+            albumImageView.kf.indicatorType = .activity
+            albumImageView.kf.setImage(with: artworkURL,
+                                       options: [.processor(processor),
+                                                 .scaleFactor(UIScreen.main.scale),
+                                                 .transition(.fade(1))
+                                       ])
             
             // Force app to update display
-            self?.view.setNeedsDisplay()
+            self.view.setNeedsDisplay()
         }
     }
     
@@ -197,83 +269,82 @@ class NowPlayingViewController: UIViewController {
         
         switch state {
         case .loading:
-            message = "Loading Station ..."
+            if songLabel.text != ""{
+                message = songLabel.text
+            } else {
+                message = "Station loading..."
+            }
         case .urlNotSet:
             message = "Station URL not valid"
         case .readyToPlay, .loadingFinished:
             playbackStateDidChange(player.playbackState, animate: animate)
             return
         case .error:
-            message = "Error Playing"
+            message = "Error playing stream"
         }
         updateLabels(with: message, animate: animate)
     }
     
     // MARK: - UI Helper Methods
     
-    func optimizeForDeviceSize() {
-        
+    func optimizeForDeviceSize(size: CGSize) {
         // Adjust album size to fit iPhone 4s, 6s & 6s+
-        let deviceHeight = self.view.bounds.height
+        print("height", size.height, "width", size.width)
         
-        if deviceHeight == 480 {
-            albumHeightConstraint.constant = 106
-            view.updateConstraints()
-        } else if deviceHeight == 667 {
-            albumHeightConstraint.constant = 230
-            view.updateConstraints()
-        } else if deviceHeight > 667 {
-            albumHeightConstraint.constant = 260
-            view.updateConstraints()
+        if size.width > size.height {
+            print("horizontal")
+            var imageHeight: CGFloat
+            //if size.height < 750 {
+            if  UIDevice.current.userInterfaceIdiom != .pad {
+                imageHeight = self.view.bounds.height * 0.12
+                if imageHeight < 100 {
+                    imageHeight = 0.00
+                }
+            } else {
+                imageHeight = self.view.bounds.height * 0.40
+            }
+            
+            albumHeightConstraint.constant = imageHeight
+            print(imageHeight)
+        } else {
+            print("vertical")
+            let imageHeight = self.view.bounds.height * 0.40
+            albumHeightConstraint.constant = imageHeight
+            print(imageHeight)
         }
+        print(albumHeightConstraint.constant)
+        view.updateConstraints()
+        view.layoutIfNeeded()
     }
     
     func updateLabels(with statusMessage: String? = nil, animate: Bool = true) {
-
+        
         guard let statusMessage = statusMessage else {
             // Radio is (hopefully) streaming properly
             self.liveDJIndicator.isHidden = false
-            songLabel.text = manager.currentStation?.trackName
-            artistLabel.text = manager.currentStation?.artistName
-            releaseLabel.text = manager.currentStation?.releaseName
-            RadioStationPROAPI.getCurrentDJ { result in
-                DispatchQueue.main.async {
-                    let idleImage = UIImage(systemName: "music.quarternote.3")
-                    let djImage = UIImage(systemName: "music.mic")
-                    let liveImage = UIImage(systemName: "pianokeys.inverse")
-                    switch result {
-                    case .success(let currentDJ):
-                        self.liveDJIndicator.setImage(liveImage, for: .normal)
-                        self.djName.text = currentDJ
-                        if (self.songLabel.text!.contains("[live]") ||
-                            self.songLabel.text!.lowercased().contains("{live}") ||
-                            self.songLabel.text!.lowercased().contains("«live»") ||
-                            self.songLabel.text!.lowercased().contains("<live>") ||
-                            self.songLabel.text!.contains("LIVE on RadioSpiral")
-                        ) {
-                            self.liveDJIndicator.setImage(liveImage, for: .normal)
-                        } else {
-                            self.liveDJIndicator.setImage(djImage, for: .normal)
-                        }
-
-                    case .failure(_):
-                        self.djName.text = "Spud the Ambient Robot"
-                        self.liveDJIndicator.setImage(idleImage, for: .normal)
-                    }
-                }
+            let status = ACWebSocketClient.shared.status
+            if status.changed {
+                self.liveDJIndicator.isHidden = !status.isLiveDJ
+                songLabel.text = status.track
+                artistLabel.text = status.artist
+                releaseLabel.text = status.album
+            } else {
+                songLabel.text = manager.currentStation?.trackName
+                artistLabel.text = manager.currentStation?.artistName
+                releaseLabel.text = manager.currentStation?.releaseName
             }
             shouldAnimateSongLabel(animate)
             return
         }
-        
         // There's a an interruption or pause in the audio queue
-        
-        // Update UI only when it's not aleary updated
+        print("Explicit status message \(String(describing: statusMessage))")
+
+        // Update UI only when it's not already updated
         guard songLabel.text != statusMessage else { return }
-        
+            
         songLabel.text = statusMessage
         artistLabel.text = manager.currentStation?.name
-    
+            
         if animate {
             songLabel.animation = "flash"
             songLabel.repeatCount = 2
@@ -353,7 +424,6 @@ extension NowPlayingViewController: FRadioPlayerObserver {
 }
 
 extension NowPlayingViewController: StationsManagerObserver {
-    
     func stationsManager(_ manager: StationsManager, stationDidChange station: RadioStation?) {
         stationDidChange()
     }

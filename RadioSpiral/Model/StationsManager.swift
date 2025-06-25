@@ -91,6 +91,15 @@ class StationsManager {
         player.radioURL = URL(string: station.streamURL)
     }
     
+    // Exists because with Azuracast, resuminh from stop/pause is not working
+    // consistently, but "previous" or "next" DOES properly restart play.
+    // Will add this into the play() function and see if it helps.
+    func reloadCurrent() {
+        guard let index = getIndex(of: currentStation) else { return }
+        currentStation = stations[index]
+        player.radioURL = URL(string: currentStation!.streamURL)
+    }
+    
     func updateSearch(with filter: String) {
         searchedStations.removeAll(keepingCapacity: false)
         searchedStations = stations.filter { $0.name.range(of: filter, options: [.caseInsensitive]) != nil }
@@ -144,11 +153,13 @@ extension StationsManager {
     private func resetArtwork(with station: RadioStation?) {
         
         guard let station = station else {
+            print("no station")
             updateLockScreen(with: nil)
             return
         }
         
         station.getImage { [weak self] image in
+            print("station set")
             self?.updateLockScreen(with: image)
         }
     }
@@ -156,23 +167,30 @@ extension StationsManager {
     private func updateLockScreen(with artworkImage: UIImage?) {
         
         // Define Now Playing Info
-        var nowPlayingInfo = [String : Any]()
+        let nowPLayingInfoCenter = MPNowPlayingInfoCenter.default()
+        var nowPlayingInfo = nowPLayingInfoCenter.nowPlayingInfo ?? [String : Any]()
         
         if let image = artworkImage {
             nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size, requestHandler: { size -> UIImage in
                 return image
             })
         }
-        
-        if let artistName = currentStation?.artistName {
-            nowPlayingInfo[MPMediaItemPropertyArtist] = artistName
-        }
-        
-        if let trackName = currentStation?.trackName {
-            nowPlayingInfo[MPMediaItemPropertyTitle] = trackName
-        }
+        nowPlayingInfo[MPMediaItemPropertyArtist] = ACWebSocketClient.shared.status.artist
+        nowPlayingInfo[MPMediaItemPropertyArtist] = ACWebSocketClient.shared.status.track
+        nowPlayingInfo[MPMediaItemPropertyTitle] = ACWebSocketClient.shared.status.album
+        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = ACWebSocketClient.shared.status.duration
         
         // Set the metadata
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+    }
+    
+    func updateLockscreenStatus(status: ACStreamStatus) {
+        let nowPLayingInfoCenter = MPNowPlayingInfoCenter.default()
+        var nowPlayingInfo = nowPLayingInfoCenter.nowPlayingInfo ?? [String : Any]()
+        nowPlayingInfo[MPMediaItemPropertyArtist] = status.artist
+        nowPlayingInfo[MPMediaItemPropertyTitle] = status.track
+        nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = status.album
+        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = status.duration
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
     }
 }
@@ -182,23 +200,13 @@ extension StationsManager {
 extension StationsManager: FRadioPlayerObserver {
     
     func radioPlayer(_ player: FRadioPlayer, metadataDidChange metadata: FRadioPlayer.Metadata?) {
-        resetArtwork(with: currentStation)
+        let status = ACWebSocketClient.shared.status
+        if !status.artist.isEmpty {
+            self.updateLockscreenStatus(status: status)
+        }
     }
     
     func radioPlayer(_ player: FRadioPlayer, artworkDidChange artworkURL: URL?) {
-        
-        guard let artworkURL = artworkURL else {
-            resetArtwork(with: currentStation)
-            return
-        }
-        
-        UIImage.image(from: artworkURL) { [weak self] image in
-            guard let image = image else {
-                self?.resetArtwork(with: self?.currentStation)
-                return
-            }
-            
-            self?.updateLockScreen(with: image)
-        }
+        self.updateLockscreenStatus(status: ACWebSocketClient.shared.status)
     }
 }
