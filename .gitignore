@@ -4,3 +4,6 @@
 xcuserdata
 fastlane/report.xml
 screenshots/*
+.claude/
+thoughts/
+docs/plans/
