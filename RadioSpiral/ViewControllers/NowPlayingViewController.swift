@@ -9,8 +9,8 @@
 import UIKit
 import MediaPlayer
 import AVKit
+import Combine
 import Spring
-import FRadioPlayer
 import Kingfisher
 
 protocol NowPlayingViewControllerDelegate: AnyObject {
@@ -41,7 +41,7 @@ class NowPlayingViewController: UIViewController {
     
     // MARK: - Properties
     
-    private let player = FRadioPlayer.shared
+    private let player = RadioPlayer.shared
     private let manager = StationsManager.shared
     
     var isNewStation = true
@@ -50,6 +50,9 @@ class NowPlayingViewController: UIViewController {
     var mpVolumeSlider: UISlider?
     private var metadataCallback: MetadataChangeCallback?
     private var lastStatusMessage: String?
+    private var wasPlaying = false
+    private var cancellables = Set<AnyCancellable>()
+    private var connectionBanner: UILabel!
     
     // MARK: - ViewDidLoad
     
@@ -60,7 +63,6 @@ class NowPlayingViewController: UIViewController {
         if manager.stations.count < 2 {
             navigationItem.hidesBackButton = true
         }
-        player.addObserver(self)
         manager.addObserver(self)
         
         let viewSize = CGSize(width:  self.view.bounds.width, height:  self.view.bounds.height)
@@ -84,6 +86,9 @@ class NowPlayingViewController: UIViewController {
             playerStateDidChange(player.state, animate: false)
         }
         
+        // Setup connection status banner
+        setupConnectionBanner()
+
         // Setup volumeSlider
         setupVolumeSlider()
         
@@ -99,7 +104,63 @@ class NowPlayingViewController: UIViewController {
             self?.handleMetadataUpdate(metadata)
         }
         metadataManager.subscribeToMetadataChanges(metadataCallback!)
-        
+
+        // Observe connection state for audio restart after WiFi recovery.
+        // Use removeDuplicates + scan to detect transitions TO .connected
+        // from a non-connected state. Only restart the audio player -
+        // do NOT call reloadCurrent() as that triggers connectToStation()
+        // via currentStation didSet, creating a feedback loop.
+        metadataManager.$connectionState
+            .removeDuplicates()
+            .scan((MetadataConnectionState.disconnected, MetadataConnectionState.disconnected)) { previous, current in
+                (previous.1, current)
+            }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] (previous, current) in
+                guard let self = self else { return }
+                if current == .connected && previous != .connected {
+                    self.hideConnectionBanner()
+                    if self.wasPlaying {
+                        self.player.radioURL = URL(string: self.manager.currentStation?.streamURL ?? "")
+                        self.player.play()
+                    }
+                } else if current == .disconnected && previous == .connected {
+                    self.showConnectionBanner("Connection lost — reconnecting…")
+                    if self.wasPlaying {
+                        // Stop AVPlayer to prevent aggressive internal retries while offline.
+                        // wasPlaying stays true so audio restarts on recovery.
+                        self.player.stop()
+                    }
+                } else if current == .connecting {
+                    self.showConnectionBanner("Reconnecting…")
+                }
+            }
+            .store(in: &cancellables)
+
+        // Observe playback state changes (dropFirst skips the initial
+        // .stopped emission — viewDidLoad already sets initial UI state)
+        RadioPlayer.shared.$playbackState
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] playbackState in
+                guard let self = self else { return }
+                if playbackState == .playing {
+                    self.hideConnectionBanner()
+                }
+                self.playbackStateDidChange(playbackState, animate: true)
+            }
+            .store(in: &cancellables)
+
+        // Observe player state changes (dropFirst skips initial .idle)
+        RadioPlayer.shared.$state
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                guard let self = self else { return }
+                self.playerStateDidChange(state, animate: true)
+            }
+            .store(in: &cancellables)
+
         isPlayingDidChange(player.isPlaying)
     }
     
@@ -147,6 +208,38 @@ class NowPlayingViewController: UIViewController {
               
     // MARK: - Setup
     
+    func setupConnectionBanner() {
+        connectionBanner = UILabel()
+        connectionBanner.textAlignment = .center
+        connectionBanner.textColor = .white
+        connectionBanner.font = .systemFont(ofSize: 14, weight: .medium)
+        connectionBanner.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        connectionBanner.layer.cornerRadius = 8
+        connectionBanner.clipsToBounds = true
+        connectionBanner.alpha = 0
+        connectionBanner.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(connectionBanner)
+        NSLayoutConstraint.activate([
+            connectionBanner.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 4),
+            connectionBanner.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            connectionBanner.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, constant: -32),
+            connectionBanner.heightAnchor.constraint(equalToConstant: 30),
+        ])
+    }
+
+    private func showConnectionBanner(_ message: String) {
+        connectionBanner.text = "  \(message)  "
+        UIView.animate(withDuration: 0.3) {
+            self.connectionBanner.alpha = 1
+        }
+    }
+
+    private func hideConnectionBanner() {
+        UIView.animate(withDuration: 0.5) {
+            self.connectionBanner.alpha = 0
+        }
+    }
+
     func setupVolumeSlider() {
         // Note: This slider implementation uses a MPVolumeView
         // The volume slider only works in devices, not the simulator.
@@ -197,8 +290,10 @@ class NowPlayingViewController: UIViewController {
         
     @IBAction func playingPressed(_ sender: Any) {
         if player.isPlaying {
+            wasPlaying = false
             player.stop()
         } else {
+            wasPlaying = true
             manager.reloadCurrent()  // Reconnect to stream
             player.play()
             updateLabels()
@@ -246,10 +341,8 @@ class NowPlayingViewController: UIViewController {
         startNowPlayingAnimation(isPlaying)
     }
     
-    func playbackStateDidChange(_ playbackState: FRadioPlayer.PlaybackState, animate: Bool) {
-        
+    func playbackStateDidChange(_ playbackState: RadioPlayer.PlaybackState, animate: Bool) {
         let message: String?
-        
         switch playbackState {
         case .paused:
             message = "Station Paused..."
@@ -258,25 +351,22 @@ class NowPlayingViewController: UIViewController {
         case .stopped:
             message = "Station Stopped..."
         }
-        
         updateLabels(with: message, animate: animate)
         isPlayingDidChange(player.isPlaying)
     }
     
-    func playerStateDidChange(_ state: FRadioPlayer.State, animate: Bool) {
-        
+    func playerStateDidChange(_ state: RadioPlayer.State, animate: Bool) {
         let message: String?
-        
         switch state {
         case .loading:
-            if songLabel.text != ""{
+            if songLabel.text != "" {
                 message = songLabel.text
             } else {
                 message = "Station loading..."
             }
-        case .urlNotSet:
+        case .idle:
             message = "Station URL not valid"
-        case .readyToPlay, .loadingFinished:
+        case .readyToPlay:
             playbackStateDidChange(player.playbackState, animate: animate)
             return
         case .error:
@@ -397,7 +487,7 @@ class NowPlayingViewController: UIViewController {
     
     @IBAction func shareButtonPressed(_ sender: UIButton) {
         guard let station = manager.currentStation else { return }
-        let artworkURL = metadataManager.getCurrentMetadata()?.artworkURL ?? player.currentArtworkURL
+        let artworkURL = metadataManager.getCurrentMetadata()?.artworkURL
         delegate?.didTapShareButton(self, station: station, artworkURL: artworkURL)
     }
     
@@ -406,24 +496,6 @@ class NowPlayingViewController: UIViewController {
     }
 }
 
-extension NowPlayingViewController: FRadioPlayerObserver {
-    
-    func radioPlayer(_ player: FRadioPlayer, playerStateDidChange state: FRadioPlayer.State) {
-        playerStateDidChange(state, animate: true)
-    }
-    
-    func radioPlayer(_ player: FRadioPlayer, playbackStateDidChange state: FRadioPlayer.PlaybackState) {
-        playbackStateDidChange(state, animate: true)
-    }
-    
-    func radioPlayer(_ player: FRadioPlayer, metadataDidChange metadata: FRadioPlayer.Metadata?) {
-        updateLabels()
-    }
-    
-    func radioPlayer(_ player: FRadioPlayer, artworkDidChange artworkURL: URL?) {
-        updateTrackArtwork()
-    }
-}
 
 extension NowPlayingViewController: StationsManagerObserver {
     func stationsManager(_ manager: StationsManager, stationDidChange station: RadioStation?) {
