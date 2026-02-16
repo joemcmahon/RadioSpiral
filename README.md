@@ -1,5 +1,9 @@
 # RadioSpiral
 
+<p align="center">
+    <img alt="RadioSpiral screen" src="https://pemungkah.com/wp-content/uploads/2023/11/Screenshot-Small.png">
+</p>
+
 RadioSpiral started out as a port of the [Swift Radio Pro](https://github.com/analogcode/Swift-Radio-Pro) app specifically designed to work with our old AirTime/[LibreTime](https://github.com/libretime/libretime) server, and functioned extremely well for that.
 
 However, LibreTime stalled out on upgrades, and we found the constant need to regenerate the automated playlists onerous (and easy to forget; we had more than one long outage because we didn't remember to rebuild the playlists!). We searched around for an option that would work better for us, and found [Azuracast](https://www.azuracast.com/). Out of the box, Azuracast drastically simplified the work we needed to do to keep the station going, so we switched...and discovered that the Icecast instance that Azuracast runs doesn't supply metadata.
@@ -56,7 +60,3 @@ providing me with a great platform that I've turned into a mutant of my own desi
 - **Co-organizer & current-lead developer of Swift Radio Pro, [Fethi El Hassasna](https://fethica.com), Twitter: [@fethica](https://twitter.com/fethica)** 
 - **Created by [Matthew Fecher](http://matthewfecher.com) from [AudioKit Pro](https://audiokitpro.com), Twitter: [@analogMatthew](http://twitter.com/analogMatthew)**  
 - *Contributions by others listed in Github [here](https://github.com/swiftcodex/Swift-Radio-Pro/graphs/contributors).*
-
-<p align="center">
-    <img alt="RadioSpiral screen" src="https://pemungkah.com/wp-content/uploads/2023/11/Screenshot-Small.png">
-</p>
