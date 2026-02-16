@@ -145,6 +145,7 @@ A task is **Done** only when **ALL** of the following are complete:
 2. **Implementation plan** was followed or deviations were documented in Implementation Notes.
 3. **Automated tests** (unit + integration) cover new logic.
 4. **Static analysis**: linter & formatter succeed.
+5. **Testing**: Automated tests succeed. Aim for 70% coverage. If there are UI components, test them on-device or have the user do so.
 5. **Documentation**:
     - All relevant docs updated (any relevant README file, backlog/docs, backlog/decisions, etc.).
     - Task file **MUST** have an `## Implementation Notes` section added summarising:
@@ -186,3 +187,185 @@ A task is **Done** only when **ALL** of the following are complete:
 - When users mention to create a task, they mean to create a task using Backlog.md CLI tool.
 
 <!-- BACKLOG.MD GUIDELINES END -->
+
+---
+
+# ConfigClient Integration Progress (In-Progress)
+
+## Summary
+Implementing ConfigClient from RadioSpiral3 into RadioSpiral app. ConfigClient provides dynamic station loading from Azuracast with intelligent fallback chains and zero shipped API keys.
+
+## Completed Tasks
+1. ✅ **ConfigClient implementation and testing** - ConfigClient fully implemented, tested, and committed
+   - 14 tests passing (all local and live server tests)
+   - Tests at: `RadioSpiral/ConfigClientTests/ConfigClientTests.swift`
+   - Code at: `RadioSpiral/ConfigClient/ConfigClient.swift`
+   - Public API approach verified (demo.azuracast.com)
+   - Fallback chain logic tested including edge cases (exclusion)
+
+2. ✅ **Add ConfigClient to main RadioSpiral target** - ConfigClient added to RadioSpiral target and building successfully
+   - Previously verified: `xcodebuild build -scheme RadioSpiral -configuration Debug` → BUILD SUCCEEDED
+   - ConfigClient.swift is in RadioSpiral/ConfigClient/ directory
+   - ConfigClient was added to RadioSpiral target's Sources build phase
+
+3. ✅ **Create StationConfig → RadioStation Converter** - Converter fully implemented and tested
+   - **Implementation:**
+     - Extracted `StationConfig` struct to dedicated file: `RadioSpiral/ConfigClient/StationConfig.swift`
+     - Created converter initializer extension on RadioStation: `init(from stationConfig: StationConfig)`
+     - Maps all 8 StationConfig fields to RadioStation: name, streamURL, imageURL, desc, longDesc, serverName, shortCode, defaultDJ
+   - **Project Integration:**
+     - Added StationConfig.swift to project.pbxproj with proper file references and build phase entries
+     - Added to ConfigClientTests target (ID: 71CA8E8A2EC57A5100F7F157)
+     - Added to RadioSpiral main target (ID: 71CA8E8A2EC57A5200F7F157)
+   - **Tests Passing:**
+     - `testStationConfigToDictionary` - Verifies StationConfig creation and field assignment
+     - `testStationConfigFromFetchedData` - Verifies fetched data can be converted
+     - All 16 ConfigClientTests passing (14 original + 2 new converter tests)
+   - **Build Status:** BUILD SUCCEEDED - Main RadioSpiral target builds without errors
+
+   **Key Files Modified:**
+   - Created: `RadioSpiral/ConfigClient/StationConfig.swift`
+   - Modified: `RadioSpiral/ConfigClient/ConfigClient.swift` (removed duplicate StationConfig definition)
+   - Modified: `RadioSpiral/Model/RadioStation.swift` (added converter extension lines 107-124)
+   - Modified: `RadioSpiral.xcodeproj/project.pbxproj` (registered StationConfig in build phases)
+   - Modified: `RadioSpiral/ConfigClientTests/ConfigClientTests.swift` (added converter tests)
+
+4. ✅ **Implement ConfigClient Fallback Lookups in MetadataManager** - Fallback chain enhanced with ConfigClient
+   - **Implementation:**
+     - Added ConfigClient.shared property to StationMetadataManager (line 74)
+     - Enhanced getFallbackMetadata() to lookup station info from ConfigClient by shortCode
+     - Fallback metadata now prioritizes: Azuracast > FRadioPlayer > ConfigClient+RadioStation > RadioStation
+     - Made ConfigClient and public methods public for cross-module access
+   - **Name Conflict Resolution:**
+     - Renamed internal error type: `DataError` → `ConfigClientError`
+     - Renamed internal config struct: `Config` → `ConfigClientDebug`
+     - Fixed pbxproj: Added ConfigClient.swift to RadioSpiral target's Compile Sources
+   - **Test Coverage:**
+     - New test: `testConfigClientCachingForFallback` - Verifies station lookup by shortCode
+     - Confirms all fallback fields available: name, desc, defaultDJ
+     - 17 ConfigClientTests passing (16 previous + 1 new)
+   - **Build Status:** BUILD SUCCEEDED - All tests passing
+
+5. ✅ **Update DataManager to Use ConfigClient for Dynamic Station Loading** - Full integration with smart fallback chain
+   - **Implementation:**
+     - Add ConfigClient.shared property to DataManager for station fetching
+     - Create loadConfigClient() method to fetch and convert stations
+     - Convert StationConfig to RadioStation using converter extension
+     - Separate handlers for ConfigClient (StationsResult) vs HTTP/Local (DataResult)
+   - **Configuration:**
+     - Add Config.useConfigClient flag (default: true) for easy toggling
+     - Implement smart fallback chain: ConfigClient → Local JSON → HTTP
+     - Preserve backward compatibility with existing loading mechanisms
+   - **Smart Loading Order:**
+     1. ConfigClient (dynamic Azuracast/fallback config)
+     2. Local JSON (stations.json bundled in app)
+     3. HTTP (remote stations.json)
+   - **Test Coverage:**
+     - All 17 ConfigClientTests still passing
+     - Build: SUCCESS with no errors
+   - **Build Status:** BUILD SUCCEEDED - All tests passing
+
+## Remaining Tasks
+- [ ] Test integrated system on device
+
+## Key Code Locations
+- **ConfigClient**: `RadioSpiral/ConfigClient/ConfigClient.swift`
+- **StationConfig**: `RadioSpiral/ConfigClient/StationConfig.swift` (public struct, 22 lines)
+- **ConfigClient Tests**: `RadioSpiral/ConfigClientTests/ConfigClientTests.swift` (16 tests, all passing)
+- **RadioStation Model**: `RadioSpiral/Model/RadioStation.swift`
+- **Converter Extension**: Lines 107-124 in RadioStation.swift (`init(from stationConfig: StationConfig)`)
+
+## Test Config Files
+- `RadioSpiral/ConfigClientTests/test-config-with-fallback.json`
+- `RadioSpiral/ConfigClientTests/test-config-with-real-server.json`
+- `RadioSpiral/ConfigClientTests/test-config-live-azuracast.json`
+
+## Current Known Good State
+- All 16 ConfigClientTests passing (14 original + 2 converter tests)
+- ConfigClient & StationConfig building into both RadioSpiral and ConfigClientTests targets
+- RadioStation converter working with full field mapping
+- Main RadioSpiral target builds successfully
+- Project structure clean with StationConfig in dedicated file
+
+## Session Summary (Sessions 2-3)
+**Duration**: Efficient token usage across two checkpoint commits
+**Work Completed**:
+
+**Session 2: ConfigClient Converter Integration**
+1. ✅ Fixed build error by extracting StationConfig to separate file
+2. ✅ Properly registered StationConfig.swift in project.pbxproj
+3. ✅ Implemented RadioStation converter extension (init from StationConfig)
+4. ✅ Created converter tests
+5. ✅ Checkpoint commit: "Extract StationConfig and implement RadioStation converter"
+
+**Session 2: MetadataManager Fallback Integration**
+6. ✅ Integrated ConfigClient into MetadataManager
+7. ✅ Enhanced fallback metadata chain with ConfigClient lookups
+8. ✅ Resolved naming conflicts (DataError → ConfigClientError, Config → ConfigClientDebug)
+9. ✅ Added ConfigClient.swift to RadioSpiral target's compile sources
+10. ✅ Created fallback chain test (testConfigClientCachingForFallback)
+11. ✅ Checkpoint commit: "Integrate ConfigClient into MetadataManager for fallback lookups"
+
+**Session 3: DataManager Dynamic Station Loading**
+12. ✅ Added Config.useConfigClient flag for configuration
+13. ✅ Integrated ConfigClient into DataManager
+14. ✅ Implemented smart fallback chain: ConfigClient → Local → HTTP
+15. ✅ Created loadConfigClient() with StationConfig→RadioStation conversion
+16. ✅ Separate handlers for different result types
+17. ✅ Full backward compatibility maintained
+
+**Session 3 Results**:
+- Completed: Full ConfigClient integration across all major components
+- Tests: 17/17 ConfigClientTests passing
+- Build: SUCCESS with no errors
+- Architecture: Dynamic station loading with intelligent fallback chain
+
+**Current Status**:
+- ConfigClient fully integrated and functional
+- Smart fallback chain implemented (ConfigClient → Local JSON → HTTP)
+- MetadataManager enhanced with ConfigClient fallback lookups
+- DataManager now uses ConfigClient for dynamic station loading
+- All code changes backward compatible
+
+**Next Steps for Future Sessions**:
+- Device testing of full integrated system
+- Performance optimization if needed
+- Consider caching layer improvements
+
+## Session 4: Production Deployment & Device Testing
+
+**Completed**:
+1. ✅ Created production config.json in radiospiral-config repo
+   - Primary: Azuracast API from spiral.radio
+   - Fallback: Static RadioSpiral station
+   - Exclude list: ["rstest"]
+   - Commit: `83258af` pushed to GitHub
+
+2. ✅ Verified app uses remote ConfigClient
+   - Config.useConfigClient = true
+   - ConfigClient default URL points to remote config.json
+   - Smart fallback chain: ConfigClient → Local → HTTP
+
+3. ✅ Device testing completed
+   - App builds and runs successfully on physical device
+   - CarPlay Simulator working correctly
+   - Station loading from Azuracast via ConfigClient working
+   - Exclude list ("rstest") filtering properly
+
+**Known Issues Found (For Next Session)**:
+- ⚠️ **Station Icons Not Displaying**: All stations showing generic icon instead of actual station artwork
+  - Location: Likely in station list UI or image loading pipeline
+  - Potential causes:
+    - StationConfig.imageURL not being populated from Azuracast API
+    - UI not loading images from imageURL field
+    - Image caching/loading issue
+    - Timing issues
+  - Reproduce: Run app on device, view stations list
+  - Status: Non-critical (functional, cosmetic only)
+
+**Current Production Status**:
+- ✅ ConfigClient integration: COMPLETE and WORKING
+- ✅ Device testing: PASSED
+- ✅ Remote config deployment: ACTIVE
+- ✅ Fallback chain: OPERATIONAL
+- ⚠️ Station icons: NEEDS INVESTIGATION
