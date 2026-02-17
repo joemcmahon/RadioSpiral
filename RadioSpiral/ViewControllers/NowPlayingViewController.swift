@@ -26,7 +26,7 @@ class NowPlayingViewController: UIViewController {
     
     // MARK: - IB UI
     
-    @IBOutlet weak var albumHeightConstraint: NSLayoutConstraint!
+    @IBOutlet var albumHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var albumImageView: SpringImageView!
     @IBOutlet weak var artistLabel: UILabel!
     @IBOutlet weak var releaseLabel: SpringLabel!
@@ -38,7 +38,33 @@ class NowPlayingViewController: UIViewController {
     @IBOutlet weak var airPlayView: UIView!
     @IBOutlet weak var djName: UILabel!
     @IBOutlet weak var liveDJIndicator: UIButton!
-    
+
+    // MARK: - Landscape Layout Outlets
+
+    @IBOutlet weak var controlsStackView: UIStackView!
+    @IBOutlet weak var volumeStackView: UIStackView!
+    @IBOutlet weak var labelsStackView: UIStackView!
+    @IBOutlet weak var toolsView: UIView!
+
+    // Portrait constraints (deactivated in landscape — strong refs prevent deallocation)
+    @IBOutlet var portraitAlbumTop: NSLayoutConstraint!
+    @IBOutlet var portraitAlbumCenterX: NSLayoutConstraint!
+    @IBOutlet var portraitAlbumAspectRatio: NSLayoutConstraint!
+    @IBOutlet var portraitAlbumTrailing: NSLayoutConstraint!
+    @IBOutlet var portraitControlsTop: NSLayoutConstraint!
+    @IBOutlet var portraitControlsCenterX: NSLayoutConstraint!
+    @IBOutlet var portraitVolumeTop: NSLayoutConstraint!
+    @IBOutlet var portraitVolumeLeading: NSLayoutConstraint!
+    @IBOutlet var portraitVolumeTrailing: NSLayoutConstraint!
+    @IBOutlet var portraitLabelsTop: NSLayoutConstraint!
+    @IBOutlet var portraitLabelsLeading: NSLayoutConstraint!
+    @IBOutlet var portraitLabelsTrailing: NSLayoutConstraint!
+
+    // Landscape layout
+    private var landscapeConstraints: [NSLayoutConstraint] = []
+    private var allPortraitConstraints: [NSLayoutConstraint] = []
+    private var isCurrentlyLandscape = false
+
     // MARK: - Properties
     
     private let player = RadioPlayer.shared
@@ -65,7 +91,11 @@ class NowPlayingViewController: UIViewController {
         }
         manager.addObserver(self)
         
-        let viewSize = CGSize(width:  self.view.bounds.width, height:  self.view.bounds.height)
+        setupLandscapeConstraints()
+        // Force first layout pass by ensuring isCurrentlyLandscape doesn't match
+        isCurrentlyLandscape = view.bounds.width > view.bounds.height && UIDevice.current.userInterfaceIdiom != .pad
+        isCurrentlyLandscape = !isCurrentlyLandscape
+        let viewSize = CGSize(width: view.bounds.width, height: view.bounds.height)
         optimizeForDeviceSize(size: viewSize)
         
         // Create Now Playing BarItem
@@ -377,33 +407,68 @@ class NowPlayingViewController: UIViewController {
     
     // MARK: - UI Helper Methods
     
+    func setupLandscapeConstraints() {
+        let safeArea = view.safeAreaLayoutGuide
+
+        landscapeConstraints = [
+            // Album art: left side, 40% width, fills height
+            albumImageView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 12),
+            albumImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.40),
+            albumImageView.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
+            albumImageView.bottomAnchor.constraint(equalTo: toolsView.topAnchor, constant: -8),
+
+            // Labels stack: right side, top
+            labelsStackView.leadingAnchor.constraint(equalTo: albumImageView.trailingAnchor, constant: 24),
+            labelsStackView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -12),
+            labelsStackView.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 12),
+
+            // Volume stack: right side, below labels
+            volumeStackView.leadingAnchor.constraint(equalTo: albumImageView.trailingAnchor, constant: 24),
+            volumeStackView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -12),
+            volumeStackView.topAnchor.constraint(equalTo: labelsStackView.bottomAnchor, constant: 20),
+
+            // Controls stack: right side, below volume
+            controlsStackView.centerXAnchor.constraint(equalTo: volumeStackView.centerXAnchor),
+            controlsStackView.topAnchor.constraint(equalTo: volumeStackView.bottomAnchor, constant: 20),
+        ]
+
+        allPortraitConstraints = [
+            portraitAlbumTop,
+            portraitAlbumCenterX,
+            portraitAlbumAspectRatio,
+            portraitAlbumTrailing,
+            portraitControlsTop,
+            portraitControlsCenterX,
+            portraitVolumeTop,
+            portraitVolumeLeading,
+            portraitVolumeTrailing,
+            portraitLabelsTop,
+            portraitLabelsLeading,
+            portraitLabelsTrailing,
+        ]
+    }
+
     func optimizeForDeviceSize(size: CGSize) {
-        // Adjust album size to fit iPhone 4s, 6s & 6s+
-        print("height", size.height, "width", size.width)
-        
-        if size.width > size.height {
-            print("horizontal")
-            var imageHeight: CGFloat
-            //if size.height < 750 {
-            if  UIDevice.current.userInterfaceIdiom != .pad {
-                imageHeight = self.view.bounds.height * 0.12
-                if imageHeight < 100 {
-                    imageHeight = 0.00
-                }
-            } else {
-                imageHeight = self.view.bounds.height * 0.40
-            }
-            
-            albumHeightConstraint.constant = imageHeight
-            print(imageHeight)
+        let isLandscape = size.width > size.height && UIDevice.current.userInterfaceIdiom != .pad
+
+        guard isLandscape != isCurrentlyLandscape else { return }
+        isCurrentlyLandscape = isLandscape
+
+        if isLandscape {
+            NSLayoutConstraint.deactivate(allPortraitConstraints)
+            albumHeightConstraint.isActive = false
+            NSLayoutConstraint.activate(landscapeConstraints)
+            if Config.debugLog { print("[NowPlaying] Switched to landscape layout") }
         } else {
-            print("vertical")
-            let imageHeight = self.view.bounds.height * 0.40
+            NSLayoutConstraint.deactivate(landscapeConstraints)
+            albumHeightConstraint.isActive = true
+            NSLayoutConstraint.activate(allPortraitConstraints)
+            let imageHeight = view.bounds.height * 0.40
             albumHeightConstraint.constant = imageHeight
-            print(imageHeight)
+            if Config.debugLog { print("[NowPlaying] Switched to portrait layout, albumHeight=\(imageHeight)") }
         }
-        print(albumHeightConstraint.constant)
-        view.updateConstraints()
+
+        view.setNeedsLayout()
         view.layoutIfNeeded()
     }
     

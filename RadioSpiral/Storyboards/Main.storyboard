@@ -400,6 +400,22 @@
                         <outlet property="releaseLabel" destination="43A-7o-9jl" id="6Gr-nr-cjU"/>
                         <outlet property="songLabel" destination="KC8-ZG-rx5" id="tNh-3K-qWW"/>
                         <outlet property="volumeParentView" destination="zuj-rb-EKQ" id="KFg-Rk-y3Q"/>
+                        <outlet property="controlsStackView" destination="WmY-ug-Nhz" id="lnd-01-csA"/>
+                        <outlet property="volumeStackView" destination="a3Z-1t-AAA" id="lnd-02-csB"/>
+                        <outlet property="labelsStackView" destination="8xJ-4F-WCE" id="lnd-03-csC"/>
+                        <outlet property="toolsView" destination="uRO-Wl-Fhm" id="lnd-04-csD"/>
+                        <outlet property="portraitAlbumTop" destination="9m0-ca-E91" id="lnd-05-csE"/>
+                        <outlet property="portraitAlbumCenterX" destination="2Bi-6G-hDF" id="lnd-06-csF"/>
+                        <outlet property="portraitAlbumAspectRatio" destination="0o9-ZN-zY3" id="lnd-07-csG"/>
+                        <outlet property="portraitAlbumTrailing" destination="nc4-oD-L1P" id="lnd-08-csH"/>
+                        <outlet property="portraitControlsTop" destination="77z-hi-QGE" id="lnd-09-csI"/>
+                        <outlet property="portraitControlsCenterX" destination="xjT-ZW-MWx" id="lnd-10-csJ"/>
+                        <outlet property="portraitVolumeTop" destination="epF-5G-BUS" id="lnd-11-csK"/>
+                        <outlet property="portraitVolumeLeading" destination="sHe-lq-M9M" id="lnd-12-csL"/>
+                        <outlet property="portraitVolumeTrailing" destination="p9p-mf-M9S" id="lnd-13-csM"/>
+                        <outlet property="portraitLabelsTop" destination="Rgp-Rr-5X1" id="lnd-14-csN"/>
+                        <outlet property="portraitLabelsLeading" destination="iJJ-RH-r0a" id="lnd-15-csO"/>
+                        <outlet property="portraitLabelsTrailing" destination="a0R-gd-CTo" id="lnd-16-csP"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
