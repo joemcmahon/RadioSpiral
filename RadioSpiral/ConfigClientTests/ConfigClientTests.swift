@@ -411,18 +411,16 @@ class ConfigClientTests: XCTestCase {
             case .success(let stations):
                 XCTAssertFalse(stations.isEmpty, "Should load at least one station")
 
-                // Verify we got the RadioSpiral station (from static fallback)
-                if let radioSpiralStation = stations.first(where: { $0.shortCode == "radiospiral" }) {
-                    XCTAssertEqual(radioSpiralStation.name, "RadioSpiral", "Should load RadioSpiral station")
-                    XCTAssertTrue(radioSpiralStation.streamURL.contains("spiral.radio"), "Stream URL should be from spiral.radio")
-                    XCTAssertEqual(radioSpiralStation.defaultDJ, "Spud the Ambient Robot", "Default DJ should match")
+                // Verify we got a RadioSpiral station from either Azuracast or static fallback
+                let radioSpiralStation = stations.first(where: { $0.shortCode == "radiospiral" })
+                XCTAssertNotNil(radioSpiralStation, "Should have a radiospiral station from Azuracast or fallback")
 
-                    expectation.fulfill()
-                } else {
-                    // If Azuracast is unreachable, we should still get the fallback
-                    XCTAssertTrue(true, "Using fallback static config")
-                    expectation.fulfill()
+                if let station = radioSpiralStation {
+                    XCTAssertFalse(station.name.isEmpty, "Station name should not be empty")
+                    XCTAssertFalse(station.streamURL.isEmpty, "Stream URL should not be empty")
                 }
+
+                expectation.fulfill()
             case .failure(let error):
                 XCTFail("Failed to load production config: \(error)")
             }

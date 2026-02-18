@@ -50,6 +50,7 @@
 		B6B0CEB08FFF4CC6A8931B5F /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
 		B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
 		B6B0CEB08FFF4CC6A8931B62 /* test-credits.json in Resources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B61 /* test-credits.json */; };
+		71CA8E912EC57AD500F7F157 /* test-config-production.json in Resources */ = {isa = PBXBuildFile; fileRef = 71CA8E902EC57AD500F7F157 /* test-config-production.json */; };
 		CE321FF329371140001572BD /* Bundle+appName.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE321FF229371140001572BD /* Bundle+appName.swift */; };
 		CE37D7B4290F47E000B0933B /* Spring in Frameworks */ = {isa = PBXBuildFile; productRef = CE37D7B3290F47E000B0933B /* Spring */; };
 		CE6036132A47A87A00E15E15 /* StationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6036122A47A87A00E15E15 /* StationsViewController.swift */; };
@@ -132,6 +133,7 @@
 		94E9761B1B1A8F3200F52B1E /* UIImage+DropShadow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+DropShadow.swift"; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsClient.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B61 /* test-credits.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-credits.json"; sourceTree = "<group>"; };
+		71CA8E902EC57AD500F7F157 /* test-config-production.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-config-production.json"; sourceTree = "<group>"; };
 		CE321FF229371140001572BD /* Bundle+appName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+appName.swift"; sourceTree = "<group>"; };
 		CE6036122A47A87A00E15E15 /* StationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationsViewController.swift; sourceTree = "<group>"; };
 		CE6036152A47B88600E15E15 /* StationTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationTableViewCell.swift; sourceTree = "<group>"; };
@@ -239,6 +241,7 @@
 				6F4444B16407430F8A42EFDD /* test-config-with-real-server.json */,
 				8AAF0ECFA82245D0A3C4E3A1 /* test-config-live-azuracast.json */,
 				B6B0CEB08FFF4CC6A8931B61 /* test-credits.json */,
+				71CA8E902EC57AD500F7F157 /* test-config-production.json */,
 			);
 			path = RadioSpiral/ConfigClientTests;
 			sourceTree = "<group>";
@@ -520,6 +523,7 @@
 				60A288069DE14CA0B96295FA /* test-config-with-real-server.json in Resources */,
 				B2C601433BBD45CD9F6DE9A3 /* test-config-live-azuracast.json in Resources */,
 				B6B0CEB08FFF4CC6A8931B62 /* test-credits.json in Resources */,
+				71CA8E912EC57AD500F7F157 /* test-config-production.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
