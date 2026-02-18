@@ -177,11 +177,24 @@ public class ParseWebSocketData {
         return status
     }
     
+    // Mapping of garbled DJ names to correct Unicode versions.
+    // Icecast/SHOUTcast metadata only supports Latin-1, so characters
+    // outside that range (e.g. IPA Extensions) get replaced with '?'
+    // or U+FFFD by the Mixxx → Azuracast pipeline.
+    private static let djNameFixes: [String: String] = [
+        "?u\u{FFFD}0??S": "\u{029E}u\u{00A1}0\u{0279}\u{029E}S",  // ʞu¡0ɹʞS
+    ]
+
     // XXX: workaround for Azuracast bugs and streamer peculiarities.
     //
     // Takes the fetched song metadata and repairs it so that the now-playing
     // data looks right in the app.
     private func descramble(status: ACStreamStatus) -> ACStreamStatus {
+        // Fix garbled Unicode DJ names from Icecast metadata encoding
+        if let fixedName = Self.djNameFixes[status.dj] {
+            status.dj = fixedName
+        }
+
         if status.dj == "Cypress Rosewood" {
             // Tony's metadata has the track name in artist and the artist
             // name in track. Album is currently unset, but we'll revisit this
