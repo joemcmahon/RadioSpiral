@@ -79,7 +79,13 @@ class NowPlayingViewController: UIViewController {
     private var wasPlaying = false
     private var cancellables = Set<AnyCancellable>()
     private var connectionBanner: UILabel!
-    
+    private var timeBubble: UILabel!
+    private var timeUpdateTimer: Timer?
+    private var metadataReceivedAt: Date?
+    private var metadataElapsed: TimeInterval = 0
+    private var metadataDuration: TimeInterval = 0
+    private var broadcastStart: Date?
+
     // MARK: - ViewDidLoad
     
     override func viewDidLoad() {
@@ -118,6 +124,9 @@ class NowPlayingViewController: UIViewController {
         
         // Setup connection status banner
         setupConnectionBanner()
+
+        // Setup time bubble overlay
+        setupTimeBubble()
 
         // Setup volumeSlider
         setupVolumeSlider()
@@ -194,9 +203,19 @@ class NowPlayingViewController: UIViewController {
         isPlayingDidChange(player.isPlaying)
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        startTimeUpdates()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopTimeUpdates()
+    }
+
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
-        
+
         coordinator.animate(alongsideTransition: { _ in
             print("rotating")
             self.optimizeForDeviceSize(size: size)
@@ -217,7 +236,14 @@ class NowPlayingViewController: UIViewController {
             
             // Update live DJ indicator
             self.liveDJIndicator.isHidden = !metadata.isLiveDJ
-            
+
+            // Update time tracking for bubble
+            self.metadataReceivedAt = Date()
+            self.metadataElapsed = metadata.elapsed ?? 0
+            self.metadataDuration = metadata.duration ?? 0
+            self.broadcastStart = metadata.broadcastStart
+            self.updateTimeBubbleText()
+
             // Update artwork
             if let artworkURL = metadata.artworkURL {
                 let processor = DownsamplingImageProcessor(size: self.albumImageView.bounds.size)
@@ -267,6 +293,69 @@ class NowPlayingViewController: UIViewController {
     private func hideConnectionBanner() {
         UIView.animate(withDuration: 0.5) {
             self.connectionBanner.alpha = 0
+        }
+    }
+
+    func setupTimeBubble() {
+        timeBubble = UILabel()
+        timeBubble.textAlignment = .center
+        timeBubble.textColor = .white
+        timeBubble.font = .monospacedDigitSystemFont(ofSize: 15, weight: .medium)
+        timeBubble.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        timeBubble.layer.cornerRadius = 12
+        timeBubble.clipsToBounds = true
+        timeBubble.text = " --:--    "
+        timeBubble.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(timeBubble)
+        NSLayoutConstraint.activate([
+            timeBubble.centerXAnchor.constraint(equalTo: albumImageView.centerXAnchor),
+            timeBubble.topAnchor.constraint(equalTo: albumImageView.bottomAnchor),
+            timeBubble.heightAnchor.constraint(equalToConstant: 30),
+        ])
+        startTimeUpdates()
+    }
+
+    private func startTimeUpdates() {
+        stopTimeUpdates()
+        timeUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.updateTimeBubbleText()
+        }
+    }
+
+    private func stopTimeUpdates() {
+        timeUpdateTimer?.invalidate()
+        timeUpdateTimer = nil
+    }
+
+    private func updateTimeBubbleText() {
+        guard metadataReceivedAt != nil else {
+            timeBubble.text = " --:--    "
+            return
+        }
+        if let broadcastStart = broadcastStart {
+            // Live DJ: show time into the show
+            let showElapsed = Date().timeIntervalSince(broadcastStart)
+            timeBubble.text = " LIVE  \(formatTime(showElapsed))    "
+        } else if metadataDuration > 0 {
+            // Pre-recorded track: show track elapsed / duration
+            let currentElapsed = metadataElapsed + Date().timeIntervalSince(metadataReceivedAt!)
+            timeBubble.text = " \(formatTime(currentElapsed)) / \(formatTime(metadataDuration))    "
+        } else {
+            // No broadcast start, no duration — fallback
+            let currentElapsed = metadataElapsed + Date().timeIntervalSince(metadataReceivedAt!)
+            timeBubble.text = " \(formatTime(currentElapsed))    "
+        }
+    }
+
+    private func formatTime(_ seconds: TimeInterval) -> String {
+        let totalSeconds = max(0, Int(seconds))
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let secs = totalSeconds % 60
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, secs)
+        } else {
+            return String(format: "%d:%02d", minutes, secs)
         }
     }
 
@@ -420,23 +509,23 @@ class NowPlayingViewController: UIViewController {
             // Labels stack: right side, top
             labelsStackView.leadingAnchor.constraint(equalTo: albumImageView.trailingAnchor, constant: 24),
             labelsStackView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -12),
-            labelsStackView.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 12),
+            labelsStackView.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
 
-            // Volume stack: right side, below labels (flexible spacing)
+            // Volume stack: right side, below labels
             volumeStackView.leadingAnchor.constraint(equalTo: albumImageView.trailingAnchor, constant: 24),
             volumeStackView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -12),
-            { let c = volumeStackView.topAnchor.constraint(equalTo: labelsStackView.bottomAnchor, constant: 20)
+            { let c = volumeStackView.topAnchor.constraint(equalTo: labelsStackView.bottomAnchor, constant: 12)
               c.priority = .defaultHigh
               return c }(),
-            volumeStackView.topAnchor.constraint(greaterThanOrEqualTo: labelsStackView.bottomAnchor, constant: 8),
+            volumeStackView.topAnchor.constraint(greaterThanOrEqualTo: labelsStackView.bottomAnchor, constant: 4),
 
-            // Controls stack: right side, below volume, must stay above toolbar
+            // Controls stack: right side, below volume, close to slider
             controlsStackView.centerXAnchor.constraint(equalTo: volumeStackView.centerXAnchor),
-            { let c = controlsStackView.topAnchor.constraint(equalTo: volumeStackView.bottomAnchor, constant: 20)
+            { let c = controlsStackView.topAnchor.constraint(equalTo: volumeStackView.bottomAnchor, constant: 4)
               c.priority = .defaultHigh
               return c }(),
-            controlsStackView.topAnchor.constraint(greaterThanOrEqualTo: volumeStackView.bottomAnchor, constant: 8),
-            controlsStackView.bottomAnchor.constraint(lessThanOrEqualTo: toolsView.topAnchor, constant: -8),
+            controlsStackView.topAnchor.constraint(greaterThanOrEqualTo: volumeStackView.bottomAnchor, constant: 2),
+            controlsStackView.bottomAnchor.constraint(lessThanOrEqualTo: toolsView.topAnchor, constant: -4),
         ]
 
         allPortraitConstraints = [

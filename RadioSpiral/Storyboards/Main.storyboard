@@ -352,6 +352,7 @@
                                     <constraint firstItem="3BY-Uw-fd7" firstAttribute="centerY" secondItem="uRO-Wl-Fhm" secondAttribute="centerY" constant="-2" id="u3t-Th-Vpc"/>
                                     <constraint firstItem="GIj-4c-kRh" firstAttribute="leading" secondItem="uRO-Wl-Fhm" secondAttribute="leading" id="vyI-CI-iUX"/>
                                     <constraint firstItem="djB-ds-tW4" firstAttribute="centerY" secondItem="uRO-Wl-Fhm" secondAttribute="centerY" id="zCg-cb-pqB"/>
+
                                 </constraints>
                             </view>
                             <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="obn-8m-awZ" userLabel="AlbumArt" customClass="SpringImageView" customModule="Spring">
@@ -368,7 +369,7 @@
                             <constraint firstItem="7tF-UX-xJ8" firstAttribute="leading" secondItem="aXI-gd-81R" secondAttribute="leading" id="0zT-nF-vtL"/>
                             <constraint firstItem="obn-8m-awZ" firstAttribute="centerX" secondItem="kh9-bI-dsS" secondAttribute="centerX" id="2Bi-6G-hDF"/>
                             <constraint firstItem="aXI-gd-81R" firstAttribute="trailing" secondItem="7tF-UX-xJ8" secondAttribute="trailing" id="3Fb-Ii-qlz"/>
-                            <constraint firstItem="WmY-ug-Nhz" firstAttribute="top" secondItem="obn-8m-awZ" secondAttribute="bottom" constant="30" id="77z-hi-QGE"/>
+                            <constraint firstItem="WmY-ug-Nhz" firstAttribute="top" secondItem="obn-8m-awZ" secondAttribute="bottom" constant="42" id="77z-hi-QGE"/>
                             <constraint firstItem="uRO-Wl-Fhm" firstAttribute="leading" secondItem="aXI-gd-81R" secondAttribute="leading" constant="20" id="9DT-Wf-FIW"/>
                             <constraint firstItem="obn-8m-awZ" firstAttribute="top" secondItem="aXI-gd-81R" secondAttribute="top" id="9m0-ca-E91"/>
                             <constraint firstItem="7tF-UX-xJ8" firstAttribute="top" secondItem="kh9-bI-dsS" secondAttribute="top" id="F8h-Bh-99U"/>
@@ -416,6 +417,7 @@
                         <outlet property="portraitLabelsTop" destination="Rgp-Rr-5X1" id="lnd-14-csN"/>
                         <outlet property="portraitLabelsLeading" destination="iJJ-RH-r0a" id="lnd-15-csO"/>
                         <outlet property="portraitLabelsTrailing" destination="a0R-gd-CTo" id="lnd-16-csP"/>
+
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
@@ -707,6 +709,7 @@ General nuisance &amp; Linux:
     <resources>
         <image name="background" width="320" height="568"/>
         <image name="btn-close" width="22.666666030883789" height="22.666666030883789"/>
+
         <image name="btn-next" width="44" height="44"/>
         <image name="btn-pause" width="44" height="44"/>
         <image name="btn-play" width="44" height="44"/>
