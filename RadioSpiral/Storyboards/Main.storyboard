@@ -313,6 +313,7 @@
                                     </button>
                                 </subviews>
                                 <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="tVh-Ht-40p"/>
                                     <constraint firstAttribute="trailing" secondItem="3BY-Uw-fd7" secondAttribute="trailing" constant="8" id="9pv-EC-eCC"/>
                                     <constraint firstItem="djB-ds-tW4" firstAttribute="centerX" secondItem="uRO-Wl-Fhm" secondAttribute="centerX" id="JnA-RA-YSH"/>
                                     <constraint firstItem="3BY-Uw-fd7" firstAttribute="centerY" secondItem="uRO-Wl-Fhm" secondAttribute="centerY" constant="-2" id="u3t-Th-Vpc"/>
@@ -365,7 +366,6 @@
                             <constraint firstItem="aXI-gd-81R" firstAttribute="trailing" secondItem="a3Z-1t-AAA" secondAttribute="trailing" constant="12" id="p9p-mf-M9S"/>
                             <constraint firstItem="a3Z-1t-AAA" firstAttribute="leading" secondItem="aXI-gd-81R" secondAttribute="leading" constant="12" id="sHe-lq-M9M"/>
                             <constraint firstItem="WmY-ug-Nhz" firstAttribute="centerX" secondItem="kh9-bI-dsS" secondAttribute="centerX" id="xjT-ZW-MWx"/>
-                            <constraint firstItem="djB-ds-tW4" firstAttribute="centerY" secondItem="Yfv-H0-2Po" secondAttribute="centerY" id="zzT-Gn-dJs"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="SubPop Records" id="M1Z-0o-hNV" userLabel="Station Title"/>
@@ -399,6 +399,9 @@
                         <outlet property="toolsView" destination="uRO-Wl-Fhm" id="lnd-04-csD"/>
                         <outlet property="volumeParentView" destination="zuj-rb-EKQ" id="KFg-Rk-y3Q"/>
                         <outlet property="volumeStackView" destination="a3Z-1t-AAA" id="lnd-02-csB"/>
+                        <outlet property="infoButton" destination="Yfv-H0-2Po" id="lnd-17-csQ"/>
+                        <outlet property="portraitInfoCenterY" destination="eBd-vC-IX5" id="lnd-18-csR"/>
+                        <outlet property="portraitInfoLeading" destination="kd6-9E-oSA" id="lnd-19-csS"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>

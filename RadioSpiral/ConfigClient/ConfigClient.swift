@@ -451,5 +451,5 @@ enum ConfigClientError: Error {
 
 /// Debug configuration
 struct ConfigClientDebug {
-    static let debugLog = false
+    static let debugLog = true
 }

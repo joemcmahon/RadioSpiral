@@ -37,6 +37,7 @@ class NowPlayingViewController: UIViewController {
     @IBOutlet weak var airPlayView: UIView!
     @IBOutlet weak var djName: UILabel!
     @IBOutlet weak var liveDJIndicator: UIButton!
+    @IBOutlet weak var infoButton: UIButton!
 
     // MARK: - Landscape Layout Outlets
 
@@ -58,6 +59,8 @@ class NowPlayingViewController: UIViewController {
     @IBOutlet var portraitLabelsTop: NSLayoutConstraint!
     @IBOutlet var portraitLabelsLeading: NSLayoutConstraint!
     @IBOutlet var portraitLabelsTrailing: NSLayoutConstraint!
+    @IBOutlet var portraitInfoCenterY: NSLayoutConstraint!
+    @IBOutlet var portraitInfoLeading: NSLayoutConstraint!
 
     // Landscape layout
     private var landscapeConstraints: [NSLayoutConstraint] = []
@@ -525,6 +528,10 @@ class NowPlayingViewController: UIViewController {
               return c }(),
             controlsStackView.topAnchor.constraint(greaterThanOrEqualTo: volumeStackView.bottomAnchor, constant: 2),
             controlsStackView.bottomAnchor.constraint(lessThanOrEqualTo: toolsView.topAnchor, constant: -4),
+
+            // Info button: left side of toolbar area in landscape
+            infoButton.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 20),
+            infoButton.centerYAnchor.constraint(equalTo: toolsView.centerYAnchor),
         ]
 
         allPortraitConstraints = [
@@ -540,6 +547,8 @@ class NowPlayingViewController: UIViewController {
             portraitLabelsTop,
             portraitLabelsLeading,
             portraitLabelsTrailing,
+            portraitInfoCenterY,
+            portraitInfoLeading,
         ]
     }
 
