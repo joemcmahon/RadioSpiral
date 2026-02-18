@@ -37,9 +37,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         if roleString.contains("CPTemplate") {
             // CarPlay scene - use CarPlaySceneDelegate
-            let delegateClass = NSClassFromString("RadioSpiral.CarPlaySceneDelegate")
             let config = UISceneConfiguration(name: "CarPlay Configuration", sessionRole: connectingSceneSession.role)
-            config.delegateClass = delegateClass
+            config.delegateClass = CarPlaySceneDelegate.self
             return config
         } else {
             // Phone/window scene - use SceneDelegate

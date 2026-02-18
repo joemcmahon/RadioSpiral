@@ -29,15 +29,7 @@ import MediaPlayer
         // The currently playing info is shown through MPNowPlayingInfoCenter (system media controls)
         let stationsTemplate = createStationsListTemplate()
         self.stationsListTemplate = stationsTemplate
-        interfaceController.setRootTemplate(stationsTemplate, animated: false)
-    }
-
-    @objc public func templateApplicationScene(
-        _ templateApplicationScene: CPTemplateApplicationScene,
-        didDisconnect interfaceController: CPInterfaceController
-    ) {
-        self.interfaceController = nil
-        self.stationsListTemplate = nil
+        interfaceController.setRootTemplate(stationsTemplate, animated: false, completion: nil)
     }
 
     // MARK: - Template Creation
@@ -121,5 +113,17 @@ import MediaPlayer
         } else {
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
         }
+    }
+}
+
+// MARK: - CPTemplateApplicationScene Disconnect
+
+extension CarPlaySceneDelegate {
+    public func templateApplicationScene(
+        _ templateApplicationScene: CPTemplateApplicationScene,
+        didDisconnect interfaceController: CPInterfaceController
+    ) {
+        self.interfaceController = nil
+        self.stationsListTemplate = nil
     }
 }
