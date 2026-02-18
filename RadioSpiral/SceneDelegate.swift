@@ -35,8 +35,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
-        // Called when the scene has moved from an inactive state to an active state.
-        ACWebSocketClient.shared.connect()
+        // Only reconnect if the WebSocket isn't already healthy.
+        // Unconditional connect() tears down the existing connection,
+        // causing a visible "reconnecting" flash and audio interruption.
+        let client = ACWebSocketClient.shared
+        if client.status.connection != .connected && client.status.connection != .connecting {
+            client.connect()
+        }
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
