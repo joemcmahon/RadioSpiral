@@ -642,7 +642,7 @@ class NowPlayingViewController: UIViewController {
         nowPlayingImageView.center = barButton.center
         
         let barItem = UIBarButtonItem(customView: barButton)
-        self.navigationItem.rightBarButtonItem = barItem
+        self.navigationItem.rightBarButtonItems = [barItem]
     }
     
     func startNowPlayingAnimation(_ animate: Bool) {
@@ -650,7 +650,6 @@ class NowPlayingViewController: UIViewController {
     }
     
     @IBAction func infoButtonPressed(_ sender: UIButton) {
-        print("button tap detected, passing.")
         delegate?.didTapInfoButton(self, station: manager.currentStation)
     }
     

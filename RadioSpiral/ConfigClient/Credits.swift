@@ -28,6 +28,6 @@ let fallbackCredits: [CreditPair] = [
     CreditPair(role: "Bullhorn",                    name: "Rebekkah Hilgraves (ʞu¡0ɹʞS)"),
     CreditPair(role: "Wild enthusiasm and remixes", name: "Kyzil"),
     CreditPair(role: "General nuisance and Linux",  name: "José Carlos Cuevas"),
-    CreditPair(role: "Rad artwork and sequncers",   name: "Brad Ross-MacLeod (Synchysis)"),
+    CreditPair(role: "Rad artwork and sequencers",   name: "Brad Ross-MacLeod (Synchysis)"),
     CreditPair(role: "Downtime DJ & attitude",      name: "Spud the Ambient Robot"),
 ]
