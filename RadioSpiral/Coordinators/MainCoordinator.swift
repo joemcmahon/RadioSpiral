@@ -66,8 +66,9 @@ class MainCoordinator: Coordinator {
         return worked
     }
     
-    func openAbout(in viewController: UIViewController) {
-        let aboutController = Storyboard.viewController as AboutViewController
+    func openAbout(in viewController: UIViewController, station: RadioStation? = nil) {
+        let aboutController = AboutViewController()
+        aboutController.currentStation = station
         aboutController.delegate = self
         viewController.present(aboutController, animated: true)
     }
@@ -105,16 +106,10 @@ extension MainCoordinator: StationsViewControllerDelegate {
 
 extension MainCoordinator: NowPlayingViewControllerDelegate {
     
-    func didTapInfoButton(_ nowPlayingViewController: NowPlayingViewController, station: RadioStation) {
-        let infoController = Storyboard.viewController as InfoDetailViewController
-        infoController.currentStation = station
-        navigationController.pushViewController(infoController, animated: true)
+    func didTapInfoButton(_ nowPlayingViewController: NowPlayingViewController, station: RadioStation?) {
+        openAbout(in: nowPlayingViewController, station: station)
     }
-    
-    func didTapCompanyButton(_ nowPlayingViewController: NowPlayingViewController) {
-        openAbout(in: nowPlayingViewController)
-    }
-    
+
     func didTapShareButton(_ nowPlayingViewController: NowPlayingViewController, station: RadioStation, artworkURL: URL?) {
         ShareActivity.activityController(station: station, artworkURL: artworkURL, sourceView: nowPlayingViewController.view) { [weak nowPlayingViewController] controller in
             nowPlayingViewController?.present(controller, animated: true, completion: nil)

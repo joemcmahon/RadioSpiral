@@ -24,9 +24,9 @@ struct Config {
     // Set this to "false" to show the next/previous player buttons
     static let hideNextPreviousButtons = true
 
-    // Contact infos
+    // Contact info
     static let website = "https://radiospiral.net"
     static let email = "radio@pemungkah.com"
-    static let emailSubject = "\(Bundle.main.appName) App Q"
+    static let emailSubject = "\(Bundle.main.appName) App Question"
 }
 

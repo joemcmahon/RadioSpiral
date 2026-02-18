@@ -13,8 +13,11 @@
 		60A288069DE14CA0B96295FA /* test-config-with-real-server.json in Resources */ = {isa = PBXBuildFile; fileRef = 6F4444B16407430F8A42EFDD /* test-config-with-real-server.json */; };
 		6258DCD822D93A3500166C65 /* LogoShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6258DCD722D93A3500166C65 /* LogoShareView.swift */; };
 		6258DCDA22D93A5400166C65 /* LogoShareView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6258DCD922D93A5400166C65 /* LogoShareView.xib */; };
+		711BB18B2F45A71200B9D8DF /* Credits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711BB18A2F45A71200B9D8DF /* Credits.swift */; };
+		711BB18C2F45A71200B9D8DF /* Credits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711BB18A2F45A71200B9D8DF /* Credits.swift */; };
 		715C87A62B23E141003FC57A /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 715C87A52B23E141003FC57A /* SnapshotHelper.swift */; };
 		7165121C2B35519B00473770 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CF72ACE621F714D000461EED /* Main.storyboard */; };
+		717686F22F457E3800D70E3D /* File.txt in Resources */ = {isa = PBXBuildFile; fileRef = 717686F12F457E3800D70E3D /* File.txt */; };
 		717B8C612EC449D30080EFE8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 717B8C5F2EC449D30080EFE8 /* SceneDelegate.swift */; };
 		717B8C662EC44DDD0080EFE8 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 717B8C632EC44DDD0080EFE8 /* CarPlaySceneDelegate.swift */; };
 		719678612D27A72000DCD7CE /* ACStreamStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 719678552D27A72000DCD7CE /* ACStreamStatus.swift */; };
@@ -40,7 +43,6 @@
 		945DB3C51AD5A6E200495EBB /* NothingFoundCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 945DB3C41AD5A6E200495EBB /* NothingFoundCell.xib */; };
 		949BBB401ACC9DEE005B7C26 /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949BBB3F1ACC9DEE005B7C26 /* DataManager.swift */; };
 		94AC70AE1AD05C6200652982 /* RadioStation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AC70AD1AD05C6200652982 /* RadioStation.swift */; };
-		94D1D0A51AD6D6230022CA11 /* InfoDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D1D0A41AD6D6230022CA11 /* InfoDetailViewController.swift */; };
 		94D260911B45D20000DE671C /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D260901B45D20000DE671C /* Config.swift */; };
 		94D260961B45E3FA00DE671C /* AnimationFrames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D260951B45E3FA00DE671C /* AnimationFrames.swift */; };
 		94E9761C1B1A8F3200F52B1E /* UIImage+DropShadow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E9761B1B1A8F3200F52B1E /* UIImage+DropShadow.swift */; };
@@ -91,7 +93,9 @@
 		6258DCD722D93A3500166C65 /* LogoShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoShareView.swift; sourceTree = "<group>"; };
 		6258DCD922D93A5400166C65 /* LogoShareView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LogoShareView.xib; sourceTree = "<group>"; };
 		6F4444B16407430F8A42EFDD /* test-config-with-real-server.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-config-with-real-server.json"; sourceTree = "<group>"; };
+		711BB18A2F45A71200B9D8DF /* Credits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Credits.swift; sourceTree = "<group>"; };
 		715C87A52B23E141003FC57A /* SnapshotHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SnapshotHelper.swift; path = fastlane/SnapshotHelper.swift; sourceTree = SOURCE_ROOT; };
+		717686F12F457E3800D70E3D /* File.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = File.txt; sourceTree = "<group>"; };
 		717B8C562EC433E10080EFE8 /* RadioSpiral.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RadioSpiral.entitlements; sourceTree = "<group>"; };
 		717B8C5F2EC449D30080EFE8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		717B8C632EC44DDD0080EFE8 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
@@ -120,7 +124,6 @@
 		945DB3C41AD5A6E200495EBB /* NothingFoundCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NothingFoundCell.xib; sourceTree = "<group>"; };
 		949BBB3F1ACC9DEE005B7C26 /* DataManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
 		94AC70AD1AD05C6200652982 /* RadioStation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RadioStation.swift; sourceTree = "<group>"; };
-		94D1D0A41AD6D6230022CA11 /* InfoDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoDetailViewController.swift; sourceTree = "<group>"; };
 		94D260901B45D20000DE671C /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		94D260951B45E3FA00DE671C /* AnimationFrames.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnimationFrames.swift; sourceTree = "<group>"; };
 		94E9761B1B1A8F3200F52B1E /* UIImage+DropShadow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+DropShadow.swift"; sourceTree = "<group>"; };
@@ -217,6 +220,7 @@
 			children = (
 				71CA8E852EC57A5000F7F157 /* ConfigClient.swift */,
 				71CA8E8A2EC57A5000F7F157 /* StationConfig.swift */,
+				711BB18A2F45A71200B9D8DF /* Credits.swift */,
 			);
 			path = ConfigClient;
 			sourceTree = "<group>";
@@ -276,6 +280,7 @@
 				9409E1251ABF6FEA00312E2B /* Images.xcassets */,
 				9409E11A1ABF6FEA00312E2B /* Info.plist */,
 				CEA82F492921F260009E9FA0 /* Info-CarPlay.plist */,
+				717686F12F457E3800D70E3D /* File.txt */,
 			);
 			path = RadioSpiral;
 			sourceTree = "<group>";
@@ -347,7 +352,6 @@
 				CE9EE8DD293BB41300F62041 /* BaseController.swift */,
 				CE9EE8E0293C048A00F62041 /* LoaderController.swift */,
 				94452E541AD7086800BFE7A5 /* AboutViewController.swift */,
-				94D1D0A41AD6D6230022CA11 /* InfoDetailViewController.swift */,
 				94452E4E1AD6F24700BFE7A5 /* PopUpMenuViewController.swift */,
 				9409E13F1ABF78B000312E2B /* NowPlayingViewController.swift */,
 				CE6036122A47A87A00E15E15 /* StationsViewController.swift */,
@@ -521,6 +525,7 @@
 				CF72ACE721F7155200461EED /* Main.storyboard in Resources */,
 				5FDEE0221F72FF980064333C /* LaunchScreen.storyboard in Resources */,
 				9409E1261ABF6FEA00312E2B /* Images.xcassets in Resources */,
+				717686F22F457E3800D70E3D /* File.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -541,6 +546,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				71CA8E8E2EC57AD400F7F157 /* ConfigClientTests.swift in Sources */,
+				711BB18B2F45A71200B9D8DF /* Credits.swift in Sources */,
 				71CA8E882EC57A5000F7F157 /* ConfigClient.swift in Sources */,
 				71CA8E8A2EC57A5100F7F157 /* StationConfig.swift in Sources */,
 			);
@@ -564,7 +570,6 @@
 				CE963ECC29135A6F004F299E /* StationsManager.swift in Sources */,
 				CE321FF329371140001572BD /* Bundle+appName.swift in Sources */,
 				CE6ECCFA292F13DF008B3C16 /* Coordinator.swift in Sources */,
-				94D1D0A51AD6D6230022CA11 /* InfoDetailViewController.swift in Sources */,
 				6258DCD822D93A3500166C65 /* LogoShareView.swift in Sources */,
 				949BBB401ACC9DEE005B7C26 /* DataManager.swift in Sources */,
 				CE6ECD00292F215F008B3C16 /* Storyboard.swift in Sources */,
@@ -576,6 +581,7 @@
 				9409E11C1ABF6FEA00312E2B /* AppDelegate.swift in Sources */,
 				94D260961B45E3FA00DE671C /* AnimationFrames.swift in Sources */,
 				CE6ECD03292F358C008B3C16 /* UIViewController+Email.swift in Sources */,
+				711BB18C2F45A71200B9D8DF /* Credits.swift in Sources */,
 				CEDABBED29121BBA00C0367F /* UIImage+Cache.swift in Sources */,
 				CE6036252A48F68D00E15E15 /* NowPlayingView.swift in Sources */,
 				94AC70AE1AD05C6200652982 /* RadioStation.swift in Sources */,

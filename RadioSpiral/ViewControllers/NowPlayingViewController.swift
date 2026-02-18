@@ -14,8 +14,7 @@ import Spring
 import Kingfisher
 
 protocol NowPlayingViewControllerDelegate: AnyObject {
-    func didTapCompanyButton(_ nowPlayingViewController: NowPlayingViewController)
-    func didTapInfoButton(_ nowPlayingViewController: NowPlayingViewController, station: RadioStation)
+    func didTapInfoButton(_ nowPlayingViewController: NowPlayingViewController, station: RadioStation?)
     func didTapShareButton(_ nowPlayingViewController: NowPlayingViewController, station: RadioStation, artworkURL: URL?)
 }
 
@@ -642,8 +641,8 @@ class NowPlayingViewController: UIViewController {
     }
     
     @IBAction func infoButtonPressed(_ sender: UIButton) {
-        guard let station = manager.currentStation else { return }
-        delegate?.didTapInfoButton(self, station: station)
+        print("button tap detected, passing.")
+        delegate?.didTapInfoButton(self, station: manager.currentStation)
     }
     
     @IBAction func shareButtonPressed(_ sender: UIButton) {
@@ -652,9 +651,6 @@ class NowPlayingViewController: UIViewController {
         delegate?.didTapShareButton(self, station: station, artworkURL: artworkURL)
     }
     
-    @IBAction func handleCompanyButton(_ sender: Any) {
-        delegate?.didTapCompanyButton(self)
-    }
 }
 
 
