@@ -422,14 +422,21 @@ class NowPlayingViewController: UIViewController {
             labelsStackView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -12),
             labelsStackView.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 12),
 
-            // Volume stack: right side, below labels
+            // Volume stack: right side, below labels (flexible spacing)
             volumeStackView.leadingAnchor.constraint(equalTo: albumImageView.trailingAnchor, constant: 24),
             volumeStackView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -12),
-            volumeStackView.topAnchor.constraint(equalTo: labelsStackView.bottomAnchor, constant: 20),
+            { let c = volumeStackView.topAnchor.constraint(equalTo: labelsStackView.bottomAnchor, constant: 20)
+              c.priority = .defaultHigh
+              return c }(),
+            volumeStackView.topAnchor.constraint(greaterThanOrEqualTo: labelsStackView.bottomAnchor, constant: 8),
 
-            // Controls stack: right side, below volume
+            // Controls stack: right side, below volume, must stay above toolbar
             controlsStackView.centerXAnchor.constraint(equalTo: volumeStackView.centerXAnchor),
-            controlsStackView.topAnchor.constraint(equalTo: volumeStackView.bottomAnchor, constant: 20),
+            { let c = controlsStackView.topAnchor.constraint(equalTo: volumeStackView.bottomAnchor, constant: 20)
+              c.priority = .defaultHigh
+              return c }(),
+            controlsStackView.topAnchor.constraint(greaterThanOrEqualTo: volumeStackView.bottomAnchor, constant: 8),
+            controlsStackView.bottomAnchor.constraint(lessThanOrEqualTo: toolsView.topAnchor, constant: -8),
         ]
 
         allPortraitConstraints = [

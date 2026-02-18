@@ -79,7 +79,7 @@ public class StationMetadataManager: ObservableObject {
     private init() {
         // Debug flags: ACExtractedData(1) | ACRawSubsections(2) | ACFullDump(4) | ACConnectivityChecks(8) | ACActivityTrace(16)
         // Enable ACConnectivityChecks for connection debugging on device
-        azuracastClient.debugLevel = ACConnectivityChecks
+        azuracastClient.debugLevel = 0
         setupPlayerObserver()
         setupAzuracastObserver()
     }

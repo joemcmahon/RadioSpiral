@@ -49,7 +49,7 @@ public class ACWebSocketClient: ObservableObject {
             }
         }
         didSet {
-            if let timer = stillAliveTimer {
+            if stillAliveTimer != nil {
             }
         }
     }
@@ -178,7 +178,7 @@ public class ACWebSocketClient: ObservableObject {
         debugLog("[Connect]", "connect() called, current state: \(status.connection)", ACActivityTrace | ACConnectivityChecks)
         self.stillAliveTimer?.invalidate()
         if status.connection == ACConnectionState.connected {
-            debugLog("[Connect]", "Already connected, disconnecting first")
+            debugLog("[Connect]", "Already connected, disconnecting first", ACActivityTrace | ACConnectivityChecks)
             disconnect()
         }
         if let _ = self.webSocketURL {
@@ -186,11 +186,11 @@ public class ACWebSocketClient: ObservableObject {
             webSocketTask = urlSession.webSocketTask(with: self.webSocketURL!)
             webSocketTask?.resume()
             status.connection = .connecting
-            debugLog("[Connect]", "State set to connecting")
+            debugLog("[Connect]", "State set to connecting", ACActivityTrace | ACConnectivityChecks)
             sendSubscriptionMessage()
             listenForMessages()
         } else {
-            debugLog("[Connect]", "No webSocketURL, cannot connect")
+            debugLog("[Connect]", "No webSocketURL, cannot connect", ACActivityTrace | ACConnectivityChecks)
         }
      }
     
@@ -203,7 +203,7 @@ public class ACWebSocketClient: ObservableObject {
         webSocketTask?.cancel(with: .goingAway, reason: nil)
         webSocketTask = nil
         status.connection = .disconnected
-        debugLog("[Disconnect]", "State set to disconnected")
+        debugLog("[Disconnect]", "State set to disconnected", ACActivityTrace | ACConnectivityChecks)
         notifySubscribers(with: status)
     }
     
@@ -261,7 +261,8 @@ public class ACWebSocketClient: ObservableObject {
                 }
             }
         } else {
-            print("Failed to encode subscription message")
+            
+            debugLog("[Subscribe]", "Failed to encode subscription message", ACActivityTrace)
             status.connection = ACConnectionState.failedSubscribe
             status.changed = true
         }
@@ -282,9 +283,9 @@ public class ACWebSocketClient: ObservableObject {
                 case .string(let text):
                     self.handleMessage(text)
                 case .data(let data):
-                    print("Received binary data: \(data)")
+                    debugLog("[Received]","Received binary data: \(data)", ACExtractedData)
                 @unknown default:
-                    print("Received unknown message type")
+                    debugLog("[Received]","Received unknown message type", ACExtractedData)
                 }
             case .failure(let error):
                 if self.debugLevel & ACConnectivityChecks != 0 {
@@ -316,7 +317,7 @@ public class ACWebSocketClient: ObservableObject {
         if status.connection == .connecting {
             status.connection = .connected
             consecutiveFailures = 0
-            debugLog("[HandleMessage]", "First message received, state set to connected")
+            debugLog("[HandleMessage]", "First message received, state set to connected", ACActivityTrace)
             // Notify subscribers immediately so downstream consumers
             // (StationMetadataManager) learn about reconnection even if
             // the metadata hasn't changed (e.g. same track still playing).
@@ -336,7 +337,7 @@ public class ACWebSocketClient: ObservableObject {
                 selector: #selector(self.fellOver),
                 userInfo: nil,
                 repeats: false)
-            self.debugLog("[HandleMessage]", "liveness timer reset to \(interval)s (pingInterval \(self.lastKnownPingInterval)s + 50% leeway)")
+            self.debugLog("[HandleMessage]", "liveness timer reset to \(interval)s (pingInterval \(self.lastKnownPingInterval)s + 50% leeway)", ACActivityTrace)
         }
 
         // Decode into data for parseWebSocketData.
@@ -386,8 +387,8 @@ public class ACWebSocketClient: ObservableObject {
         } catch {
             // Parse should NEVER fail — the parser has been thoroughly tested.
             // If this fires, something fundamentally unexpected happened.
-            debugLog("[HandleMessage]", "PARSE FAILURE — THIS SHOULD NEVER HAPPEN: \(error)", ACConnectivityChecks)
-            debugLog("[HandleMessage]", "Raw message (\(message.count) chars): \(String(message.prefix(500)))", ACConnectivityChecks)
+            debugLog("[HandleMessage]", "PARSE FAILURE — THIS SHOULD NEVER HAPPEN: \(error)")
+            debugLog("[HandleMessage]", "Raw message (\(message.count) chars): \(String(message.prefix(500)))")
         }
     }
 }
