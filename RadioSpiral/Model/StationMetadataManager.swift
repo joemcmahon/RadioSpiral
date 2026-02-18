@@ -16,15 +16,19 @@ public struct UnifiedMetadata: Equatable {
     let albumName: String?
     let artworkURL: URL?
     let duration: TimeInterval?
+    let elapsed: TimeInterval?
+    let broadcastStart: Date?
     let djName: String?
     let isLiveDJ: Bool
 
-    public init(trackName: String, artistName: String, albumName: String? = nil, artworkURL: URL? = nil, duration: TimeInterval? = nil, djName: String? = nil, isLiveDJ: Bool = false) {
+    public init(trackName: String, artistName: String, albumName: String? = nil, artworkURL: URL? = nil, duration: TimeInterval? = nil, elapsed: TimeInterval? = nil, broadcastStart: Date? = nil, djName: String? = nil, isLiveDJ: Bool = false) {
         self.trackName = trackName
         self.artistName = artistName
         self.albumName = albumName
         self.artworkURL = artworkURL
         self.duration = duration
+        self.elapsed = elapsed
+        self.broadcastStart = broadcastStart
         self.djName = djName
         self.isLiveDJ = isLiveDJ
     }
@@ -207,6 +211,8 @@ public class StationMetadataManager: ObservableObject {
             albumName: status.album.isEmpty ? nil : status.album,
             artworkURL: status.artwork,
             duration: status.duration > 0 ? status.duration : nil,
+            elapsed: status.elapsed > 0 ? status.elapsed : nil,
+            broadcastStart: status.broadcastStart,
             djName: status.dj.isEmpty ? nil : status.dj,
             isLiveDJ: status.isLiveDJ
         )

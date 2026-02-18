@@ -100,7 +100,10 @@ import MediaPlayer
         let client = ACWebSocketClient.shared
         nowPlayingInfo[MPMediaItemPropertyArtist] = client.status.artist
         nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = client.status.track
-        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = 0 // Unknown for streaming
+        let duration = client.status.duration
+        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = duration > 0 ? duration : 0
+        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = client.status.elapsed > 0 ? client.status.elapsed : 0.0
+        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = 1.0
 
         if let station = station {
             station.getImage { image in

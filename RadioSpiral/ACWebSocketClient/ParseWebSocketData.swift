@@ -89,6 +89,9 @@ public class ParseWebSocketData {
                 // Live segment. Contains info about the streamer.
                 let live = np?["live"] as? Dictionary<String, Any>
                 self.status = setDJ(live: live, status: self.status, defaultDJ: defaultDJ)
+                if let broadcastTimestamp = live?["broadcast_start"] as? Int {
+                    status.broadcastStart = Date(timeIntervalSince1970: Double(broadcastTimestamp))
+                }
                 if debugLevel & ACRawSubsections != 0 { print("live: \(String(describing: live))") }
 
                 /*
@@ -108,6 +111,12 @@ public class ParseWebSocketData {
                 let current_song = current?["song"] as? Dictionary<String, Any>
                 let duration = current?["duration"] as! Int
                 status.duration = TimeInterval(Double(duration))
+
+                // Extract played_at timestamp and compute elapsed seconds into track
+                if let playedAt = current?["played_at"] as? Int {
+                    let elapsed = Date().timeIntervalSince1970 - Double(playedAt)
+                    status.elapsed = max(0, elapsed)
+                }
 
                 if debugLevel & ACRawSubsections != 0 { print("current song: \(String(describing: current_song))") }
                 
@@ -140,10 +149,20 @@ public class ParseWebSocketData {
                 // live block. Extract DJ info.
                 let live = np["live"] as? Dictionary<String, Any>
                 self.status = setDJ(live: live, status: self.status, defaultDJ: defaultDJ)
+                if let broadcastTimestamp = live?["broadcast_start"] as? Int {
+                    status.broadcastStart = Date(timeIntervalSince1970: Double(broadcastTimestamp))
+                }
 
                 // now_playing block. Extract track info.
                 let nowPlaying = np["now_playing"] as! Dictionary<String, Any>
                 let duration = nowPlaying["duration"] as! Int
+
+                // Extract played_at timestamp and compute elapsed seconds into track
+                if let playedAt = nowPlaying["played_at"] as? Int {
+                    let elapsed = Date().timeIntervalSince1970 - Double(playedAt)
+                    status.elapsed = max(0, elapsed)
+                }
+
                 let song = nowPlaying["song"] as! Dictionary<String, Any>
                 status.album = song["album"] as! String
                 status.artist = song["artist"] as! String

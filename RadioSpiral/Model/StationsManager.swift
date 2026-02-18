@@ -57,6 +57,7 @@ class StationsManager {
     
     private init() {
         setupMetadataObserver()
+        setupPlaybackStateObserver()
     }
     
     func fetch(_ completion: StationsCompletion? = nil) {
@@ -131,6 +132,16 @@ class StationsManager {
             }
         }
     }
+
+    private func setupPlaybackStateObserver() {
+        // Update lock screen playback rate when player state changes
+        player.$playbackState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                self?.updateLockScreenPlaybackRate(isPlaying: state == .playing)
+            }
+            .store(in: &cancellables)
+    }
     
     private func handleMetadataUpdate(_ metadata: UnifiedMetadata?) {
         updateLockScreen(with: metadata)
@@ -178,6 +189,12 @@ extension StationsManager {
         }
     }
     
+    private func updateLockScreenPlaybackRate(isPlaying: Bool) {
+        guard var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo else { return }
+        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+    }
+
     private func updateLockScreen(with metadata: UnifiedMetadata?) {
         let nowPLayingInfoCenter = MPNowPlayingInfoCenter.default()
         var nowPlayingInfo = nowPLayingInfoCenter.nowPlayingInfo ?? [String : Any]()
@@ -190,6 +207,12 @@ extension StationsManager {
             if let duration = metadata.duration {
                 nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = duration
             }
+            let elapsed = metadata.elapsed ?? 0.0
+            nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = elapsed
+            // Always set rate to 1.0 when receiving metadata — we're actively streaming.
+            // Play/pause state changes update the rate separately via setupPlaybackStateObserver.
+            nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = 1.0
+            print("[LockScreen] duration=\(metadata.duration ?? 0) elapsed=\(elapsed) rate=1.0")
             if let artworkURL = metadata.artworkURL {
                 URLSession.shared.dataTask(with: artworkURL) { [weak self] data, response, error in
                     if let error = error {

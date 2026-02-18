@@ -22,6 +22,7 @@ public class ACStreamStatus: Equatable, ObservableObject {
         && lhs.artist == rhs.artist
         && lhs.album == rhs.album
         && lhs.dj == rhs.dj
+        && lhs.elapsed == rhs.elapsed
     }
     
     ///   `init()` creates an empty `AcStreamStatus` instance
@@ -37,6 +38,7 @@ public class ACStreamStatus: Equatable, ObservableObject {
         self.artist = ""
         self.album = ""
         self.duration = TimeInterval(0.0)
+        self.elapsed = TimeInterval(0.0)
         self.dj = ""
         self.recordType = .notSet
         self.pingInterval = TimeInterval(0.0)
@@ -49,7 +51,7 @@ public class ACStreamStatus: Equatable, ObservableObject {
     ///  - `connection` statte is one of the valid states (see `ACConectionState`)
     ///  - `changed` is `true` (since this is a newly-created status)
     ///  - `isLiveDJ`, `track`, `artist`, `album`, `dj`, and `artwork` are all set to the supplied values
-    public init(connection: ACConnectionState, isLiveDJ: Bool, track: String, artist: String, album: String, duration: TimeInterval, dj: String, artwork: URL?) {
+    public init(connection: ACConnectionState, isLiveDJ: Bool, track: String, artist: String, album: String, duration: TimeInterval, elapsed: TimeInterval = 0.0, dj: String, artwork: URL?) {
         self.connection = connection
         self.changed = true
         self.isLiveDJ = isLiveDJ
@@ -57,6 +59,7 @@ public class ACStreamStatus: Equatable, ObservableObject {
         self.artist = artist
         self.album = album
         self.duration = duration
+        self.elapsed = elapsed
         self.dj = dj
         self.artwork = artwork
         self.recordType = .notSet
@@ -70,8 +73,10 @@ public class ACStreamStatus: Equatable, ObservableObject {
     public var artist: String
     public var album: String
     public var duration: TimeInterval
+    public var elapsed: TimeInterval
     public var dj: String
     public var artwork: URL?
+    public var broadcastStart: Date?
     public var recordType: ACRecordType
     public var pingInterval: TimeInterval?
 }
