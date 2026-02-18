@@ -28,6 +28,12 @@ class AboutViewController: UIViewController {
     // Adaptive layout container — rebuilt on orientation change
     private var bodyContainer: UIView?
 
+    // Rolling credits state
+    private var creditsScrollView: UIScrollView?
+    private var displayLink: CADisplayLink?
+    private var isScrollPaused = false
+    private static let scrollSpeed: CGFloat = 0.3 // points per frame (~18pt/sec at 60fps)
+
     // Constraints that change between portrait/landscape
     private var okLeadingToSafeArea: NSLayoutConstraint!
     private var okLeadingToMidpoint: NSLayoutConstraint!
@@ -61,6 +67,16 @@ class AboutViewController: UIViewController {
                 self.rebuildBody()
             }
         }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        startDisplayLink()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopDisplayLink()
     }
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -97,7 +113,13 @@ class AboutViewController: UIViewController {
 
         // Prepare both leading constraints (only one active at a time)
         okLeadingToSafeArea = okButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16)
-        okLeadingToMidpoint = okButton.leadingAnchor.constraint(equalTo: view.centerXAnchor, constant: 16)
+        // In landscape, OK button aligns with the 30% button column on the right
+        // Use a layout guide at the 70% mark
+        let splitGuide = UILayoutGuide()
+        view.addLayoutGuide(splitGuide)
+        splitGuide.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        splitGuide.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.7).isActive = true
+        okLeadingToMidpoint = okButton.leadingAnchor.constraint(equalTo: splitGuide.trailingAnchor, constant: 16)
 
         NSLayoutConstraint.activate([
             okButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
@@ -116,12 +138,15 @@ class AboutViewController: UIViewController {
     }
 
     private func rebuildBody() {
+        stopDisplayLink()
+        creditsScrollView = nil
         bodyContainer?.removeFromSuperview()
         bodyContainer = nil
         // Detach buttons from old parent so they can be re-added
         websiteButton.removeFromSuperview()
         emailButton.removeFromSuperview()
         buildBody()
+        if view.window != nil { startDisplayLink() }
     }
 
     private func buildBody() {
@@ -138,35 +163,23 @@ class AboutViewController: UIViewController {
         okLeadingToMidpoint.isActive = false
         okLeadingToSafeArea.isActive = true
 
-        let scrollView = UIScrollView()
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        view.insertSubview(scrollView, belowSubview: okButton)
-        bodyContainer = scrollView
-
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: okButton.topAnchor, constant: -8),
-            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-        ])
-
         let stack = UIStackView()
         stack.axis = .vertical
         stack.spacing = 12
         stack.alignment = .fill
         stack.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(stack)
+        view.insertSubview(stack, belowSubview: okButton)
+        bodyContainer = stack
 
         NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 12),
-            stack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -12),
-            stack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 16),
-            stack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -16),
-            stack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -32),
+            stack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12),
+            stack.bottomAnchor.constraint(equalTo: okButton.topAnchor, constant: -8),
+            stack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
         ])
 
         stack.addArrangedSubview(makeDescription())
-        stack.addArrangedSubview(makeCreditsColumns())
+        stack.addArrangedSubview(makeRollingCredits())
         stack.addArrangedSubview(makeAttribution())
         stack.addArrangedSubview(websiteButton)
         stack.addArrangedSubview(emailButton)
@@ -190,38 +203,18 @@ class AboutViewController: UIViewController {
             container.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
         ])
 
-        // Left side: scrolling credits
-        let scrollView = UIScrollView()
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(scrollView)
+        // Left side: everything rolls together in landscape
+        let rollingView = makeRollingAll()
+        container.addSubview(rollingView)
 
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: container.topAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: container.centerXAnchor),
+            rollingView.topAnchor.constraint(equalTo: container.topAnchor, constant: 8),
+            rollingView.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -8),
+            rollingView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
+            rollingView.widthAnchor.constraint(equalTo: container.widthAnchor, multiplier: 0.7, constant: -24),
         ])
 
-        let creditsStack = UIStackView()
-        creditsStack.axis = .vertical
-        creditsStack.spacing = 8
-        creditsStack.alignment = .fill
-        creditsStack.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(creditsStack)
-
-        NSLayoutConstraint.activate([
-            creditsStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 8),
-            creditsStack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -8),
-            creditsStack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 16),
-            creditsStack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -8),
-            creditsStack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -24),
-        ])
-
-        creditsStack.addArrangedSubview(makeDescription())
-        creditsStack.addArrangedSubview(makeCreditsColumns())
-        creditsStack.addArrangedSubview(makeAttribution())
-
-        // Right side: buttons stacked vertically, centered
+        // Right side: buttons stacked vertically, centered (30% width)
         let buttonStack = UIStackView(arrangedSubviews: [websiteButton, emailButton])
         buttonStack.axis = .vertical
         buttonStack.spacing = 12
@@ -231,7 +224,7 @@ class AboutViewController: UIViewController {
 
         NSLayoutConstraint.activate([
             buttonStack.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-            buttonStack.leadingAnchor.constraint(equalTo: container.centerXAnchor, constant: 16),
+            buttonStack.leadingAnchor.constraint(equalTo: rollingView.trailingAnchor, constant: 16),
             buttonStack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
         ])
     }
@@ -287,27 +280,149 @@ class AboutViewController: UIViewController {
         return descLabel
     }
 
-    // MARK: - Shared UI builders
+    // MARK: - Rolling Credits
 
+    private func makeRollingCredits() -> UIView {
+        let scrollView = UIScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.isUserInteractionEnabled = true
+        scrollView.clipsToBounds = true
 
-    private func makeCreditsColumns() -> UIStackView {
-        let midpoint = (loadedCredits.count + 1) / 2
-        let leftCredits = Array(loadedCredits.prefix(midpoint))
-        let rightCredits = Array(loadedCredits.suffix(from: midpoint))
+        // Build a stack with credits duplicated for seamless looping
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 12
+        stack.alignment = .fill
+        stack.translatesAutoresizingMaskIntoConstraints = false
 
-        let left = makeCreditsTextView(text: formatCredits(leftCredits))
-        let right = makeCreditsTextView(text: formatCredits(rightCredits))
+        // First copy
+        for credit in loadedCredits {
+            stack.addArrangedSubview(makeCreditLabel(credit))
+        }
+        // Spacer between copies
+        let spacer = UIView()
+        spacer.translatesAutoresizingMaskIntoConstraints = false
+        spacer.heightAnchor.constraint(equalToConstant: 24).isActive = true
+        stack.addArrangedSubview(spacer)
+        // Second copy (for seamless loop)
+        for credit in loadedCredits {
+            stack.addArrangedSubview(makeCreditLabel(credit))
+        }
 
-        let stack = UIStackView(arrangedSubviews: [left, right])
-        stack.axis = .horizontal
-        stack.spacing = 8
-        stack.distribution = .fillEqually
-        stack.alignment = .top
-        return stack
+        scrollView.addSubview(stack)
+
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            stack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+            stack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+            stack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
+        ])
+
+        // Tap to pause/resume
+        let tap = UITapGestureRecognizer(target: self, action: #selector(creditsTapped))
+        scrollView.addGestureRecognizer(tap)
+
+        creditsScrollView = scrollView
+        return scrollView
     }
 
-    private func formatCredits(_ pairs: [CreditPair]) -> String {
-        return pairs.map { "\($0.role):\n • \($0.name)" }.joined(separator: "\n\n")
+    /// Landscape variant: description + credits + attribution all roll together
+    private func makeRollingAll() -> UIView {
+        let scrollView = UIScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.isUserInteractionEnabled = true
+        scrollView.clipsToBounds = true
+
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 12
+        stack.alignment = .fill
+        stack.translatesAutoresizingMaskIntoConstraints = false
+
+        // Helper to add one full sequence
+        func addSequence() {
+            stack.addArrangedSubview(makeDescription())
+            for credit in loadedCredits {
+                stack.addArrangedSubview(makeCreditLabel(credit))
+            }
+            stack.addArrangedSubview(makeAttribution())
+        }
+
+        // First copy
+        addSequence()
+        // Spacer between copies
+        let spacer = UIView()
+        spacer.translatesAutoresizingMaskIntoConstraints = false
+        spacer.heightAnchor.constraint(equalToConstant: 24).isActive = true
+        stack.addArrangedSubview(spacer)
+        // Second copy (for seamless loop)
+        addSequence()
+
+        scrollView.addSubview(stack)
+
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            stack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+            stack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+            stack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
+        ])
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(creditsTapped))
+        scrollView.addGestureRecognizer(tap)
+
+        creditsScrollView = scrollView
+        return scrollView
+    }
+
+    private func makeCreditLabel(_ credit: CreditPair) -> UILabel {
+        let label = UILabel()
+        label.text = "\(credit.role): \(credit.name)"
+        label.font = UIFont.preferredFont(forTextStyle: .caption1)
+        label.textColor = .white
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        return label
+    }
+
+    // MARK: - Display Link
+
+    private func startDisplayLink() {
+        guard displayLink == nil else { return }
+        let link = CADisplayLink(target: self, selector: #selector(scrollCredits))
+        link.add(to: .main, forMode: .common)
+        displayLink = link
+    }
+
+    private func stopDisplayLink() {
+        displayLink?.invalidate()
+        displayLink = nil
+    }
+
+    @objc private func scrollCredits() {
+        guard !isScrollPaused, let scrollView = creditsScrollView else { return }
+        let contentHeight = scrollView.contentSize.height
+        guard contentHeight > 0 else { return }
+
+        // Midpoint is where the second copy starts (half of total content)
+        let midpoint = contentHeight / 2.0
+        var offset = scrollView.contentOffset.y + Self.scrollSpeed
+
+        // When we've scrolled past the first copy, jump back seamlessly
+        if offset >= midpoint {
+            offset -= midpoint
+        }
+
+        scrollView.contentOffset.y = offset
+    }
+
+    @objc private func creditsTapped() {
+        isScrollPaused.toggle()
     }
 
     private func makeAttribution() -> UILabel {
@@ -318,18 +433,6 @@ class AboutViewController: UIViewController {
         label.textAlignment = .center
         label.numberOfLines = 0
         return label
-    }
-
-    private func makeCreditsTextView(text: String) -> UITextView {
-        let textView = UITextView()
-        textView.text = text
-        textView.font = UIFont.preferredFont(forTextStyle: .caption1)
-        textView.textColor = .white
-        textView.backgroundColor = .clear
-        textView.isEditable = false
-        textView.isSelectable = false
-        textView.isScrollEnabled = false
-        return textView
     }
 
     // MARK: - Actions
