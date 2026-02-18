@@ -430,4 +430,81 @@ class ConfigClientTests: XCTestCase {
 
         waitForExpectations(timeout: 10.0)
     }
+
+    // MARK: - CreditsClient Tests
+
+    func testCreditsClientFetchFromLocalFile() {
+        let testBundle = Bundle(for: ConfigClientTests.self)
+        guard let path = testBundle.path(forResource: "test-credits", ofType: "json") else {
+            XCTFail("test-credits.json not found in test bundle")
+            return
+        }
+        let url = URL(fileURLWithPath: path).absoluteString
+        let client = CreditsClient(creditsURL: url)
+        let expectation = self.expectation(description: "Fetch credits from file")
+
+        client.fetchCredits { credits in
+            XCTAssertEqual(credits.count, 2)
+            XCTAssertEqual(credits[0].role, "Test Role 1")
+            XCTAssertEqual(credits[0].name, "Test Person 1")
+            XCTAssertEqual(credits[1].role, "Test Role 2")
+            XCTAssertEqual(credits[1].name, "Test Person 2")
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 5.0)
+    }
+
+    func testCreditsClientFallbackOnInvalidURL() {
+        let client = CreditsClient(creditsURL: "file:///nonexistent/credits.json")
+        let expectation = self.expectation(description: "Fallback credits")
+
+        client.fetchCredits { credits in
+            XCTAssertEqual(credits, fallbackCredits)
+            XCTAssertFalse(credits.isEmpty)
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 5.0)
+    }
+
+    func testCreditsClientCaching() {
+        let testBundle = Bundle(for: ConfigClientTests.self)
+        guard let path = testBundle.path(forResource: "test-credits", ofType: "json") else {
+            XCTFail("test-credits.json not found in test bundle")
+            return
+        }
+        let url = URL(fileURLWithPath: path).absoluteString
+        let client = CreditsClient(creditsURL: url)
+        let exp1 = self.expectation(description: "First fetch")
+
+        client.fetchCredits { credits in
+            XCTAssertEqual(credits.count, 2)
+            exp1.fulfill()
+        }
+        waitForExpectations(timeout: 5.0)
+
+        // Second fetch should return cached data immediately
+        let exp2 = self.expectation(description: "Second fetch (cached)")
+        client.fetchCredits { credits in
+            XCTAssertEqual(credits.count, 2)
+            XCTAssertEqual(credits[0].role, "Test Role 1")
+            exp2.fulfill()
+        }
+        waitForExpectations(timeout: 1.0)
+    }
+
+    func testCreditPairCodable() {
+        let json = """
+        {"role": "DJ", "name": "Spud"}
+        """.data(using: .utf8)!
+
+        let decoded = try! JSONDecoder().decode(CreditPair.self, from: json)
+        XCTAssertEqual(decoded.role, "DJ")
+        XCTAssertEqual(decoded.name, "Spud")
+
+        let encoded = try! JSONEncoder().encode(decoded)
+        let reDecoded = try! JSONDecoder().decode(CreditPair.self, from: encoded)
+        XCTAssertEqual(reDecoded, decoded)
+    }
 }

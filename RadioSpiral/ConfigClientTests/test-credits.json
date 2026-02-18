@@ -1,0 +1,6 @@
+{
+  "credits": [
+    { "role": "Test Role 1", "name": "Test Person 1" },
+    { "role": "Test Role 2", "name": "Test Person 2" }
+  ]
+}

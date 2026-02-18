@@ -22,6 +22,9 @@ class AboutViewController: UIViewController {
     /// Nil when opened from the popup menu (no station context).
     var currentStation: RadioStation?
 
+    // Credits loaded from remote (falls back to hardcoded)
+    private var loadedCredits: [CreditPair] = fallbackCredits
+
     // Adaptive layout container — rebuilt on orientation change
     private var bodyContainer: UIView?
 
@@ -49,6 +52,15 @@ class AboutViewController: UIViewController {
         super.viewDidLoad()
         setupChrome()
         buildBody()
+
+        CreditsClient.shared.fetchCredits { [weak self] credits in
+            guard let self = self else { return }
+            guard credits != self.loadedCredits else { return }
+            self.loadedCredits = credits
+            DispatchQueue.main.async {
+                self.rebuildBody()
+            }
+        }
     }
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -279,8 +291,12 @@ class AboutViewController: UIViewController {
 
 
     private func makeCreditsColumns() -> UIStackView {
-        let left = makeCreditsTextView(text: "Curator:\n • Mike Metlay\n\nSecond Life:\n • Diana Smethurst\n\nKeeping the lights on:\n • Paul Harriman\n\nBots & iOS:\n • Joe McMahon")
-        let right = makeCreditsTextView(text: "Bullhorn:\n • Rebekkah Hilgraves\n\nDowntime DJ and attitude:\n • Spud\n\nGeneral nuisance & Linux:\n • José Carlos Cuevas")
+        let midpoint = (loadedCredits.count + 1) / 2
+        let leftCredits = Array(loadedCredits.prefix(midpoint))
+        let rightCredits = Array(loadedCredits.suffix(from: midpoint))
+
+        let left = makeCreditsTextView(text: formatCredits(leftCredits))
+        let right = makeCreditsTextView(text: formatCredits(rightCredits))
 
         let stack = UIStackView(arrangedSubviews: [left, right])
         stack.axis = .horizontal
@@ -288,6 +304,10 @@ class AboutViewController: UIViewController {
         stack.distribution = .fillEqually
         stack.alignment = .top
         return stack
+    }
+
+    private func formatCredits(_ pairs: [CreditPair]) -> String {
+        return pairs.map { "\($0.role):\n • \($0.name)" }.joined(separator: "\n\n")
     }
 
     private func makeAttribution() -> UILabel {
