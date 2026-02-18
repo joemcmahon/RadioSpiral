@@ -112,6 +112,10 @@ class NowPlayingViewController: UIViewController {
         // Set View Title
         self.title = manager.currentStation?.name
         
+        // Accessibility identifiers for UI testing
+        playingButton.accessibilityIdentifier = "playPauseButton"
+        infoButton.accessibilityIdentifier = "infoButton"
+
         // Set UI
         djName.text = ""
         liveDJIndicator.isHidden = true

@@ -109,6 +109,7 @@ class AboutViewController: UIViewController {
         okButton.layer.cornerRadius = 8
         okButton.translatesAutoresizingMaskIntoConstraints = false
         okButton.addTarget(self, action: #selector(okButtonTapped), for: .touchUpInside)
+        okButton.accessibilityIdentifier = "okButton"
         view.addSubview(okButton)
 
         // Prepare both leading constraints (only one active at a time)
