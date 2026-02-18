@@ -2,10 +2,8 @@
 
 # A list of devices you want to take the screenshots from
 devices([
-  "iPhone 14 Pro Max",
-  "iPhone SE (3rd generation)",
-  "iPad Pro (12.9-inch) (6th generation)",
-  "iPad Air (5th generation)"
+  "iPhone 17 Pro Max",
+  "iPad Pro 13-inch (M5)"
  ])
 
  languages([
@@ -14,12 +12,13 @@ devices([
 #   "it-IT",
 #   ["pt", "pt_BR"] # Portuguese with Brazilian locale
  ])
+concurrent_simulators(false)
 
 # The name of the scheme which contains the UI Tests
 scheme("RadioSpiralUITests")
 
 # Where should the resulting screenshots be stored?
-output_directory("./screenshots")
+output_directory("./fastlane/screenshots")
 
 # remove the '#' to clear all previously generated screenshots before creating new ones
 clear_previous_screenshots(true)
