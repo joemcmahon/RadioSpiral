@@ -96,6 +96,7 @@ class StationsViewController: BaseController, Handoffable {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(false)
         title = "RadioSpiral streams"
+        guard !manager.stations.isEmpty else { return }
         let station = manager.stations[0]
         if manager.stations.count < 2 {
             pushNowPlayingController(with: station)
