@@ -71,6 +71,7 @@ class AboutViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        isScrollPaused = ProcessInfo.processInfo.arguments.contains("-FASTLANE_SNAPSHOT")
         startDisplayLink()
     }
 
