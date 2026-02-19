@@ -33,6 +33,8 @@ class SwiftRadioUITests: XCTestCase {
 
     @MainActor func testTransitionToNowPlaying() {
         XCTAssertTrue(playPauseButton.waitForExistence(timeout: 30.0))
+        // Wait for stream to connect and deliver real track metadata
+        sleep(10)
         XCUIDevice.shared.orientation = .portrait
         snapshot("01playing_portrait")
         XCUIDevice.shared.orientation = .landscapeLeft
@@ -41,6 +43,9 @@ class SwiftRadioUITests: XCTestCase {
 
     @MainActor func testSharing() {
         XCTAssertTrue(shareButton.waitForExistence(timeout: 10.0))
+        // Wait for stream to connect and deliver real track metadata
+        // so the share text shows actual track info, not the station description
+        sleep(10)
         shareButton.tap()
         // Wait for share sheet to appear
         sleep(2)
