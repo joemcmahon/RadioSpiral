@@ -133,6 +133,35 @@ class NowPlayingViewController: UIViewController {
                     }
                 }
             }
+
+            // Scale toolbar icons (info, share, AirPlay) and toolbar height
+            for button in [infoButton] as [UIView?] {
+                guard let button = button else { continue }
+                for constraint in button.constraints {
+                    if constraint.firstAttribute == .width || constraint.firstAttribute == .height {
+                        constraint.constant *= scale
+                    }
+                }
+            }
+            for constraint in airPlayView.constraints {
+                if constraint.firstAttribute == .width || constraint.firstAttribute == .height {
+                    constraint.constant *= scale
+                }
+            }
+            // Find share button by accessibility identifier and scale it
+            if let shareButton = toolsView.subviews.first(where: { $0.accessibilityIdentifier == "shareButton" }) {
+                for constraint in shareButton.constraints {
+                    if constraint.firstAttribute == .width || constraint.firstAttribute == .height {
+                        constraint.constant *= scale
+                    }
+                }
+            }
+            // Scale toolsView height
+            for constraint in toolsView.constraints {
+                if constraint.firstAttribute == .height {
+                    constraint.constant *= scale
+                }
+            }
         }
 
         // Set UI
@@ -408,6 +437,7 @@ class NowPlayingViewController: UIViewController {
         let airPlayButton = AVRoutePickerView(frame: airPlayView.bounds)
         airPlayButton.activeTintColor = .white
         airPlayButton.tintColor = .gray
+        airPlayButton.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         airPlayView.backgroundColor = .clear
         airPlayView.addSubview(airPlayButton)
     }
