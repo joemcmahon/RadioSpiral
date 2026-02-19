@@ -66,6 +66,7 @@ class NowPlayingViewController: UIViewController {
     private var landscapeConstraints: [NSLayoutConstraint] = []
     private var allPortraitConstraints: [NSLayoutConstraint] = []
     private var isCurrentlyLandscape = false
+    private var landscapeRightPanel: UIView?
 
     // MARK: - Properties
     
@@ -101,7 +102,7 @@ class NowPlayingViewController: UIViewController {
         
         setupLandscapeConstraints()
         // Force first layout pass by ensuring isCurrentlyLandscape doesn't match
-        isCurrentlyLandscape = view.bounds.width > view.bounds.height && UIDevice.current.userInterfaceIdiom != .pad
+        isCurrentlyLandscape = view.bounds.width > view.bounds.height
         isCurrentlyLandscape = !isCurrentlyLandscape
         let viewSize = CGSize(width: view.bounds.width, height: view.bounds.height)
         optimizeForDeviceSize(size: viewSize)
@@ -115,6 +116,24 @@ class NowPlayingViewController: UIViewController {
         // Accessibility identifiers for UI testing
         playingButton.accessibilityIdentifier = "playPauseButton"
         infoButton.accessibilityIdentifier = "infoButton"
+
+        // Scale UI elements for iPad
+        if traitCollection.userInterfaceIdiom == .pad {
+            let scale: CGFloat = 1.4
+            songLabel.font = songLabel.font.withSize(songLabel.font.pointSize * scale)
+            artistLabel.font = artistLabel.font.withSize(artistLabel.font.pointSize * scale)
+            releaseLabel.font = releaseLabel.font.withSize(releaseLabel.font.pointSize * scale)
+
+            // Scale play/prev/next buttons
+            for button in [playingButton, previousButton, nextButton] {
+                guard let button = button else { continue }
+                for constraint in button.constraints {
+                    if constraint.firstAttribute == .width || constraint.firstAttribute == .height {
+                        constraint.constant *= scale
+                    }
+                }
+            }
+        }
 
         // Set UI
         djName.text = ""
@@ -504,34 +523,50 @@ class NowPlayingViewController: UIViewController {
     
     func setupLandscapeConstraints() {
         let safeArea = view.safeAreaLayoutGuide
+        let artWidthFraction: CGFloat = (UIDevice.current.userInterfaceIdiom == .pad) ? 0.35 : 0.40
+
+        // Container for right-side controls — vertically centered on iPad
+        let rightPanel = UIView()
+        rightPanel.translatesAutoresizingMaskIntoConstraints = false
+        landscapeRightPanel = rightPanel
+
+        let isPad = UIDevice.current.userInterfaceIdiom == .pad
 
         landscapeConstraints = [
-            // Album art: left side, 40% width, fills height
+            // Album art: left side, fills height
             albumImageView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 12),
-            albumImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.40),
+            albumImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: artWidthFraction),
             albumImageView.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
             albumImageView.bottomAnchor.constraint(equalTo: toolsView.topAnchor, constant: -8),
 
-            // Labels stack: right side, top
-            labelsStackView.leadingAnchor.constraint(equalTo: albumImageView.trailingAnchor, constant: 24),
-            labelsStackView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -12),
-            labelsStackView.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
+            // Right panel: positioned between art and trailing edge
+            rightPanel.leadingAnchor.constraint(equalTo: albumImageView.trailingAnchor, constant: 24),
+            rightPanel.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -12),
+            isPad
+                ? rightPanel.centerYAnchor.constraint(equalTo: albumImageView.centerYAnchor)
+                : rightPanel.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
+            rightPanel.bottomAnchor.constraint(lessThanOrEqualTo: toolsView.topAnchor, constant: -4),
 
-            // Volume stack: right side, below labels
-            volumeStackView.leadingAnchor.constraint(equalTo: albumImageView.trailingAnchor, constant: 24),
-            volumeStackView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -12),
+            // Labels inside right panel
+            labelsStackView.topAnchor.constraint(equalTo: rightPanel.topAnchor),
+            labelsStackView.leadingAnchor.constraint(equalTo: rightPanel.leadingAnchor),
+            labelsStackView.trailingAnchor.constraint(equalTo: rightPanel.trailingAnchor),
+
+            // Volume below labels
+            volumeStackView.leadingAnchor.constraint(equalTo: rightPanel.leadingAnchor),
+            volumeStackView.trailingAnchor.constraint(equalTo: rightPanel.trailingAnchor),
             { let c = volumeStackView.topAnchor.constraint(equalTo: labelsStackView.bottomAnchor, constant: 12)
               c.priority = .defaultHigh
               return c }(),
             volumeStackView.topAnchor.constraint(greaterThanOrEqualTo: labelsStackView.bottomAnchor, constant: 4),
 
-            // Controls stack: right side, below volume, close to slider
-            controlsStackView.centerXAnchor.constraint(equalTo: volumeStackView.centerXAnchor),
+            // Controls below volume
+            controlsStackView.centerXAnchor.constraint(equalTo: rightPanel.centerXAnchor),
             { let c = controlsStackView.topAnchor.constraint(equalTo: volumeStackView.bottomAnchor, constant: 4)
               c.priority = .defaultHigh
               return c }(),
             controlsStackView.topAnchor.constraint(greaterThanOrEqualTo: volumeStackView.bottomAnchor, constant: 2),
-            controlsStackView.bottomAnchor.constraint(lessThanOrEqualTo: toolsView.topAnchor, constant: -4),
+            controlsStackView.bottomAnchor.constraint(equalTo: rightPanel.bottomAnchor),
 
             // Info button: left side of toolbar area in landscape
             infoButton.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 20),
@@ -557,21 +592,39 @@ class NowPlayingViewController: UIViewController {
     }
 
     func optimizeForDeviceSize(size: CGSize) {
-        let isLandscape = size.width > size.height && UIDevice.current.userInterfaceIdiom != .pad
+        let isLandscape = size.width > size.height
 
         guard isLandscape != isCurrentlyLandscape else { return }
         isCurrentlyLandscape = isLandscape
 
         if isLandscape {
+            // Reparent controls into right panel for landscape
+            if let panel = landscapeRightPanel {
+                view.addSubview(panel)
+                panel.addSubview(labelsStackView)
+                panel.addSubview(volumeStackView)
+                panel.addSubview(controlsStackView)
+            }
             NSLayoutConstraint.deactivate(allPortraitConstraints)
             albumHeightConstraint.isActive = false
             NSLayoutConstraint.activate(landscapeConstraints)
             if Config.debugLog { print("[NowPlaying] Switched to landscape layout") }
         } else {
             NSLayoutConstraint.deactivate(landscapeConstraints)
+            // Reparent controls back to main view for portrait
+            if let panel = landscapeRightPanel {
+                labelsStackView.removeFromSuperview()
+                volumeStackView.removeFromSuperview()
+                controlsStackView.removeFromSuperview()
+                view.addSubview(labelsStackView)
+                view.addSubview(volumeStackView)
+                view.addSubview(controlsStackView)
+                panel.removeFromSuperview()
+            }
             albumHeightConstraint.isActive = true
             NSLayoutConstraint.activate(allPortraitConstraints)
-            let imageHeight = view.bounds.height * 0.40
+            let heightFraction: CGFloat = (traitCollection.userInterfaceIdiom == .pad) ? 0.55 : 0.40
+            let imageHeight = view.bounds.height * heightFraction
             albumHeightConstraint.constant = imageHeight
             if Config.debugLog { print("[NowPlaying] Switched to portrait layout, albumHeight=\(imageHeight)") }
         }
