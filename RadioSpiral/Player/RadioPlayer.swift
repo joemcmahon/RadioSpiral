@@ -98,8 +98,12 @@ class RadioPlayer: ObservableObject {
         state = .loading
         let asset = AVURLAsset(url: url)
         playerItem = AVPlayerItem(asset: asset)
+        playerItem?.audioTimePitchAlgorithm = .timeDomain
+        playerItem?.preferredForwardBufferDuration = 10.0
+
         player = AVPlayer(playerItem: playerItem!)
         player?.allowsExternalPlayback = false
+        player!.automaticallyWaitsToMinimizeStalling = true
 
         setupObservations()
     }
