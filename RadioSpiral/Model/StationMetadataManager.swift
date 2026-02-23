@@ -70,7 +70,8 @@ public class StationMetadataManager: ObservableObject {
     // MARK: - Published Properties
     @Published public private(set) var currentMetadata: UnifiedMetadata?
     @Published public private(set) var connectionState: MetadataConnectionState = .disconnected
-    
+    @Published public private(set) var formattedTime: String = " --:--    "
+
     // MARK: - Private Properties
     private let azuracastClient = ACWebSocketClient.shared
     private let configClient = ConfigClient.shared
@@ -78,6 +79,13 @@ public class StationMetadataManager: ObservableObject {
     private var currentStation: RadioStation?
     private var cancellables = Set<AnyCancellable>()
     private static var activeSubscribers = 0
+
+    // Time tracking (mirrors what NowPlayingViewController used to own)
+    private var metadataReceivedAt: Date?
+    private var metadataElapsed: TimeInterval = 0
+    private var metadataDuration: TimeInterval = 0
+    private var broadcastStart: Date?
+    private var timeUpdateTimer: Timer?
     
     // MARK: - Initialization
     private init() {
@@ -110,12 +118,15 @@ public class StationMetadataManager: ObservableObject {
     public func disconnectCurrentStation() {
         // Disconnect Azuracast client
         azuracastClient.disconnect()
-        
+
+        // Stop time tracking
+        stopTimeUpdates()
+
         // Clear current metadata
         currentMetadata = nil
         currentStation = nil
         connectionState = .disconnected
-        
+
         // Notify subscribers
         notifySubscribers(with: nil)
     }
@@ -182,11 +193,24 @@ public class StationMetadataManager: ObservableObject {
     
     private func updateMetadata() {
         let newMetadata = getUnifiedMetadata()
-        
+
         // Only update if metadata has actually changed
         if newMetadata != currentMetadata {
             currentMetadata = newMetadata
             notifySubscribers(with: newMetadata)
+            if let metadata = newMetadata {
+                metadataReceivedAt = Date()
+                metadataElapsed = metadata.elapsed ?? 0
+                metadataDuration = metadata.duration ?? 0
+                broadcastStart = metadata.broadcastStart
+                startTimeUpdates()
+            } else {
+                metadataReceivedAt = nil
+                metadataElapsed = 0
+                metadataDuration = 0
+                broadcastStart = nil
+                stopTimeUpdates()
+            }
         }
     }
     
@@ -244,6 +268,48 @@ public class StationMetadataManager: ObservableObject {
         for callback in subscribers {
             callback(metadata)
         }
+    }
+
+    private func formatTime(_ seconds: TimeInterval) -> String {
+        let totalSeconds = max(0, Int(seconds))
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let secs = totalSeconds % 60
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, secs)
+        } else {
+            return String(format: "%d:%02d", minutes, secs)
+        }
+    }
+
+    private func updateFormattedTime() {
+        guard let receivedAt = metadataReceivedAt else {
+            formattedTime = " --:--    "
+            return
+        }
+        if let start = broadcastStart {
+            let showElapsed = Date().timeIntervalSince(start)
+            formattedTime = " LIVE  \(formatTime(showElapsed))    "
+        } else if metadataDuration > 0 {
+            let currentElapsed = metadataElapsed + Date().timeIntervalSince(receivedAt)
+            formattedTime = " \(formatTime(currentElapsed)) / \(formatTime(metadataDuration))    "
+        } else {
+            let currentElapsed = metadataElapsed + Date().timeIntervalSince(receivedAt)
+            formattedTime = " \(formatTime(currentElapsed))    "
+        }
+    }
+
+    private func startTimeUpdates() {
+        stopTimeUpdates()
+        timeUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            DispatchQueue.main.async { self?.updateFormattedTime() }
+        }
+    }
+
+    private func stopTimeUpdates() {
+        timeUpdateTimer?.invalidate()
+        timeUpdateTimer = nil
+        formattedTime = " --:--    "
     }
 }
 
