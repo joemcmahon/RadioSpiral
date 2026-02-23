@@ -198,7 +198,7 @@ public class StationMetadataManager: ObservableObject {
         if newMetadata != currentMetadata {
             currentMetadata = newMetadata
             notifySubscribers(with: newMetadata)
-            if let metadata = newMetadata {
+            if let metadata = newMetadata, connectionState == .connected {
                 metadataReceivedAt = Date()
                 metadataElapsed = metadata.elapsed ?? 0
                 metadataDuration = metadata.duration ?? 0
