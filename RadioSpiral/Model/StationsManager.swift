@@ -212,12 +212,8 @@ extension StationsManager {
             // Always set rate to 1.0 when receiving metadata — we're actively streaming.
             // Play/pause state changes update the rate separately via setupPlaybackStateObserver.
             nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = 1.0
-            print("[LockScreen] duration=\(metadata.duration ?? 0) elapsed=\(elapsed) rate=1.0")
             if let artworkURL = metadata.artworkURL {
                 URLSession.shared.dataTask(with: artworkURL) { [weak self] data, response, error in
-                    if let error = error {
-                        print("[LockScreen] Error downloading artwork: \(error)")
-                    }
                     if let data = data, let image = UIImage(data: data) {
                         DispatchQueue.main.async {
                             nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size, requestHandler: { _ in
@@ -226,7 +222,6 @@ extension StationsManager {
                             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
                         }
                     } else {
-                        print("[LockScreen] Failed to decode artwork, falling back to station icon")
                         if let station = self?.currentStation {
                             station.getImage { fallbackImage in
                                 DispatchQueue.main.async {
