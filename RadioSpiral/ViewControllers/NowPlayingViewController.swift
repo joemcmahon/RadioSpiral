@@ -192,11 +192,21 @@ class NowPlayingViewController: UIViewController {
         previousButton.isHidden = Config.hideNextPreviousButtons
         nextButton.isHidden = Config.hideNextPreviousButtons
         
-        // Subscribe to unified metadata changes
-        metadataCallback = { [weak self] metadata in
-            self?.handleMetadataUpdate(metadata)
-        }
-        metadataManager.subscribeToMetadataChanges(metadataCallback!)
+        // Subscribe to metadata changes via Combine
+        metadataManager.$currentMetadata
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] metadata in
+                self?.handleMetadataUpdate(metadata)
+            }
+            .store(in: &cancellables)
+
+        // Drive time bubble from StationMetadataManager
+        metadataManager.$formattedTime
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] text in
+                self?.timeBubble.text = text
+            }
+            .store(in: &cancellables)
 
         // Observe connection state for audio restart after WiFi recovery.
         // Use removeDuplicates + scan to detect transitions TO .connected
