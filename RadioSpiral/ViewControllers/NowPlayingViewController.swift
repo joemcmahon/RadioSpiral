@@ -271,7 +271,6 @@ class NowPlayingViewController: UIViewController {
         super.viewWillTransition(to: size, with: coordinator)
 
         coordinator.animate(alongsideTransition: { _ in
-            print("rotating")
             self.optimizeForDeviceSize(size: size)
         })
     }
