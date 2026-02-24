@@ -67,7 +67,7 @@ class RadioPlayer: ObservableObject {
         if player.currentItem == nil, let item = playerItem {
             player.replaceCurrentItem(with: item)
         }
-        player.play()
+        player.playImmediately(atRate: 1.0)
         playbackState = .playing
     }
 
@@ -97,13 +97,17 @@ class RadioPlayer: ObservableObject {
 
         state = .loading
         let asset = AVURLAsset(url: url)
-        playerItem = AVPlayerItem(asset: asset)
-        playerItem?.audioTimePitchAlgorithm = .timeDomain
-        playerItem?.preferredForwardBufferDuration = 10.0
+        let requiredAssetKeys = [
+            "playable",
+            "hasProtectedContent"
+        ]
+        playerItem = AVPlayerItem(asset: asset, automaticallyLoadedAssetKeys: requiredAssetKeys)
+        playerItem?.preferredForwardBufferDuration = 2.0
 
         player = AVPlayer(playerItem: playerItem!)
         player?.allowsExternalPlayback = false
-        player!.automaticallyWaitsToMinimizeStalling = true
+        // Do NOT set automaticallyWaitsToMinimizeStalling — playImmediately(atRate:) disables it,
+        // which keeps the rate locked at 1.0 and prevents pitch wobble on live streams.
 
         setupObservations()
     }

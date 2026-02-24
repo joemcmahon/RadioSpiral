@@ -77,11 +77,17 @@ class NowPlayingViewController: UIViewController {
     var nowPlayingImageView: UIImageView!
     
     var mpVolumeSlider: UISlider?
+    private var metadataCallback: MetadataChangeCallback?
     private var lastStatusMessage: String?
     private var wasPlaying = false
     private var cancellables = Set<AnyCancellable>()
     private var connectionBanner: UILabel!
     private var timeBubble: UILabel!
+    private var timeUpdateTimer: Timer?
+    private var metadataReceivedAt: Date?
+    private var metadataElapsed: TimeInterval = 0
+    private var metadataDuration: TimeInterval = 0
+    private var broadcastStart: Date?
 
     // MARK: - ViewDidLoad
     
@@ -186,21 +192,11 @@ class NowPlayingViewController: UIViewController {
         previousButton.isHidden = Config.hideNextPreviousButtons
         nextButton.isHidden = Config.hideNextPreviousButtons
         
-        // Subscribe to metadata changes via Combine
-        metadataManager.$currentMetadata
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] metadata in
-                self?.handleMetadataUpdate(metadata)
-            }
-            .store(in: &cancellables)
-
-        // Drive time bubble from StationMetadataManager
-        metadataManager.$formattedTime
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] text in
-                self?.timeBubble.text = text
-            }
-            .store(in: &cancellables)
+        // Subscribe to unified metadata changes
+        metadataCallback = { [weak self] metadata in
+            self?.handleMetadataUpdate(metadata)
+        }
+        metadataManager.subscribeToMetadataChanges(metadataCallback!)
 
         // Observe connection state for audio restart after WiFi recovery.
         // Use removeDuplicates + scan to detect transitions TO .connected
@@ -261,33 +257,61 @@ class NowPlayingViewController: UIViewController {
         isPlayingDidChange(player.isPlaying)
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        startTimeUpdates()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopTimeUpdates()
+    }
+
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
 
         coordinator.animate(alongsideTransition: { _ in
+            print("rotating")
             self.optimizeForDeviceSize(size: size)
         })
     }
     
     func handleMetadataUpdate(_ metadata: UnifiedMetadata?) {
         guard let metadata = metadata else { return }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Update UI with unified metadata
+            self.artistLabel.text = metadata.artistName
+            self.songLabel.text = metadata.trackName
+            self.releaseLabel.text = metadata.albumName ?? ""
+            self.djName.text = metadata.djName ?? ""
+            
+            // Update live DJ indicator
+            self.liveDJIndicator.isHidden = !metadata.isLiveDJ
 
-        artistLabel.text = metadata.artistName
-        songLabel.text = metadata.trackName
-        releaseLabel.text = metadata.albumName ?? ""
-        djName.text = metadata.djName ?? ""
-        liveDJIndicator.isHidden = !metadata.isLiveDJ
+            // Update time tracking for bubble
+            self.metadataReceivedAt = Date()
+            self.metadataElapsed = metadata.elapsed ?? 0
+            self.metadataDuration = metadata.duration ?? 0
+            self.broadcastStart = metadata.broadcastStart
+            self.updateTimeBubbleText()
 
-        if let artworkURL = metadata.artworkURL {
-            let processor = DownsamplingImageProcessor(size: albumImageView.bounds.size)
-            albumImageView.kf.indicatorType = .activity
-            albumImageView.kf.setImage(with: artworkURL,
-                                       options: [.processor(processor),
-                                                 .scaleFactor(UIScreen.main.scale),
-                                                 .transition(.fade(1))])
-        } else {
-            manager.currentStation?.getImage { [weak self] image in
-                self?.albumImageView.image = image
+            // Update artwork
+            if let artworkURL = metadata.artworkURL {
+                let processor = DownsamplingImageProcessor(size: self.albumImageView.bounds.size)
+                self.albumImageView.kf.indicatorType = .activity
+                self.albumImageView.kf.setImage(with: artworkURL,
+                                               options: [.processor(processor),
+                                                         .scaleFactor(UIScreen.main.scale),
+                                                         .transition(.fade(1))
+                                               ])
+            } else {
+                // Fallback to station artwork
+                self.manager.currentStation?.getImage { [weak self] image in
+                    self?.albumImageView.image = image
+                }
             }
         }
     }
@@ -342,6 +366,51 @@ class NowPlayingViewController: UIViewController {
             timeBubble.topAnchor.constraint(equalTo: albumImageView.bottomAnchor),
             timeBubble.heightAnchor.constraint(equalToConstant: 30),
         ])
+        startTimeUpdates()
+    }
+
+    private func startTimeUpdates() {
+        stopTimeUpdates()
+        timeUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.updateTimeBubbleText()
+        }
+    }
+
+    private func stopTimeUpdates() {
+        timeUpdateTimer?.invalidate()
+        timeUpdateTimer = nil
+    }
+
+    private func updateTimeBubbleText() {
+        guard metadataReceivedAt != nil else {
+            timeBubble.text = " --:--    "
+            return
+        }
+        if let broadcastStart = broadcastStart {
+            // Live DJ: show time into the show
+            let showElapsed = Date().timeIntervalSince(broadcastStart)
+            timeBubble.text = " LIVE  \(formatTime(showElapsed))    "
+        } else if metadataDuration > 0 {
+            // Pre-recorded track: show track elapsed / duration
+            let currentElapsed = metadataElapsed + Date().timeIntervalSince(metadataReceivedAt!)
+            timeBubble.text = " \(formatTime(currentElapsed)) / \(formatTime(metadataDuration))    "
+        } else {
+            // No broadcast start, no duration — fallback
+            let currentElapsed = metadataElapsed + Date().timeIntervalSince(metadataReceivedAt!)
+            timeBubble.text = " \(formatTime(currentElapsed))    "
+        }
+    }
+
+    private func formatTime(_ seconds: TimeInterval) -> String {
+        let totalSeconds = max(0, Int(seconds))
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let secs = totalSeconds % 60
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, secs)
+        } else {
+            return String(format: "%d:%02d", minutes, secs)
+        }
     }
 
     func setupVolumeSlider() {
@@ -381,6 +450,14 @@ class NowPlayingViewController: UIViewController {
         title = manager.currentStation?.name
         updateLabels()
         player.stop()
+        // Remove only the previous UI metadata subscriber, not all subscribers
+        if let callback = metadataCallback {
+            metadataManager.unsubscribeFromMetadataChanges(callback)
+        }
+        metadataCallback = { [weak self] metadata in
+            self?.handleMetadataUpdate(metadata)
+        }
+        metadataManager.subscribeToMetadataChanges(metadataCallback!)
     }
     
     // MARK: - Player Controls (Play/Pause/Volume)
