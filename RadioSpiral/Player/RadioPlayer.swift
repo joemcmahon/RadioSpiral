@@ -48,7 +48,7 @@ class RadioPlayer: ObservableObject {
         do {
             switch mode {
             case .stability:
-                try session.setCategory(.playback, mode: .spokenAudio, options: [.allowBluetooth])
+                try session.setCategory(.playback, mode: .spokenAudio, options: [.allowBluetoothHFP])
                 playerItem?.audioTimePitchAlgorithm = .timeDomain
                 playerItem?.preferredForwardBufferDuration = 30.0
             case .fidelity:

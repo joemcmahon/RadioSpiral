@@ -7,10 +7,10 @@ final class StabilityModeBanner: UIView {
 
     private let messageLabel = UILabel()
     private let dontAskButton = UIButton(type: .system)
-    private let keepStabilityButton = UIButton(type: .system)
-    private let keepFidelityButton = UIButton(type: .system)
+    private let keepStabilityButton = UIButton()
+    private let keepFidelityButton = UIButton()
+    private let keepAsIsButton = UIButton()
     private var dontAskChecked = false
-    private var dismissTimer: Timer?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -24,38 +24,52 @@ final class StabilityModeBanner: UIView {
         layer.cornerRadius = 12
         clipsToBounds = true
         translatesAutoresizingMaskIntoConstraints = false
+        let fontSize = 18
 
-        messageLabel.text = "Hearing aids connected — switched to Stability Mode to prevent audio pitch wobble."
+        messageLabel.text = "Hearing aids connected in stable pitch mode to prevent audio pitch wobble. Tap a preference below to continue:"
         messageLabel.textColor = .white
-        messageLabel.font = .systemFont(ofSize: 14, weight: .medium)
+        messageLabel.font = .systemFont(ofSize: CGFloat(fontSize), weight: .medium)
         messageLabel.numberOfLines = 0
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        dontAskButton.setTitle("○  Don't ask again", for: .normal)
+        dontAskButton.setTitle("□  Don't ask again", for: .normal)
         dontAskButton.setTitleColor(.white, for: .normal)
-        dontAskButton.titleLabel?.font = .systemFont(ofSize: 13)
+        dontAskButton.titleLabel?.font = .systemFont(ofSize: CGFloat(fontSize))
         dontAskButton.contentHorizontalAlignment = .left
         dontAskButton.addTarget(self, action: #selector(toggleDontAsk), for: .touchUpInside)
         dontAskButton.translatesAutoresizingMaskIntoConstraints = false
 
-        keepStabilityButton.setTitle("Keep Stability", for: .normal)
+        keepStabilityButton.setTitle("Always ensure stable pitch", for: .normal)
         keepStabilityButton.setTitleColor(.systemBlue, for: .normal)
-        keepStabilityButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
+        keepStabilityButton.titleLabel?.font = .systemFont(ofSize: CGFloat(fontSize), weight: .semibold)
         keepStabilityButton.addTarget(self, action: #selector(tappedKeepStability), for: .touchUpInside)
         keepStabilityButton.translatesAutoresizingMaskIntoConstraints = false
 
-        keepFidelityButton.setTitle("Keep Hi-Fi", for: .normal)
+        keepFidelityButton.setTitle("Always ensure continuous audio", for: .normal)
         keepFidelityButton.setTitleColor(.systemOrange, for: .normal)
-        keepFidelityButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
+        keepFidelityButton.titleLabel?.font = .systemFont(ofSize: CGFloat(fontSize), weight: .semibold)
         keepFidelityButton.addTarget(self, action: #selector(tappedKeepFidelity), for: .touchUpInside)
         keepFidelityButton.translatesAutoresizingMaskIntoConstraints = false
 
-        let buttonRow = UIStackView(arrangedSubviews: [keepStabilityButton, keepFidelityButton])
-        buttonRow.axis = .horizontal
-        buttonRow.spacing = 16
-        buttonRow.translatesAutoresizingMaskIntoConstraints = false
+        
+        keepAsIsButton.setTitle("Use best choice for current output", for: .normal)
+        keepAsIsButton.setTitleColor(.systemGray, for: .normal)
+        keepAsIsButton.titleLabel?.font = .systemFont(ofSize: CGFloat(fontSize), weight: .semibold)
+        keepAsIsButton.contentHorizontalAlignment = .left
+        keepAsIsButton.addTarget(self, action: #selector(tappedKeepAsIs), for: .touchUpInside)
+        keepAsIsButton.translatesAutoresizingMaskIntoConstraints = false
 
-        let stack = UIStackView(arrangedSubviews: [messageLabel, dontAskButton, buttonRow])
+        for button in [keepStabilityButton, keepFidelityButton, keepAsIsButton] {
+            button.heightAnchor.constraint(greaterThanOrEqualToConstant: 44).isActive = true
+            button.contentHorizontalAlignment = .center
+        }
+
+        let buttonStack = UIStackView(arrangedSubviews: [keepStabilityButton, keepFidelityButton, keepAsIsButton])
+        buttonStack.axis = .vertical
+        buttonStack.spacing = 4
+        buttonStack.translatesAutoresizingMaskIntoConstraints = false
+
+        let stack = UIStackView(arrangedSubviews: [messageLabel, buttonStack, dontAskButton])
         stack.axis = .vertical
         stack.spacing = 8
         stack.translatesAutoresizingMaskIntoConstraints = false
@@ -71,7 +85,7 @@ final class StabilityModeBanner: UIView {
 
     @objc private func toggleDontAsk() {
         dontAskChecked.toggle()
-        dontAskButton.setTitle(dontAskChecked ? "●  Don't ask again" : "○  Don't ask again",
+        dontAskButton.setTitle(dontAskChecked ? "☑  Don't ask again" : "□  Don't ask again",
                                for: .normal)
     }
 
@@ -86,9 +100,13 @@ final class StabilityModeBanner: UIView {
         RadioPlayer.shared.applyStabilitySettings(mode: .fidelity)
         dismiss()
     }
+    
+    @objc private func tappedKeepAsIs() {
+        if dontAskChecked { AudioStabilityPreference.current = .ask }
+        dismiss()
+    }
 
     private func dismiss() {
-        dismissTimer?.invalidate()
         UIView.animate(withDuration: 0.3, animations: { self.alpha = 0 }) { _ in
             self.removeFromSuperview()
         }
@@ -96,7 +114,7 @@ final class StabilityModeBanner: UIView {
 
     // MARK: - Public
 
-    /// Add to key window and auto-dismiss after 10 seconds.
+    /// Add to key window. Stays visible until user taps a button.
     func show() {
         guard let window = UIApplication.shared.connectedScenes
                 .compactMap({ $0 as? UIWindowScene })
@@ -113,9 +131,5 @@ final class StabilityModeBanner: UIView {
         ])
 
         UIView.animate(withDuration: 0.3) { self.alpha = 1 }
-
-        dismissTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: false) { [weak self] _ in
-            self?.dismiss()
-        }
     }
 }
