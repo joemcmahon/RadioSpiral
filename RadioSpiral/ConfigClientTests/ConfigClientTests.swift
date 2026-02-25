@@ -505,4 +505,29 @@ class ConfigClientTests: XCTestCase {
         let reDecoded = try! JSONDecoder().decode(CreditPair.self, from: encoded)
         XCTAssertEqual(reDecoded, decoded)
     }
+
+    // MARK: - AudioStabilityPreference Tests
+
+    func testDefaultPreferenceIsAsk() {
+        AudioStabilityPreference.reset()
+        XCTAssertEqual(AudioStabilityPreference.current, .ask)
+    }
+
+    func testSavingAlwaysStability() {
+        AudioStabilityPreference.current = .alwaysStability
+        XCTAssertEqual(AudioStabilityPreference.current, .alwaysStability)
+        AudioStabilityPreference.reset()
+    }
+
+    func testSavingNeverStability() {
+        AudioStabilityPreference.current = .neverStability
+        XCTAssertEqual(AudioStabilityPreference.current, .neverStability)
+        AudioStabilityPreference.reset()
+    }
+
+    func testResetRestoresDefault() {
+        AudioStabilityPreference.current = .alwaysStability
+        AudioStabilityPreference.reset()
+        XCTAssertEqual(AudioStabilityPreference.current, .ask)
+    }
 }

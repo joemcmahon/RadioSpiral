@@ -43,6 +43,7 @@
 		945DB3C21AD58E3A00495EBB /* stations.json in Resources */ = {isa = PBXBuildFile; fileRef = 945DB3C11AD58E3A00495EBB /* stations.json */; };
 		945DB3C51AD5A6E200495EBB /* NothingFoundCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 945DB3C41AD5A6E200495EBB /* NothingFoundCell.xib */; };
 		949BBB401ACC9DEE005B7C26 /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949BBB3F1ACC9DEE005B7C26 /* DataManager.swift */; };
+		27D776512BD747B293E5A498 /* AudioStabilityPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB1F0A11DE24DA9A9641A24 /* AudioStabilityPreference.swift */; };
 		94AC70AE1AD05C6200652982 /* RadioStation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AC70AD1AD05C6200652982 /* RadioStation.swift */; };
 		94D260911B45D20000DE671C /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D260901B45D20000DE671C /* Config.swift */; };
 		94D260961B45E3FA00DE671C /* AnimationFrames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D260951B45E3FA00DE671C /* AnimationFrames.swift */; };
@@ -128,6 +129,7 @@
 		945DB3C11AD58E3A00495EBB /* stations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = stations.json; sourceTree = "<group>"; };
 		945DB3C41AD5A6E200495EBB /* NothingFoundCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NothingFoundCell.xib; sourceTree = "<group>"; };
 		949BBB3F1ACC9DEE005B7C26 /* DataManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
+		FEB1F0A11DE24DA9A9641A24 /* AudioStabilityPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioStabilityPreference.swift; sourceTree = "<group>"; };
 		94AC70AD1AD05C6200652982 /* RadioStation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RadioStation.swift; sourceTree = "<group>"; };
 		94D260901B45D20000DE671C /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		94D260951B45E3FA00DE671C /* AnimationFrames.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnimationFrames.swift; sourceTree = "<group>"; };
@@ -349,6 +351,7 @@
 		CE8062F5291EF598008BD097 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				FEB1F0A11DE24DA9A9641A24 /* AudioStabilityPreference.swift */,
 				71B3D01E2E2989C5001E8F5A /* StationMetadataManager.swift */,
 				94AC70AD1AD05C6200652982 /* RadioStation.swift */,
 				CE963ECB29135A6F004F299E /* StationsManager.swift */,
@@ -598,6 +601,7 @@
 				B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */,
 				CEDABBED29121BBA00C0367F /* UIImage+Cache.swift in Sources */,
 				CE6036252A48F68D00E15E15 /* NowPlayingView.swift in Sources */,
+				27D776512BD747B293E5A498 /* AudioStabilityPreference.swift in Sources */,
 				94AC70AE1AD05C6200652982 /* RadioStation.swift in Sources */,
 				CE9EE8E1293C048A00F62041 /* LoaderController.swift in Sources */,
 				CE6036132A47A87A00E15E15 /* StationsViewController.swift in Sources */,
