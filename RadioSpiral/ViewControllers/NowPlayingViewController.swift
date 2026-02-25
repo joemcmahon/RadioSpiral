@@ -83,6 +83,7 @@ class NowPlayingViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
     private var connectionBanner: UILabel!
     private var timeBubble: UILabel!
+    private var modeIconView: UIImageView?
     private var timeUpdateTimer: Timer?
     private var metadataReceivedAt: Date?
     private var metadataElapsed: TimeInterval = 0
@@ -254,6 +255,13 @@ class NowPlayingViewController: UIViewController {
             }
             .store(in: &cancellables)
 
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleStabilityModeChange),
+            name: RadioPlayer.stabilityModeDidChange,
+            object: nil
+        )
+
         isPlayingDidChange(player.isPlaying)
     }
     
@@ -365,6 +373,26 @@ class NowPlayingViewController: UIViewController {
             timeBubble.topAnchor.constraint(equalTo: albumImageView.bottomAnchor),
             timeBubble.heightAnchor.constraint(equalToConstant: 30),
         ])
+
+        timeBubble.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(timeBubbleTapped))
+        timeBubble.addGestureRecognizer(tap)
+
+        let iconView = UIImageView()
+        iconView.contentMode = .scaleAspectFit
+        iconView.tintColor = .white
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+        iconView.isHidden = true
+        timeBubble.addSubview(iconView)
+        NSLayoutConstraint.activate([
+            iconView.trailingAnchor.constraint(equalTo: timeBubble.trailingAnchor, constant: -6),
+            iconView.centerYAnchor.constraint(equalTo: timeBubble.centerYAnchor),
+            iconView.widthAnchor.constraint(equalToConstant: 16),
+            iconView.heightAnchor.constraint(equalToConstant: 16),
+        ])
+        modeIconView = iconView
+        updateModeIcon()
+
         startTimeUpdates()
     }
 
@@ -397,6 +425,20 @@ class NowPlayingViewController: UIViewController {
             // No broadcast start, no duration — fallback
             let currentElapsed = metadataElapsed + Date().timeIntervalSince(metadataReceivedAt!)
             timeBubble.text = " \(formatTime(currentElapsed))    "
+        }
+    }
+
+    private func updateModeIcon() {
+        guard let iconView = modeIconView else { return }
+        switch AudioStabilityPreference.current {
+        case .alwaysStability:
+            iconView.image = UIImage(systemName: "ear.and.waveform")
+            iconView.isHidden = false
+        case .neverStability:
+            iconView.image = UIImage(systemName: "hifispeaker.fill")
+            iconView.isHidden = false
+        case .ask:
+            iconView.isHidden = true
         }
     }
 
@@ -744,7 +786,51 @@ class NowPlayingViewController: UIViewController {
         let artworkURL = metadataManager.getCurrentMetadata()?.artworkURL
         delegate?.didTapShareButton(self, station: station, artworkURL: artworkURL)
     }
-    
+
+    // MARK: - Audio Mode
+
+    @objc private func timeBubbleTapped() {
+        let sheet = UIAlertController(title: "Audio Quality Mode",
+                                      message: "Choose how RadioSpiral handles hearing aid connections.",
+                                      preferredStyle: .actionSheet)
+
+        sheet.addAction(UIAlertAction(title: "Automatic (switch when hearing aids connect)",
+                                      style: .default) { [weak self] _ in
+            AudioStabilityPreference.current = .ask
+            self?.updateModeIcon()
+        })
+        sheet.addAction(UIAlertAction(title: "Always use Stability Mode",
+                                      style: .default) { [weak self] _ in
+            AudioStabilityPreference.current = .alwaysStability
+            RadioPlayer.shared.applyStabilitySettings(mode: .stability)
+            self?.updateModeIcon()
+        })
+        sheet.addAction(UIAlertAction(title: "Always use Hi-Fi Mode",
+                                      style: .default) { [weak self] _ in
+            AudioStabilityPreference.current = .neverStability
+            RadioPlayer.shared.applyStabilitySettings(mode: .fidelity)
+            self?.updateModeIcon()
+        })
+        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        if let popover = sheet.popoverPresentationController {
+            popover.sourceView = timeBubble
+            popover.sourceRect = timeBubble.bounds
+        }
+
+        present(sheet, animated: true)
+    }
+
+    @objc private func handleStabilityModeChange(notification: Notification) {
+        DispatchQueue.main.async {
+            self.updateModeIcon()
+            if AudioStabilityPreference.current == .ask {
+                let banner = StabilityModeBanner()
+                banner.show()
+            }
+        }
+    }
+
 }
 
 
