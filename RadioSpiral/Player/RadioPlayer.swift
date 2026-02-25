@@ -32,6 +32,50 @@ class RadioPlayer: ObservableObject {
         case playing, stopped, paused
     }
 
+    // MARK: - Stability Mode
+
+    static let stabilityModeDidChange = Notification.Name("RadioPlayerStabilityModeDidChange")
+
+    func isUsingHearingAids() -> Bool {
+        // MFi hearing aids route audio via Bluetooth LE (.bluetoothLE port type).
+        // There is no dedicated "hearingAppliance" port constant in AVAudioSession.
+        AVAudioSession.sharedInstance().currentRoute.outputs
+            .contains(where: { $0.portType == .bluetoothLE })
+    }
+
+    func applyStabilitySettings(mode: AudioStabilityMode) {
+        let session = AVAudioSession.sharedInstance()
+        do {
+            switch mode {
+            case .stability:
+                try session.setCategory(.playback, mode: .spokenAudio, options: [.allowBluetooth])
+                playerItem?.audioTimePitchAlgorithm = .timeDomain
+                playerItem?.preferredForwardBufferDuration = 30.0
+            case .fidelity:
+                try session.setCategory(.playback, mode: .default,
+                                        options: [.allowAirPlay, .allowBluetoothA2DP])
+                playerItem?.audioTimePitchAlgorithm = .spectral
+                playerItem?.preferredForwardBufferDuration = 2.0
+            }
+            try session.setActive(true)
+        } catch {
+            // Session update failed; continue with existing settings
+        }
+        NotificationCenter.default.post(
+            name: RadioPlayer.stabilityModeDidChange,
+            object: nil,
+            userInfo: ["mode": mode]
+        )
+    }
+
+    private func currentModeForRoute() -> AudioStabilityMode {
+        switch AudioStabilityPreference.current {
+        case .neverStability: return .fidelity
+        case .alwaysStability: return .stability
+        case .ask: return isUsingHearingAids() ? .stability : .fidelity
+        }
+    }
+
     // MARK: - Private
 
     private var player: AVPlayer?
@@ -110,6 +154,7 @@ class RadioPlayer: ObservableObject {
         // which keeps the rate locked at 1.0 and prevents pitch wobble on live streams.
 
         setupObservations()
+        applyStabilitySettings(mode: currentModeForRoute())
     }
 
     // MARK: - KVO
@@ -180,9 +225,28 @@ class RadioPlayer: ObservableObject {
               let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
               let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else { return }
 
-        if reason == .oldDeviceUnavailable {
-            // Headphones unplugged
-            DispatchQueue.main.async { self.pause() }
+        switch reason {
+        case .newDeviceAvailable:
+            DispatchQueue.main.async {
+                guard self.isUsingHearingAids() else { return }
+                let pref = AudioStabilityPreference.current
+                guard pref != .neverStability else { return }
+                self.applyStabilitySettings(mode: .stability)
+                // Banner shown by NowPlayingVC: it observes stabilityModeDidChange and checks
+                // AudioStabilityPreference.current == .ask to decide whether to show the banner
+            }
+
+        case .oldDeviceUnavailable:
+            DispatchQueue.main.async {
+                if !self.isUsingHearingAids() {
+                    self.applyStabilitySettings(mode: .fidelity)
+                }
+                // Pause on any device removal (preserves existing behaviour for wired headphones)
+                self.pause()
+            }
+
+        default:
+            break
         }
     }
 }
