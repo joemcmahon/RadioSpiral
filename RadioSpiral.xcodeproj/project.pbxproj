@@ -60,6 +60,7 @@
 		CE6036212A48C51A00E15E15 /* NVActivityIndicatorView in Frameworks */ = {isa = PBXBuildFile; productRef = CE6036202A48C51A00E15E15 /* NVActivityIndicatorView */; };
 		CE6036232A48C51A00E15E15 /* NVActivityIndicatorViewExtended in Frameworks */ = {isa = PBXBuildFile; productRef = CE6036222A48C51A00E15E15 /* NVActivityIndicatorViewExtended */; };
 		CE6036252A48F68D00E15E15 /* NowPlayingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE60361C2A48C4A400E15E15 /* NowPlayingView.swift */; };
+		E1CD58126CD94ECB95750E9F /* StabilityModeBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479C334BFC9C451FBFF29987 /* StabilityModeBanner.swift */; };
 		CE6ECCFA292F13DF008B3C16 /* Coordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6ECCF9292F13DF008B3C16 /* Coordinator.swift */; };
 		CE6ECCFD292F1445008B3C16 /* MainCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6ECCFC292F1445008B3C16 /* MainCoordinator.swift */; };
 		CE6ECD00292F215F008B3C16 /* Storyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6ECCFF292F215F008B3C16 /* Storyboard.swift */; };
@@ -140,6 +141,7 @@
 		CE6036122A47A87A00E15E15 /* StationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationsViewController.swift; sourceTree = "<group>"; };
 		CE6036152A47B88600E15E15 /* StationTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationTableViewCell.swift; sourceTree = "<group>"; };
 		CE6036182A48BA2500E15E15 /* UITableViewCell+reuseIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableViewCell+reuseIdentifier.swift"; sourceTree = "<group>"; };
+		479C334BFC9C451FBFF29987 /* StabilityModeBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StabilityModeBanner.swift; sourceTree = "<group>"; };
 		CE60361C2A48C4A400E15E15 /* NowPlayingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingView.swift; sourceTree = "<group>"; };
 		CE6ECCF9292F13DF008B3C16 /* Coordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coordinator.swift; sourceTree = "<group>"; };
 		CE6ECCFC292F1445008B3C16 /* MainCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainCoordinator.swift; sourceTree = "<group>"; };
@@ -310,6 +312,7 @@
 			children = (
 				6258DCD722D93A3500166C65 /* LogoShareView.swift */,
 				CE60361C2A48C4A400E15E15 /* NowPlayingView.swift */,
+				479C334BFC9C451FBFF29987 /* StabilityModeBanner.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -601,6 +604,7 @@
 				B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */,
 				CEDABBED29121BBA00C0367F /* UIImage+Cache.swift in Sources */,
 				CE6036252A48F68D00E15E15 /* NowPlayingView.swift in Sources */,
+				E1CD58126CD94ECB95750E9F /* StabilityModeBanner.swift in Sources */,
 				27D776512BD747B293E5A498 /* AudioStabilityPreference.swift in Sources */,
 				94AC70AE1AD05C6200652982 /* RadioStation.swift in Sources */,
 				CE9EE8E1293C048A00F62041 /* LoaderController.swift in Sources */,
