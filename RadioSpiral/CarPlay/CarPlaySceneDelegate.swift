@@ -23,16 +23,44 @@ import MediaPlayer
         _ templateApplicationScene: CPTemplateApplicationScene,
         didConnect interfaceController: CPInterfaceController
     ) {
+        print("[CarPlay] didConnect — stations at connect time: \(StationsManager.shared.stations.count)")
         self.interfaceController = interfaceController
 
-        // Set up the stations list as the root template when CarPlay connects
-        // The currently playing info is shown through MPNowPlayingInfoCenter (system media controls)
         let stationsTemplate = createStationsListTemplate()
         self.stationsListTemplate = stationsTemplate
         interfaceController.setRootTemplate(stationsTemplate, animated: false, completion: nil)
+
+        StationsManager.shared.addObserver(self)
+
+        let existing = StationsManager.shared.stations
+        if !existing.isEmpty {
+            print("[CarPlay] stations already loaded (\(existing.count)), refreshing template immediately")
+            refreshTemplate(with: existing)
+        } else {
+            print("[CarPlay] stations empty at connect, fetching…")
+            StationsManager.shared.fetch { [weak self] result in
+                switch result {
+                case .success(let stations):
+                    print("[CarPlay] fetch completion: \(stations.count) stations, self=\(self != nil ? "alive" : "nil")")
+                    guard !stations.isEmpty else { return }
+                    DispatchQueue.main.async { self?.refreshTemplate(with: stations) }
+                case .failure(let error):
+                    print("[CarPlay] fetch failed: \(error)")
+                }
+            }
+        }
     }
 
     // MARK: - Template Creation
+
+    /// Updates the displayed sections in the existing stations template.
+    private func refreshTemplate(with stations: [RadioStation]) {
+        print("[CarPlay] refreshTemplate: \(stations.count) stations, template=\(stationsListTemplate != nil ? "exists" : "nil")")
+        guard let template = stationsListTemplate else { return }
+        let items = stations.map { createStationListItem(for: $0) }
+        template.updateSections([CPListSection(items: items)])
+        print("[CarPlay] updateSections called with \(items.count) items")
+    }
 
     /// Creates the stations list template
     private func createStationsListTemplate() -> CPListTemplate {
@@ -76,16 +104,9 @@ import MediaPlayer
         _ station: RadioStation,
         completionHandler: @escaping () -> Void
     ) {
-        // Set the station in the manager
         StationsManager.shared.set(station: station)
-
-        // Update now playing info for CarPlay display
+        RadioPlayer.shared.play()
         updateMPNowPlayingInfo(station: station)
-
-        // Note: Audio playback is managed by the phone app's audio session
-        // CarPlay UI just controls what's already playing on the phone
-
-        // Dismiss the selection handler
         completionHandler()
     }
 
@@ -129,4 +150,16 @@ extension CarPlaySceneDelegate {
         self.interfaceController = nil
         self.stationsListTemplate = nil
     }
+}
+
+// MARK: - StationsManagerObserver
+
+extension CarPlaySceneDelegate: StationsManagerObserver {
+    func stationsManager(_ manager: StationsManager, stationsDidUpdate stations: [RadioStation]) {
+        print("[CarPlay] stationsDidUpdate: \(stations.count) stations")
+        guard !stations.isEmpty else { return }
+        DispatchQueue.main.async { [weak self] in self?.refreshTemplate(with: stations) }
+    }
+
+    func stationsManager(_ manager: StationsManager, stationDidChange station: RadioStation?) {}
 }
