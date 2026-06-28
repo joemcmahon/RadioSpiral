@@ -240,6 +240,8 @@ class NowPlayingViewController: UIViewController {
             .sink { [weak self] playbackState in
                 guard let self = self else { return }
                 if playbackState == .playing {
+                    // Mirror external play starts (e.g. CarPlay) so reconnect-on-recovery works.
+                    self.wasPlaying = true
                     self.hideConnectionBanner()
                 }
                 self.playbackStateDidChange(playbackState, animate: true)
