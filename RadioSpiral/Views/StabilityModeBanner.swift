@@ -1,16 +1,17 @@
 // RadioSpiral/Views/StabilityModeBanner.swift
 import UIKit
 
-/// One-time banner shown when hearing aids connect and preference is .ask.
-/// Appears at top of key window. Has two action buttons and a "Don't ask again" toggle.
+/// First-run banner: shown when hearing aids are connected and no preference has been chosen.
+/// Forces a choice, which is saved to AudioStabilityPreference (shared with the ear button).
 final class StabilityModeBanner: UIView {
 
     private let messageLabel = UILabel()
-    private let dontAskButton = UIButton(type: .system)
     private let keepStabilityButton = UIButton()
     private let keepFidelityButton = UIButton()
     private let keepAsIsButton = UIButton()
-    private var dontAskChecked = false
+
+    /// At most one banner on screen app-wide; several NowPlaying instances may each try to show one.
+    private static weak var visibleBanner: StabilityModeBanner?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -31,13 +32,6 @@ final class StabilityModeBanner: UIView {
         messageLabel.font = .systemFont(ofSize: CGFloat(fontSize), weight: .medium)
         messageLabel.numberOfLines = 0
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
-
-        dontAskButton.setTitle("□  Don't ask again", for: .normal)
-        dontAskButton.setTitleColor(.white, for: .normal)
-        dontAskButton.titleLabel?.font = .systemFont(ofSize: CGFloat(fontSize))
-        dontAskButton.contentHorizontalAlignment = .left
-        dontAskButton.addTarget(self, action: #selector(toggleDontAsk), for: .touchUpInside)
-        dontAskButton.translatesAutoresizingMaskIntoConstraints = false
 
         keepStabilityButton.setTitle("Always ensure stable pitch", for: .normal)
         keepStabilityButton.setTitleColor(.systemBlue, for: .normal)
@@ -69,7 +63,7 @@ final class StabilityModeBanner: UIView {
         buttonStack.spacing = 4
         buttonStack.translatesAutoresizingMaskIntoConstraints = false
 
-        let stack = UIStackView(arrangedSubviews: [messageLabel, buttonStack, dontAskButton])
+        let stack = UIStackView(arrangedSubviews: [messageLabel, buttonStack])
         stack.axis = .vertical
         stack.spacing = 8
         stack.translatesAutoresizingMaskIntoConstraints = false
@@ -83,26 +77,21 @@ final class StabilityModeBanner: UIView {
         ])
     }
 
-    @objc private func toggleDontAsk() {
-        dontAskChecked.toggle()
-        dontAskButton.setTitle(dontAskChecked ? "☑  Don't ask again" : "□  Don't ask again",
-                               for: .normal)
-    }
+    // Each choice saves the same preference as the matching ear-menu item, then applies it.
+    // applyStabilitySettings posts stabilityModeDidChange, which refreshes the ear button.
 
     @objc private func tappedKeepStability() {
-        if dontAskChecked { AudioStabilityPreference.current = .alwaysStability }
+        RadioPlayer.shared.choosePreference(.alwaysStability)
         dismiss()
     }
 
     @objc private func tappedKeepFidelity() {
-        if dontAskChecked { AudioStabilityPreference.current = .neverStability }
-        // Switching back to fidelity: tell RadioPlayer
-        RadioPlayer.shared.applyStabilitySettings(mode: .fidelity)
+        RadioPlayer.shared.choosePreference(.neverStability)
         dismiss()
     }
-    
+
     @objc private func tappedKeepAsIs() {
-        if dontAskChecked { AudioStabilityPreference.current = .ask }
+        RadioPlayer.shared.choosePreference(.ask)
         dismiss()
     }
 
@@ -114,14 +103,13 @@ final class StabilityModeBanner: UIView {
 
     // MARK: - Public
 
-    /// Add to key window. Stays visible until user taps a button.
-    func show() {
-        guard let window = UIApplication.shared.connectedScenes
-                .compactMap({ $0 as? UIWindowScene })
-                .first?.windows
-                .first(where: { $0.isKeyWindow }) else { return }
+    /// Add to the given window (the caller's own, so it never lands in the CarPlay scene).
+    /// Stays visible until the user taps a choice. No-op if a banner is already showing.
+    func show(in window: UIWindow) {
+        guard StabilityModeBanner.visibleBanner == nil else { return }
 
         window.addSubview(self)
+        StabilityModeBanner.visibleBanner = self
         alpha = 0
 
         NSLayoutConstraint.activate([

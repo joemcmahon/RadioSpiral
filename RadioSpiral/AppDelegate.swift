@@ -100,13 +100,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: - Activate Audio Session
     
     private func activateAudioSession() {
-        do {
-            try AVAudioSession.sharedInstance().setActive(true)
-        } catch let error {
-            if Config.debugLog {
-                print("audioSession could not be activated: \(error.localizedDescription)")
-            }
-        }
+        // Routed through RadioPlayer's session queue: setActive blocks and must stay off main.        RadioPlayer.shared.activateSession()
     }
 }
 

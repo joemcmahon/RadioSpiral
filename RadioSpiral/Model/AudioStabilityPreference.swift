@@ -2,15 +2,25 @@
 import Foundation
 
 /// User preference for audio stability mode when hearing aids are connected.
+/// Single source of truth shared by the hearing-aid banner and the ear button.
 enum AudioStabilityPreference: String {
-    /// Default. Auto-switch to Stability Mode on HA connect; show banner every time.
+    /// "Auto-select": stability with hearing aids, fidelity otherwise. Also the effective
+    /// value before the user has chosen (see `hasChoice`).
     case ask = "ask"
-    /// Always use Stability Mode when HAs connect. No banner. Shows icon.
+    /// "Pitch lock": always use Stability Mode.
     case alwaysStability = "alwaysStability"
-    /// Always use Fidelity Mode even with HAs. No banner. Shows icon.
+    /// "Continuous audio lock": always use Fidelity Mode, even with hearing aids.
     case neverStability = "neverStability"
 
+    /// Posted on the main thread whenever `current` is set.
+    static let didChange = Notification.Name("AudioStabilityPreferenceDidChange")
+
     private static let key = "audioStabilityPreference"
+
+    /// False until the user picks a mode (banner or ear menu). Drives the first-run banner.
+    static var hasChoice: Bool {
+        UserDefaults.standard.object(forKey: key) != nil
+    }
 
     static var current: AudioStabilityPreference {
         get {
@@ -19,6 +29,7 @@ enum AudioStabilityPreference: String {
         }
         set {
             UserDefaults.standard.set(newValue.rawValue, forKey: key)
+            NotificationCenter.default.post(name: didChange, object: nil)
         }
     }
 

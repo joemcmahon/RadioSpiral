@@ -84,7 +84,7 @@ class NowPlayingViewController: UIViewController {
     private var connectionBanner: UILabel!
     private var timeBubble: UILabel!
     private var modeIconView: UIImageView?
-    private var stabilityBannerAcknowledged = false
+    private var earButton: UIButton!
     private var timeUpdateTimer: Timer?
     private var metadataReceivedAt: Date?
     private var metadataElapsed: TimeInterval = 0
@@ -265,16 +265,22 @@ class NowPlayingViewController: UIViewController {
             object: nil
         )
 
-        // Hearing aids may already be connected at launch — no route-change fires for them.
-        // Trigger stability mode now if they're in the current route.
-        if RadioPlayer.shared.isUsingHearingAids(),
-           AudioStabilityPreference.current != .neverStability {
-            RadioPlayer.shared.applyStabilitySettings(mode: .stability)
-        }
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleHearingAidStateOrPreferenceChange),
+            name: RadioPlayer.hearingAidStateDidChange, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleHearingAidStateOrPreferenceChange),
+            name: AudioStabilityPreference.didChange, object: nil)
 
         isPlayingDidChange(player.isPlaying)
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // Hearing aids may have been detected before this screen existed.
+        showStabilityBannerIfNeeded()
+    }
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         startTimeUpdates()
@@ -403,9 +409,43 @@ class NowPlayingViewController: UIViewController {
             iconView.heightAnchor.constraint(equalToConstant: 16),
         ])
         modeIconView = iconView
+        setupEarButton()
         updateTimeBubbleText()
 
         startTimeUpdates()
+    }
+
+    /// Standalone ear button beside the time bubble, visible only while hearing aids are
+    /// the active output. Opens the compensation-mode picker.
+    private func setupEarButton() {
+        var config = UIButton.Configuration.filled()
+        config.image = UIImage(systemName: "ear.and.waveform",
+                               withConfiguration: UIImage.SymbolConfiguration(pointSize: 15, weight: .medium))
+        config.baseBackgroundColor = UIColor.black.withAlphaComponent(0.7)
+        config.cornerStyle = .capsule
+        config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        earButton = UIButton(configuration: config)
+        earButton.accessibilityLabel = "Hearing aid audio mode"
+        earButton.translatesAutoresizingMaskIntoConstraints = false
+        earButton.isHidden = true
+        earButton.addTarget(self, action: #selector(timeBubbleTapped), for: .touchUpInside)
+        view.addSubview(earButton)
+        NSLayoutConstraint.activate([
+            earButton.leadingAnchor.constraint(equalTo: timeBubble.trailingAnchor, constant: 8),
+            earButton.centerYAnchor.constraint(equalTo: timeBubble.centerYAnchor),
+            earButton.widthAnchor.constraint(equalToConstant: 36),
+            earButton.heightAnchor.constraint(equalToConstant: 36),
+        ])
+    }
+
+    private func updateEarButton() {
+        guard let earButton = earButton else { return }
+        earButton.isHidden = !RadioPlayer.shared.isUsingHearingAids()
+        switch AudioStabilityPreference.current {
+        case .alwaysStability: earButton.configuration?.baseForegroundColor = .systemBlue
+        case .neverStability:  earButton.configuration?.baseForegroundColor = .systemOrange
+        case .ask:             earButton.configuration?.baseForegroundColor = .white
+        }
     }
 
     private func startTimeUpdates() {
@@ -422,8 +462,10 @@ class NowPlayingViewController: UIViewController {
 
     private func updateTimeBubbleText() {
         let leftPadding = "  "
-        let iconVisible = AudioStabilityPreference.current != .ask || RadioPlayer.shared.isUsingHearingAids()
+        let iconVisible = AudioStabilityPreference.current != .ask
         let rightPadding = iconVisible ? "        " : "  "
+        updateModeIcon()
+        updateEarButton()
         guard metadataReceivedAt != nil else {
             timeBubble.text = leftPadding + "--:--" + rightPadding
             return
@@ -441,7 +483,6 @@ class NowPlayingViewController: UIViewController {
             let currentElapsed = metadataElapsed + Date().timeIntervalSince(metadataReceivedAt!)
             timeBubble.text = leftPadding + "\(formatTime(currentElapsed))" + rightPadding
         }
-        updateModeIcon()
     }
 
     private func updateModeIcon() {
@@ -458,14 +499,8 @@ class NowPlayingViewController: UIViewController {
             iconView.tintColor = .systemOrange
             iconView.isHidden = false
         case .ask:
-            // Hardware state: show ear icon only while hearing aids are actively driving the mode.
-            if RadioPlayer.shared.isUsingHearingAids() {
-                iconView.image = UIImage(systemName: "ear.and.waveform")
-                iconView.tintColor = .white
-                iconView.isHidden = false
-            } else {
-                iconView.isHidden = true
-            }
+            // Hearing-aid state is shown by the standalone ear button instead.
+            iconView.isHidden = true
         }
     }
 
@@ -829,27 +864,23 @@ class NowPlayingViewController: UIViewController {
             pref == match ? "✓  \(title)" : "    \(title)"
         }
 
-        sheet.addAction(UIAlertAction(title: marked("Auto-select", .ask),
-                                      style: .default) { [weak self] _ in
-            AudioStabilityPreference.current = .ask
-            self?.updateTimeBubbleText()
+        // Choosing saves to AudioStabilityPreference, whose didChange refreshes the ear button.
+        sheet.addAction(UIAlertAction(title: marked("Auto-select", .ask), style: .default) { _ in
+            RadioPlayer.shared.choosePreference(.ask)
         })
-        sheet.addAction(UIAlertAction(title: marked("Pitch lock", .alwaysStability),
-                                      style: .default) { [weak self] _ in
-            AudioStabilityPreference.current = .alwaysStability
-            RadioPlayer.shared.applyStabilitySettings(mode: .stability)
-            self?.updateTimeBubbleText()
+        sheet.addAction(UIAlertAction(title: marked("Pitch lock", .alwaysStability), style: .default) { _ in
+            RadioPlayer.shared.choosePreference(.alwaysStability)
         })
-        sheet.addAction(UIAlertAction(title: marked("Continuous audio lock", .neverStability),
-                                      style: .default) { [weak self] _ in
-            AudioStabilityPreference.current = .neverStability
-            RadioPlayer.shared.applyStabilitySettings(mode: .fidelity)
-            self?.updateTimeBubbleText()
+        sheet.addAction(UIAlertAction(title: marked("Continuous audio lock", .neverStability), style: .default) { _ in
+            RadioPlayer.shared.choosePreference(.neverStability)
         })
+        // Close without changing anything.
+        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
 
         if let popover = sheet.popoverPresentationController {
-            popover.sourceView = timeBubble
-            popover.sourceRect = timeBubble.bounds
+            let source: UIView = earButton.isHidden ? timeBubble : earButton
+            popover.sourceView = source
+            popover.sourceRect = source.bounds
         }
 
         present(sheet, animated: true)
@@ -858,19 +889,23 @@ class NowPlayingViewController: UIViewController {
     @objc private func handleStabilityModeChange(notification: Notification) {
         DispatchQueue.main.async {
             self.updateTimeBubbleText()
-            guard let mode = notification.userInfo?["mode"] as? AudioStabilityMode else { return }
-            if mode == .fidelity {
-                // Hearing aids gone or user switched to hi-fi — allow banner on next connection.
-                self.stabilityBannerAcknowledged = false
-            } else if mode == .stability,
-                      AudioStabilityPreference.current == .ask,
-                      !self.stabilityBannerAcknowledged {
-                // First stability activation for this connection — show banner once.
-                self.stabilityBannerAcknowledged = true
-                let banner = StabilityModeBanner()
-                banner.show()
-            }
         }
+    }
+
+    @objc private func handleHearingAidStateOrPreferenceChange() {
+        DispatchQueue.main.async {
+            self.updateTimeBubbleText()
+            self.showStabilityBannerIfNeeded()
+        }
+    }
+
+    /// First-run banner: hearing aids connected and the user has never chosen a mode.
+    /// Only the on-screen NowPlaying instance shows it.
+    private func showStabilityBannerIfNeeded() {
+        guard let window = view.window,
+              RadioPlayer.shared.isUsingHearingAids(),
+              !AudioStabilityPreference.hasChoice else { return }
+        StabilityModeBanner().show(in: window)
     }
 
 }

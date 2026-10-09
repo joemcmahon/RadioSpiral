@@ -530,4 +530,21 @@ class ConfigClientTests: XCTestCase {
         AudioStabilityPreference.reset()
         XCTAssertEqual(AudioStabilityPreference.current, .ask)
     }
+
+    func testHasChoiceFalseUntilPreferenceSaved() {
+        AudioStabilityPreference.reset()
+        XCTAssertFalse(AudioStabilityPreference.hasChoice)
+        // Choosing Auto-select still counts as a choice, so the first-run banner won't reappear.
+        AudioStabilityPreference.current = .ask
+        XCTAssertTrue(AudioStabilityPreference.hasChoice)
+        AudioStabilityPreference.reset()
+        XCTAssertFalse(AudioStabilityPreference.hasChoice)
+    }
+
+    func testSettingPreferencePostsDidChange() {
+        let posted = expectation(forNotification: AudioStabilityPreference.didChange, object: nil)
+        AudioStabilityPreference.current = .neverStability
+        wait(for: [posted], timeout: 1.0)
+        AudioStabilityPreference.reset()
+    }
 }
