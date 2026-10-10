@@ -2,7 +2,7 @@
 import Foundation
 
 /// User preference for audio stability mode when hearing aids are connected.
-/// Single source of truth shared by the hearing-aid banner and the ear button.
+/// Single source of truth shared by the hearing-aid banner and the mode button.
 enum AudioStabilityPreference: String {
     /// "Auto-select": stability with hearing aids, fidelity otherwise. Also the effective
     /// value before the user has chosen (see `hasChoice`).
@@ -17,7 +17,7 @@ enum AudioStabilityPreference: String {
 
     private static let key = "audioStabilityPreference"
 
-    /// False until the user picks a mode (banner or ear menu). Drives the first-run banner.
+    /// False until the user picks a mode (banner or mode menu). Drives the first-run banner.
     static var hasChoice: Bool {
         UserDefaults.standard.object(forKey: key) != nil
     }

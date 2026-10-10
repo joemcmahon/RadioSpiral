@@ -125,7 +125,7 @@ class RadioPlayer: ObservableObject {
         }
     }
 
-    /// Records the user's choice (banner or ear menu) and applies it.
+    /// Records the user's choice (banner or mode menu) and applies it.
     func choosePreference(_ preference: AudioStabilityPreference) {
         AudioStabilityPreference.current = preference
         applyPreferredMode()

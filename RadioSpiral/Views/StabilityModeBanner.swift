@@ -2,7 +2,7 @@
 import UIKit
 
 /// First-run banner: shown when hearing aids are connected and no preference has been chosen.
-/// Forces a choice, which is saved to AudioStabilityPreference (shared with the ear button).
+/// Forces a choice, which is saved to AudioStabilityPreference (shared with the mode button).
 final class StabilityModeBanner: UIView {
 
     private let messageLabel = UILabel()
@@ -77,8 +77,8 @@ final class StabilityModeBanner: UIView {
         ])
     }
 
-    // Each choice saves the same preference as the matching ear-menu item, then applies it.
-    // applyStabilitySettings posts stabilityModeDidChange, which refreshes the ear button.
+    // Each choice saves the same preference as the matching mode-menu item, then applies it.
+    // applyStabilitySettings posts stabilityModeDidChange, which refreshes the mode button.
 
     @objc private func tappedKeepStability() {
         RadioPlayer.shared.choosePreference(.alwaysStability)

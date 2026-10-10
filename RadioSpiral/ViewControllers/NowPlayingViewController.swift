@@ -83,8 +83,7 @@ class NowPlayingViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
     private var connectionBanner: UILabel!
     private var timeBubble: UILabel!
-    private var modeIconView: UIImageView?
-    private var earButton: UIButton!
+    private var modeButton: UIButton!
     private var timeUpdateTimer: Timer?
     private var metadataReceivedAt: Date?
     private var metadataElapsed: TimeInterval = 0
@@ -394,58 +393,52 @@ class NowPlayingViewController: UIViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(timeBubbleTapped))
         timeBubble.addGestureRecognizer(tap)
 
-        // Icon floats inside the bubble's trailing space — left alignment ensures
-        // the time text never reaches the icon area.
-        let iconView = UIImageView()
-        iconView.contentMode = .scaleAspectFit
-        iconView.tintColor = .white
-        iconView.translatesAutoresizingMaskIntoConstraints = false
-        iconView.isHidden = true
-        timeBubble.addSubview(iconView)
-        NSLayoutConstraint.activate([
-            iconView.trailingAnchor.constraint(equalTo: timeBubble.trailingAnchor, constant: -6),
-            iconView.centerYAnchor.constraint(equalTo: timeBubble.centerYAnchor),
-            iconView.widthAnchor.constraint(equalToConstant: 16),
-            iconView.heightAnchor.constraint(equalToConstant: 16),
-        ])
-        modeIconView = iconView
-        setupEarButton()
+        setupModeButton()
         updateTimeBubbleText()
 
         startTimeUpdates()
     }
 
-    /// Standalone ear button beside the time bubble, visible only while hearing aids are
-    /// the active output. Opens the compensation-mode picker.
-    private func setupEarButton() {
+    /// Audio-mode button beside the time bubble. Opens the compensation-mode picker.
+    private func setupModeButton() {
         var config = UIButton.Configuration.filled()
-        config.image = UIImage(systemName: "ear.and.waveform",
-                               withConfiguration: UIImage.SymbolConfiguration(pointSize: 15, weight: .medium))
+        config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 15, weight: .medium)
         config.baseBackgroundColor = UIColor.black.withAlphaComponent(0.7)
         config.cornerStyle = .capsule
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-        earButton = UIButton(configuration: config)
-        earButton.accessibilityLabel = "Hearing aid audio mode"
-        earButton.translatesAutoresizingMaskIntoConstraints = false
-        earButton.isHidden = true
-        earButton.addTarget(self, action: #selector(timeBubbleTapped), for: .touchUpInside)
-        view.addSubview(earButton)
+        modeButton = UIButton(configuration: config)
+        modeButton.accessibilityLabel = "Audio compensation mode"
+        modeButton.translatesAutoresizingMaskIntoConstraints = false
+        modeButton.isHidden = true
+        modeButton.addTarget(self, action: #selector(timeBubbleTapped), for: .touchUpInside)
+        view.addSubview(modeButton)
         NSLayoutConstraint.activate([
-            earButton.leadingAnchor.constraint(equalTo: timeBubble.trailingAnchor, constant: 8),
-            earButton.centerYAnchor.constraint(equalTo: timeBubble.centerYAnchor),
-            earButton.widthAnchor.constraint(equalToConstant: 36),
-            earButton.heightAnchor.constraint(equalToConstant: 36),
+            modeButton.leadingAnchor.constraint(equalTo: timeBubble.trailingAnchor, constant: 8),
+            modeButton.centerYAnchor.constraint(equalTo: timeBubble.centerYAnchor),
+            modeButton.widthAnchor.constraint(equalToConstant: 36),
+            modeButton.heightAnchor.constraint(equalToConstant: 36),
         ])
     }
 
-    private func updateEarButton() {
-        guard let earButton = earButton else { return }
-        earButton.isHidden = !RadioPlayer.shared.isUsingHearingAids()
+    /// One indicator for the single, output-independent preference:
+    /// a lock (blue = pitch, orange = continuous audio) when locked, or an ear under
+    /// Auto-select while hearing aids are driving the mode. Hidden otherwise.
+    private func updateModeButton() {
+        guard let modeButton = modeButton else { return }
+        let symbol: String
+        let color: UIColor
         switch AudioStabilityPreference.current {
-        case .alwaysStability: earButton.configuration?.baseForegroundColor = .systemBlue
-        case .neverStability:  earButton.configuration?.baseForegroundColor = .systemOrange
-        case .ask:             earButton.configuration?.baseForegroundColor = .white
+        case .alwaysStability:
+            symbol = "lock.fill"; color = .systemBlue
+        case .neverStability:
+            symbol = "lock.fill"; color = .systemOrange
+        case .ask:
+            symbol = "ear.and.waveform"; color = .white
         }
+        modeButton.configuration?.image = UIImage(systemName: symbol)
+        modeButton.configuration?.baseForegroundColor = color
+        modeButton.isHidden = AudioStabilityPreference.current == .ask
+            && !RadioPlayer.shared.isUsingHearingAids()
     }
 
     private func startTimeUpdates() {
@@ -462,10 +455,8 @@ class NowPlayingViewController: UIViewController {
 
     private func updateTimeBubbleText() {
         let leftPadding = "  "
-        let iconVisible = AudioStabilityPreference.current != .ask
-        let rightPadding = iconVisible ? "        " : "  "
-        updateModeIcon()
-        updateEarButton()
+        let rightPadding = "  "
+        updateModeButton()
         guard metadataReceivedAt != nil else {
             timeBubble.text = leftPadding + "--:--" + rightPadding
             return
@@ -482,25 +473,6 @@ class NowPlayingViewController: UIViewController {
             // No broadcast start, no duration — fallback
             let currentElapsed = metadataElapsed + Date().timeIntervalSince(metadataReceivedAt!)
             timeBubble.text = leftPadding + "\(formatTime(currentElapsed))" + rightPadding
-        }
-    }
-
-    private func updateModeIcon() {
-        guard let iconView = modeIconView else { return }
-        switch AudioStabilityPreference.current {
-        case .alwaysStability:
-            // User explicitly locked pitch — show a lock, not a hardware indicator.
-            iconView.image = UIImage(systemName: "lock.fill")
-            iconView.tintColor = .systemBlue
-            iconView.isHidden = false
-        case .neverStability:
-            // User explicitly locked hi-fi — show a lock, not a hardware indicator.
-            iconView.image = UIImage(systemName: "lock.fill")
-            iconView.tintColor = .systemOrange
-            iconView.isHidden = false
-        case .ask:
-            // Hearing-aid state is shown by the standalone ear button instead.
-            iconView.isHidden = true
         }
     }
 
@@ -864,7 +836,7 @@ class NowPlayingViewController: UIViewController {
             pref == match ? "✓  \(title)" : "    \(title)"
         }
 
-        // Choosing saves to AudioStabilityPreference, whose didChange refreshes the ear button.
+        // Choosing saves to AudioStabilityPreference, whose didChange refreshes the mode button.
         sheet.addAction(UIAlertAction(title: marked("Auto-select", .ask), style: .default) { _ in
             RadioPlayer.shared.choosePreference(.ask)
         })
@@ -878,7 +850,7 @@ class NowPlayingViewController: UIViewController {
         sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
 
         if let popover = sheet.popoverPresentationController {
-            let source: UIView = earButton.isHidden ? timeBubble : earButton
+            let source: UIView = modeButton.isHidden ? timeBubble : modeButton
             popover.sourceView = source
             popover.sourceRect = source.bounds
         }
