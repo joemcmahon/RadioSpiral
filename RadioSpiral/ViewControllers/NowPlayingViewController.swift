@@ -65,8 +65,27 @@ class NowPlayingViewController: UIViewController {
     // Landscape layout
     private var landscapeConstraints: [NSLayoutConstraint] = []
     private var allPortraitConstraints: [NSLayoutConstraint] = []
-    private var isCurrentlyLandscape = false
     private var landscapeRightPanel: UIView?
+
+    /// Which arrangement the Now Playing screen is in.
+    private enum NowPlayingLayout {
+        case portrait
+        case landscape
+        /// iPhone Duo inner display, wider than tall (fully open or book): art and controls
+        /// sit in equal halves on either side of the vertical fold.
+        case foldWide
+    }
+    private var currentLayout: NowPlayingLayout?
+
+    // Constraints placing labels/volume/controls inside landscapeRightPanel (landscape and foldWide).
+    private var panelContentConstraints: [NSLayoutConstraint] = []
+    private var foldWideConstraints: [NSLayoutConstraint] = []
+    /// Outer-edge constraints for foldWide; constants track the safe-area insets.
+    private var foldWideEdgeConstraints: [NSLayoutConstraint] = []
+    /// Storyboard constraint centering AirPlay in the full-width toolbar (swapped out in foldWide).
+    private var airPlayToolbarCenterX: NSLayoutConstraint?
+    /// Label fonts as loaded (after iPad scaling), so per-layout scaling never compounds.
+    private var baseLabelFonts: [(UILabel, UIFont)] = []
 
     // MARK: - Properties
     
@@ -94,7 +113,8 @@ class NowPlayingViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        setupFoldDiagnostics()  // TEMP (task-19): remove once Duo layouts are tuned
+
         navigationItem.largeTitleDisplayMode = .never
         if manager.stations.count < 2 {
             navigationItem.hidesBackButton = true
@@ -102,11 +122,8 @@ class NowPlayingViewController: UIViewController {
         manager.addObserver(self)
         
         setupLandscapeConstraints()
-        // Force first layout pass by ensuring isCurrentlyLandscape doesn't match
-        isCurrentlyLandscape = view.bounds.width > view.bounds.height
-        isCurrentlyLandscape = !isCurrentlyLandscape
-        let viewSize = CGSize(width: view.bounds.width, height: view.bounds.height)
-        optimizeForDeviceSize(size: viewSize)
+        // currentLayout starts nil, so the first pass always applies a layout.
+        optimizeForDeviceSize(size: view.bounds.size)
         
         // Create Now Playing BarItem
         createNowPlayingAnimation()
@@ -164,6 +181,9 @@ class NowPlayingViewController: UIViewController {
                 }
             }
         }
+
+        baseLabelFonts = [songLabel, artistLabel, releaseLabel].map { ($0, $0.font) }
+        applyLabelScale(for: currentLayout ?? .portrait, size: view.bounds.size)
 
         // Set UI
         djName.text = ""
@@ -637,6 +657,27 @@ class NowPlayingViewController: UIViewController {
 
         let isPad = UIDevice.current.userInterfaceIdiom == .pad
 
+        // Labels, volume and controls stacked inside the panel (shared by landscape and foldWide).
+        panelContentConstraints = [
+            labelsStackView.topAnchor.constraint(equalTo: rightPanel.topAnchor),
+            labelsStackView.leadingAnchor.constraint(equalTo: rightPanel.leadingAnchor),
+            labelsStackView.trailingAnchor.constraint(equalTo: rightPanel.trailingAnchor),
+
+            volumeStackView.leadingAnchor.constraint(equalTo: rightPanel.leadingAnchor),
+            volumeStackView.trailingAnchor.constraint(equalTo: rightPanel.trailingAnchor),
+            { let c = volumeStackView.topAnchor.constraint(equalTo: labelsStackView.bottomAnchor, constant: 12)
+              c.priority = .defaultHigh
+              return c }(),
+            volumeStackView.topAnchor.constraint(greaterThanOrEqualTo: labelsStackView.bottomAnchor, constant: 4),
+
+            controlsStackView.centerXAnchor.constraint(equalTo: rightPanel.centerXAnchor),
+            { let c = controlsStackView.topAnchor.constraint(equalTo: volumeStackView.bottomAnchor, constant: 4)
+              c.priority = .defaultHigh
+              return c }(),
+            controlsStackView.topAnchor.constraint(greaterThanOrEqualTo: volumeStackView.bottomAnchor, constant: 2),
+            controlsStackView.bottomAnchor.constraint(equalTo: rightPanel.bottomAnchor),
+        ]
+
         landscapeConstraints = [
             // Album art: left side, fills height
             albumImageView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 12),
@@ -652,31 +693,12 @@ class NowPlayingViewController: UIViewController {
                 : rightPanel.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
             rightPanel.bottomAnchor.constraint(lessThanOrEqualTo: toolsView.topAnchor, constant: -4),
 
-            // Labels inside right panel
-            labelsStackView.topAnchor.constraint(equalTo: rightPanel.topAnchor),
-            labelsStackView.leadingAnchor.constraint(equalTo: rightPanel.leadingAnchor),
-            labelsStackView.trailingAnchor.constraint(equalTo: rightPanel.trailingAnchor),
-
-            // Volume below labels
-            volumeStackView.leadingAnchor.constraint(equalTo: rightPanel.leadingAnchor),
-            volumeStackView.trailingAnchor.constraint(equalTo: rightPanel.trailingAnchor),
-            { let c = volumeStackView.topAnchor.constraint(equalTo: labelsStackView.bottomAnchor, constant: 12)
-              c.priority = .defaultHigh
-              return c }(),
-            volumeStackView.topAnchor.constraint(greaterThanOrEqualTo: labelsStackView.bottomAnchor, constant: 4),
-
-            // Controls below volume
-            controlsStackView.centerXAnchor.constraint(equalTo: rightPanel.centerXAnchor),
-            { let c = controlsStackView.topAnchor.constraint(equalTo: volumeStackView.bottomAnchor, constant: 4)
-              c.priority = .defaultHigh
-              return c }(),
-            controlsStackView.topAnchor.constraint(greaterThanOrEqualTo: volumeStackView.bottomAnchor, constant: 2),
-            controlsStackView.bottomAnchor.constraint(equalTo: rightPanel.bottomAnchor),
-
             // Info button: left side of toolbar area in landscape
             infoButton.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 20),
             infoButton.centerYAnchor.constraint(equalTo: toolsView.centerYAnchor),
         ]
+
+        setupFoldWideConstraints(rightPanel: rightPanel)
 
         allPortraitConstraints = [
             portraitAlbumTop,
@@ -696,28 +718,127 @@ class NowPlayingViewController: UIViewController {
         ]
     }
 
+    /// Duo inner display, wide: art and controls in the halves either side of the fold (the view's
+    /// center line). Asymmetric on purpose: the art takes as much of its half as possible.
+    private func setupFoldWideConstraints(rightPanel: UIView) {
+        let artFoldGap: CGFloat = 10       // art may sit close to the fold
+        let controlsFoldGap: CGFloat = 28  // controls stay clear of it so they're easy to press
+        let leftHalf = UILayoutGuide()
+        let rightHalf = UILayoutGuide()
+        let content = UILayoutGuide()  // vertical band between the top safe area and the toolbar
+        [leftHalf, rightHalf, content].forEach(view.addLayoutGuide)
+
+        let leftEdge = leftHalf.leadingAnchor.constraint(equalTo: view.leadingAnchor)
+        let rightEdge = rightHalf.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        foldWideEdgeConstraints = [leftEdge, rightEdge]
+
+        airPlayToolbarCenterX = toolsView.constraints.first {
+            $0.firstItem === airPlayView && $0.firstAttribute == .centerX
+        }
+
+        // Square art fills the left half where height allows.
+        let artFillsWidth = albumImageView.widthAnchor.constraint(equalTo: leftHalf.widthAnchor)
+        artFillsWidth.priority = .defaultHigh
+
+        foldWideConstraints = foldWideEdgeConstraints + [
+            leftHalf.trailingAnchor.constraint(equalTo: view.centerXAnchor, constant: -artFoldGap),
+            rightHalf.leadingAnchor.constraint(equalTo: view.centerXAnchor, constant: controlsFoldGap),
+
+            content.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            content.bottomAnchor.constraint(equalTo: toolsView.topAnchor, constant: -8),
+
+            albumImageView.centerXAnchor.constraint(equalTo: leftHalf.centerXAnchor),
+            albumImageView.centerYAnchor.constraint(equalTo: content.centerYAnchor),
+            albumImageView.widthAnchor.constraint(equalTo: albumImageView.heightAnchor),
+            albumImageView.widthAnchor.constraint(lessThanOrEqualTo: leftHalf.widthAnchor),
+            albumImageView.topAnchor.constraint(greaterThanOrEqualTo: content.topAnchor),
+            albumImageView.bottomAnchor.constraint(lessThanOrEqualTo: content.bottomAnchor),
+            artFillsWidth,
+
+            rightPanel.leadingAnchor.constraint(equalTo: rightHalf.leadingAnchor),
+            rightPanel.trailingAnchor.constraint(equalTo: rightHalf.trailingAnchor),
+            rightPanel.centerYAnchor.constraint(equalTo: content.centerYAnchor),
+            rightPanel.topAnchor.constraint(greaterThanOrEqualTo: content.topAnchor),
+            rightPanel.bottomAnchor.constraint(lessThanOrEqualTo: content.bottomAnchor),
+
+            // Toolbar: AirPlay centered under the right half, info at the left half's edge.
+            airPlayView.centerXAnchor.constraint(equalTo: rightHalf.centerXAnchor),
+            infoButton.leadingAnchor.constraint(equalTo: leftHalf.leadingAnchor),
+            infoButton.centerYAnchor.constraint(equalTo: toolsView.centerYAnchor),
+        ]
+    }
+
+    /// Each foldWide outer edge clears only its own side's inset (e.g. a side system strip).
+    private func updateFoldWideMargins() {
+        guard foldWideEdgeConstraints.count == 2 else { return }
+        let insets = view.safeAreaInsets
+        foldWideEdgeConstraints[0].constant = insets.left + 10
+        foldWideEdgeConstraints[1].constant = -(insets.right + 16)
+    }
+
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        updateFoldWideMargins()
+    }
+
+    /// iPhone Duo inner display: a phone whose long side is far beyond any slab iPhone.
+    /// (UIHinge reports open/closed but not the fold's position, so the screen size identifies it.)
+    private func isFoldInnerDisplay(_ size: CGSize) -> Bool {
+        traitCollection.userInterfaceIdiom == .phone && max(size.width, size.height) >= 850
+    }
+
+    private func layout(for size: CGSize) -> NowPlayingLayout {
+        guard size.width > size.height else { return .portrait }
+        return isFoldInnerDisplay(size) ? .foldWide : .landscape
+    }
+
+    /// Scales label fonts up to suit the space each layout gives them.
+    private func applyLabelScale(for layout: NowPlayingLayout, size: CGSize) {
+        let scale: CGFloat
+        switch layout {
+        case .foldWide:
+            // Text column is half the screen; ~330pt is the width the base fonts were tuned for.
+            let column = size.width / 2 - 60
+            scale = min(max(column / 330, 1.0), 1.5)
+        case .portrait, .landscape:
+            scale = 1.0
+        }
+        for (label, font) in baseLabelFonts {
+            label.font = font.withSize(font.pointSize * scale)
+        }
+    }
+
     func optimizeForDeviceSize(size: CGSize) {
-        let isLandscape = size.width > size.height
+        let newLayout = layout(for: size)
+        guard newLayout != currentLayout else { return }
+        currentLayout = newLayout
 
-        guard isLandscape != isCurrentlyLandscape else { return }
-        isCurrentlyLandscape = isLandscape
+        NSLayoutConstraint.deactivate(landscapeConstraints + foldWideConstraints + panelContentConstraints)
+        NSLayoutConstraint.deactivate(allPortraitConstraints)
+        airPlayToolbarCenterX?.isActive = true
 
-        if isLandscape {
-            // Reparent controls into right panel for landscape
-            if let panel = landscapeRightPanel {
+        switch newLayout {
+        case .landscape, .foldWide:
+            // Reparent controls into right panel
+            if let panel = landscapeRightPanel, panel.superview == nil {
                 view.addSubview(panel)
                 panel.addSubview(labelsStackView)
                 panel.addSubview(volumeStackView)
                 panel.addSubview(controlsStackView)
             }
-            NSLayoutConstraint.deactivate(allPortraitConstraints)
             albumHeightConstraint.isActive = false
-            NSLayoutConstraint.activate(landscapeConstraints)
-            if Config.debugLog { print("[NowPlaying] Switched to landscape layout") }
-        } else {
-            NSLayoutConstraint.deactivate(landscapeConstraints)
+            NSLayoutConstraint.activate(panelContentConstraints)
+            if newLayout == .foldWide {
+                airPlayToolbarCenterX?.isActive = false
+                updateFoldWideMargins()
+                NSLayoutConstraint.activate(foldWideConstraints)
+            } else {
+                NSLayoutConstraint.activate(landscapeConstraints)
+            }
+            if Config.debugLog { print("[NowPlaying] Switched to \(newLayout) layout") }
+        case .portrait:
             // Reparent controls back to main view for portrait
-            if let panel = landscapeRightPanel {
+            if let panel = landscapeRightPanel, panel.superview != nil {
                 labelsStackView.removeFromSuperview()
                 volumeStackView.removeFromSuperview()
                 controlsStackView.removeFromSuperview()
@@ -729,13 +850,18 @@ class NowPlayingViewController: UIViewController {
             albumHeightConstraint.isActive = true
             NSLayoutConstraint.activate(allPortraitConstraints)
             let heightFraction: CGFloat = (traitCollection.userInterfaceIdiom == .pad) ? 0.55 : 0.40
-            let imageHeight = view.bounds.height * heightFraction
+            let imageHeight = size.height * heightFraction
             albumHeightConstraint.constant = imageHeight
             if Config.debugLog { print("[NowPlaying] Switched to portrait layout, albumHeight=\(imageHeight)") }
-            // Reparenting stack views above puts them above timeBubble in Z-order;
-            // restore timeBubble to front so its tap gesture isn't blocked.
-            if let bubble = timeBubble { view.bringSubviewToFront(bubble) }
         }
+        applyLabelScale(for: newLayout, size: size)
+        // foldWide has vertical room to spare: let long track names wrap to a second line
+        // (fixed column width, tail-truncated after two lines) instead of truncating at one.
+        songLabel.numberOfLines = newLayout == .foldWide ? 2 : 1
+        // Reparenting stack views puts them above timeBubble in Z-order;
+        // restore timeBubble (and the mode button beside it) to front so taps aren't blocked.
+        if let bubble = timeBubble { view.bringSubviewToFront(bubble) }
+        if let modeButton = modeButton { view.bringSubviewToFront(modeButton) }
 
         view.setNeedsLayout()
         view.layoutIfNeeded()
@@ -886,5 +1012,45 @@ class NowPlayingViewController: UIViewController {
 extension NowPlayingViewController: StationsManagerObserver {
     func stationsManager(_ manager: StationsManager, stationDidChange station: RadioStation?) {
         stationDidChange()
+    }
+}
+
+// MARK: - TEMP (task-19) fold diagnostics — remove once Duo layouts are tuned
+
+private var lastFoldDiagnostic = ""
+
+extension NowPlayingViewController {
+    func setupFoldDiagnostics() {
+        guard Config.debugLog else { return }
+        if #available(iOS 27.1, *) {
+            let interaction = UIHingeInteraction { [weak self] _, update in
+                guard let self else { return }
+                if let hinge = update.hinge {
+                    let degrees = Int((hinge.angle * 180 / .pi).rounded())
+                    print("[Fold] hinge status=\(hinge.status.rawValue) (0=unknown 1=closed 2=partial 3=full) angle=\(degrees)°")
+                } else {
+                    print("[Fold] hinge unavailable")
+                }
+                self.logFoldGeometry()
+            }
+            view.addInteraction(interaction)
+        } else {
+            print("[Fold] UIHingeInteraction needs iOS 27.1")
+        }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        logFoldGeometry()
+    }
+
+    func logFoldGeometry() {
+        guard Config.debugLog else { return }
+        let b = view.bounds.size, i = view.safeAreaInsets
+        let screen = view.window?.windowScene?.screen.bounds.size ?? .zero
+        let line = "[Fold] view=\(Int(b.width))x\(Int(b.height)) screen=\(Int(screen.width))x\(Int(screen.height)) safeInsets top=\(Int(i.top)) left=\(Int(i.left)) bottom=\(Int(i.bottom)) right=\(Int(i.right))"
+        guard line != lastFoldDiagnostic else { return }
+        lastFoldDiagnostic = line
+        print(line)
     }
 }
