@@ -858,7 +858,6 @@ class NowPlayingViewController: UIViewController {
         guard #available(iOS 27.1, *) else { return }
         let interaction = UIHingeInteraction { [weak self] _, update in
             guard let self else { return }
-            self.logHingeUpdate(update)  // TEMP (task-19) diagnostics
             let partial = update.hinge?.status == .partiallyOpen
             guard partial != self.hingePartiallyOpen else { return }
             self.hingePartiallyOpen = partial
@@ -1063,12 +1062,10 @@ class NowPlayingViewController: UIViewController {
     }
     
     @IBAction func infoButtonPressed(_ sender: UIButton) {
-        logPresentationState("info")  // TEMP (task-19)
         delegate?.didTapInfoButton(self, station: manager.currentStation)
     }
     
     @IBAction func shareButtonPressed(_ sender: UIButton) {
-        logPresentationState("share")  // TEMP (task-19)
         guard let station = manager.currentStation else { return }
         let artworkURL = metadataManager.getCurrentMetadata()?.artworkURL
         delegate?.didTapShareButton(self, station: station, artworkURL: artworkURL)
@@ -1136,64 +1133,5 @@ class NowPlayingViewController: UIViewController {
 extension NowPlayingViewController: StationsManagerObserver {
     func stationsManager(_ manager: StationsManager, stationDidChange station: RadioStation?) {
         stationDidChange()
-    }
-}
-
-// MARK: - TEMP (task-19) fold diagnostics — remove once Duo layouts are tuned
-
-private var lastFoldDiagnostic = ""
-
-extension NowPlayingViewController {
-    @available(iOS 27.1, *)
-    func logHingeUpdate(_ update: UIHingeInteraction.Update) {
-        guard Config.debugLog else { return }
-        if let hinge = update.hinge {
-            let degrees = Int((hinge.angle * 180 / .pi).rounded())
-            print("[Fold] hinge status=\(hinge.status.rawValue) (0=unknown 1=closed 2=partial 3=full) angle=\(degrees)°")
-        } else {
-            print("[Fold] hinge unavailable")
-        }
-        logFoldGeometry()
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        logFoldGeometry()
-    }
-
-    func logPresentationState(_ button: String) {
-        guard Config.debugLog else { return }
-        print("[Fold] \(button) tapped: delegate=\(delegate == nil ? "nil" : "set") presented=\(String(describing: presentedViewController.map { type(of: $0) })) inWindow=\(view.window != nil) station=\(manager.currentStation?.name ?? "nil")")
-    }
-
-    func logToolbarHitTest() {
-        guard Config.debugLog, let window = view.window, let parent = toolsView.superview else { return }
-        let toolsInParent = toolsView.frame
-        print("[Fold] toolbar parent=\(type(of: parent)) parentBounds=\(parent.bounds) toolsFrame=\(toolsInParent) inside=\(parent.bounds.contains(toolsInParent))")
-        var chain: [String] = []
-        var v: UIView? = toolsView
-        while let cur = v, cur !== window {
-            if let sup = cur.superview {
-                chain.append("\(type(of: cur)) \(cur.frame) in \(sup.bounds.size) inside=\(sup.bounds.contains(cur.frame))")
-            }
-            v = cur.superview
-        }
-        chain.forEach { print("[Fold]   \($0)") }
-        for (name, target) in [("info", infoButton as UIView), ("airplay", airPlayView as UIView)] {
-            let p = target.convert(CGPoint(x: target.bounds.midX, y: target.bounds.midY), to: window)
-            let hit = window.hitTest(p, with: nil)
-            print("[Fold] hitTest \(name) at \(p) -> \(hit.map { String(describing: type(of: $0)) } ?? "nil") isTarget=\(hit === target || hit?.isDescendant(of: target) == true)")
-        }
-    }
-
-    func logFoldGeometry() {
-        guard Config.debugLog else { return }
-        let b = view.bounds.size, i = view.safeAreaInsets
-        let screen = view.window?.windowScene?.screen.bounds.size ?? .zero
-        let line = "[Fold] view=\(Int(b.width))x\(Int(b.height)) screen=\(Int(screen.width))x\(Int(screen.height)) safeInsets top=\(Int(i.top)) left=\(Int(i.left)) bottom=\(Int(i.bottom)) right=\(Int(i.right))"
-        guard line != lastFoldDiagnostic else { return }
-        lastFoldDiagnostic = line
-        print(line)
-        DispatchQueue.main.async { self.logToolbarHitTest() }
     }
 }
