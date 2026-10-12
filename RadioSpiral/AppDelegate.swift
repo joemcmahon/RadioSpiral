@@ -100,7 +100,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: - Activate Audio Session
     
     private func activateAudioSession() {
-        // Routed through RadioPlayer's session queue: setActive blocks and must stay off main.        RadioPlayer.shared.activateSession()
+        // Routed through RadioPlayer's session queue: setActive blocks and must stay off main.
+        RadioPlayer.shared.activateSession()
     }
 }
 
