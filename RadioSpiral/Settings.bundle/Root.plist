@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PreferenceSpecifiers</key>
+	<array>
+		<dict>
+			<key>FooterText</key>
+			<string>Applies to anything that speaks over the stream: navigation directions, Siri, and other apps.
+
+Accessibility mode pauses audio during interruptions when hearing aids are connected and lowers the volume otherwise.</string>
+			<key>Title</key>
+			<string>During voice prompts</string>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+		</dict>
+		<dict>
+			<key>DefaultValue</key>
+			<string>ask</string>
+			<key>Key</key>
+			<string>audioStabilityPreference</string>
+			<key>Title</key>
+			<string>Audio</string>
+			<key>Titles</key>
+			<array>
+				<string>Accessibility mode</string>
+				<string>Paused</string>
+				<string>Quieter</string>
+			</array>
+			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Values</key>
+			<array>
+				<string>ask</string>
+				<string>alwaysStability</string>
+				<string>neverStability</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

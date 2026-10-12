@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		27D776512BD747B293E5A498 /* AudioStabilityPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB1F0A11DE24DA9A9641A24 /* AudioStabilityPreference.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F3 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* Settings.bundle */; };
+		27D776512BD747B293E5A498 /* InterruptionPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB1F0A11DE24DA9A9641A24 /* InterruptionPreference.swift */; };
 		2C5545BD1C1124DE00728469 /* SwiftRadioUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C5545BC1C1124DE00728469 /* SwiftRadioUITests.swift */; };
 		53113F39230C720900462C0E /* ShareActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53113F38230C720900462C0E /* ShareActivity.swift */; };
 		5FDEE0221F72FF980064333C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5FDEE0211F72FF980064333C /* LaunchScreen.storyboard */; };
@@ -70,7 +71,6 @@
 		CED6353B293081ED002B216F /* Handoffable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED6353A293081ED002B216F /* Handoffable.swift */; };
 		CEDABBED29121BBA00C0367F /* UIImage+Cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEDABBEC29121BBA00C0367F /* UIImage+Cache.swift */; };
 		CF72ACE721F7155200461EED /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CF72ACE621F714D000461EED /* Main.storyboard */; };
-		E1CD58126CD94ECB95750E9F /* StabilityModeBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479C334BFC9C451FBFF29987 /* StabilityModeBanner.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,10 +91,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		2C5545BA1C1124DE00728469 /* RadioSpiralUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RadioSpiralUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C5545BC1C1124DE00728469 /* SwiftRadioUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftRadioUITests.swift; sourceTree = "<group>"; };
 		2C5545BE1C1124DE00728469 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		479C334BFC9C451FBFF29987 /* StabilityModeBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StabilityModeBanner.swift; sourceTree = "<group>"; };
 		53113F38230C720900462C0E /* ShareActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareActivity.swift; sourceTree = "<group>"; };
 		5FDEE0211F72FF980064333C /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6258DCD722D93A3500166C65 /* LogoShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoShareView.swift; sourceTree = "<group>"; };
@@ -153,7 +153,7 @@
 		CED6353A293081ED002B216F /* Handoffable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Handoffable.swift; sourceTree = "<group>"; };
 		CEDABBEC29121BBA00C0367F /* UIImage+Cache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Cache.swift"; sourceTree = "<group>"; };
 		CF72ACE621F714D000461EED /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
-		FEB1F0A11DE24DA9A9641A24 /* AudioStabilityPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioStabilityPreference.swift; sourceTree = "<group>"; };
+		FEB1F0A11DE24DA9A9641A24 /* InterruptionPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterruptionPreference.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -292,6 +292,7 @@
 				94D260901B45D20000DE671C /* Config.swift */,
 				9409E11B1ABF6FEA00312E2B /* AppDelegate.swift */,
 				9409E1251ABF6FEA00312E2B /* Images.xcassets */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* Settings.bundle */,
 				9409E11A1ABF6FEA00312E2B /* Info.plist */,
 				CEA82F492921F260009E9FA0 /* Info-CarPlay.plist */,
 				717686F12F457E3800D70E3D /* File.txt */,
@@ -312,7 +313,6 @@
 			children = (
 				6258DCD722D93A3500166C65 /* LogoShareView.swift */,
 				CE60361C2A48C4A400E15E15 /* NowPlayingView.swift */,
-				479C334BFC9C451FBFF29987 /* StabilityModeBanner.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -354,7 +354,7 @@
 		CE8062F5291EF598008BD097 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				FEB1F0A11DE24DA9A9641A24 /* AudioStabilityPreference.swift */,
+				FEB1F0A11DE24DA9A9641A24 /* InterruptionPreference.swift */,
 				71B3D01E2E2989C5001E8F5A /* StationMetadataManager.swift */,
 				94AC70AD1AD05C6200652982 /* RadioStation.swift */,
 				CE963ECB29135A6F004F299E /* StationsManager.swift */,
@@ -542,6 +542,7 @@
 				6258DCDA22D93A5400166C65 /* LogoShareView.xib in Resources */,
 				CF72ACE721F7155200461EED /* Main.storyboard in Resources */,
 				5FDEE0221F72FF980064333C /* LaunchScreen.storyboard in Resources */,
+				A1B2C3D4E5F6A7B8C9D0E1F3 /* Settings.bundle in Resources */,
 				9409E1261ABF6FEA00312E2B /* Images.xcassets in Resources */,
 				717686F22F457E3800D70E3D /* File.txt in Resources */,
 			);
@@ -604,8 +605,7 @@
 				B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */,
 				CEDABBED29121BBA00C0367F /* UIImage+Cache.swift in Sources */,
 				CE6036252A48F68D00E15E15 /* NowPlayingView.swift in Sources */,
-				E1CD58126CD94ECB95750E9F /* StabilityModeBanner.swift in Sources */,
-				27D776512BD747B293E5A498 /* AudioStabilityPreference.swift in Sources */,
+				27D776512BD747B293E5A498 /* InterruptionPreference.swift in Sources */,
 				94AC70AE1AD05C6200652982 /* RadioStation.swift in Sources */,
 				CE9EE8E1293C048A00F62041 /* LoaderController.swift in Sources */,
 				CE6036132A47A87A00E15E15 /* StationsViewController.swift in Sources */,

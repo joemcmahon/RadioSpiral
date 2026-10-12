@@ -506,45 +506,64 @@ class ConfigClientTests: XCTestCase {
         XCTAssertEqual(reDecoded, decoded)
     }
 
-    // MARK: - AudioStabilityPreference Tests
+    // MARK: - InterruptionPreference Tests
 
-    func testDefaultPreferenceIsAsk() {
-        AudioStabilityPreference.reset()
-        XCTAssertEqual(AudioStabilityPreference.current, .ask)
+    func testDefaultPreferenceIsAutomatic() {
+        InterruptionPreference.reset()
+        XCTAssertEqual(InterruptionPreference.current, .automatic)
     }
 
-    func testSavingAlwaysStability() {
-        AudioStabilityPreference.current = .alwaysStability
-        XCTAssertEqual(AudioStabilityPreference.current, .alwaysStability)
-        AudioStabilityPreference.reset()
-    }
-
-    func testSavingNeverStability() {
-        AudioStabilityPreference.current = .neverStability
-        XCTAssertEqual(AudioStabilityPreference.current, .neverStability)
-        AudioStabilityPreference.reset()
+    func testSavingPreferenceRoundTrips() {
+        for preference in [InterruptionPreference.pause, .lowerVolume, .automatic] {
+            InterruptionPreference.current = preference
+            XCTAssertEqual(InterruptionPreference.current, preference)
+        }
+        InterruptionPreference.reset()
     }
 
     func testResetRestoresDefault() {
-        AudioStabilityPreference.current = .alwaysStability
-        AudioStabilityPreference.reset()
-        XCTAssertEqual(AudioStabilityPreference.current, .ask)
+        InterruptionPreference.current = .pause
+        InterruptionPreference.reset()
+        XCTAssertEqual(InterruptionPreference.current, .automatic)
     }
 
-    func testHasChoiceFalseUntilPreferenceSaved() {
-        AudioStabilityPreference.reset()
-        XCTAssertFalse(AudioStabilityPreference.hasChoice)
-        // Choosing Auto-select still counts as a choice, so the first-run banner won't reappear.
-        AudioStabilityPreference.current = .ask
-        XCTAssertTrue(AudioStabilityPreference.hasChoice)
-        AudioStabilityPreference.reset()
-        XCTAssertFalse(AudioStabilityPreference.hasChoice)
+    func testOldMenuChoicesCarryOver() {
+        // Values saved by the old audio mode menu and banner, under the same key.
+        let carried: [String: InterruptionPreference] = [
+            "ask": .automatic,               // Auto-select
+            "alwaysStability": .pause,       // Pitch lock
+            "neverStability": .lowerVolume,  // Continuous audio lock
+        ]
+        for (raw, expected) in carried {
+            UserDefaults.standard.set(raw, forKey: "audioStabilityPreference")
+            XCTAssertEqual(InterruptionPreference.current, expected, raw)
+        }
+        InterruptionPreference.reset()
     }
 
-    func testSettingPreferencePostsDidChange() {
-        let posted = expectation(forNotification: AudioStabilityPreference.didChange, object: nil)
-        AudioStabilityPreference.current = .neverStability
-        wait(for: [posted], timeout: 1.0)
-        AudioStabilityPreference.reset()
+    func testUnknownStoredValueFallsBackToAutomatic() {
+        UserDefaults.standard.set("bogus", forKey: InterruptionPreference.key)
+        XCTAssertEqual(InterruptionPreference.current, .automatic)
+        InterruptionPreference.reset()
+    }
+
+    func testModeForPreference() {
+        XCTAssertEqual(InterruptionPreference.automatic.mode(hearingAidsConnected: true), .pause)
+        XCTAssertEqual(InterruptionPreference.automatic.mode(hearingAidsConnected: false), .lowerVolume)
+        XCTAssertEqual(InterruptionPreference.pause.mode(hearingAidsConnected: false), .pause)
+        XCTAssertEqual(InterruptionPreference.pause.mode(hearingAidsConnected: true), .pause)
+        XCTAssertEqual(InterruptionPreference.lowerVolume.mode(hearingAidsConnected: true), .lowerVolume)
+        XCTAssertEqual(InterruptionPreference.lowerVolume.mode(hearingAidsConnected: false), .lowerVolume)
+    }
+
+    func testSettingsBundleMatchesPreference() throws {
+        // The Settings app page must offer exactly the preference's values, on its key.
+        let bundle = Bundle(for: RadioPlayer.self)
+        let url = try XCTUnwrap(bundle.url(forResource: "Root", withExtension: "plist", subdirectory: "Settings.bundle"))
+        let root = try XCTUnwrap(NSDictionary(contentsOf: url) as? [String: Any])
+        let specifiers = try XCTUnwrap(root["PreferenceSpecifiers"] as? [[String: Any]])
+        let item = try XCTUnwrap(specifiers.first { $0["Key"] as? String == InterruptionPreference.key })
+        XCTAssertEqual(item["Values"] as? [String], ["ask", "alwaysStability", "neverStability"])
+        XCTAssertEqual(item["DefaultValue"] as? String, InterruptionPreference.automatic.rawValue)
     }
 }

@@ -32,24 +32,13 @@ class RadioPlayer: ObservableObject {
         case playing, stopped, paused
     }
 
-    // MARK: - Stability Mode
-
-    static let stabilityModeDidChange = Notification.Name("RadioPlayerStabilityModeDidChange")
+    // MARK: - Interruption Mode
 
     /// Cached hearing-aid state, refreshed only at init and on route changes.
     /// Reading `currentRoute` on a hearing-aid route logs an AVAudioSession
     /// "Endpoint Value Converter ... HearingAid" warning, so the UI's 1s timer must not poll it.
     /// Starts false; the first real read happens on `sessionQueue` in init (route reads block on main).
-    private var hearingAidsConnected = false
-
-    static let hearingAidStateDidChange = Notification.Name("RadioPlayerHearingAidStateDidChange")
-
-    /// Main thread only. Posts `hearingAidStateDidChange` when the cached value flips.
-    private func setHearingAidsConnected(_ connected: Bool) {
-        guard connected != hearingAidsConnected else { return }
-        hearingAidsConnected = connected
-        NotificationCenter.default.post(name: RadioPlayer.hearingAidStateDidChange, object: nil)
-    }
+    private var hearingAidsConnected = false  // main thread only
 
     func isUsingHearingAids() -> Bool {
         hearingAidsConnected
@@ -71,18 +60,16 @@ class RadioPlayer: ObservableObject {
     /// starts immediately (playImmediately(atRate:)), so the larger target doesn't delay it.
     static let forwardBufferDuration: TimeInterval = 30.0
 
-    func applyStabilitySettings(mode: AudioStabilityMode) {
+    /// Mode last applied, so a UserDefaults change only reconfigures the session when it matters.
+    private var appliedMode: InterruptionMode?
+
+    func applyInterruptionMode(_ mode: InterruptionMode) {
+        appliedMode = mode
         // No category options: .playback already routes to A2DP/AirPlay, and HFP/AirPlay
         // options are only valid with .playAndRecord (passing them fails with paramErr -50).
-        let sessionMode: AVAudioSession.Mode
-        switch mode {
-        case .stability:
-            sessionMode = .spokenAudio
-            playerItem?.audioTimePitchAlgorithm = .timeDomain
-        case .fidelity:
-            sessionMode = .default
-            playerItem?.audioTimePitchAlgorithm = .spectral
-        }
+        // .spokenAudio makes spoken interruptions pause the stream; .default lowers its volume.
+        let sessionMode: AVAudioSession.Mode = mode == .pause ? .spokenAudio : .default
+        playerItem?.audioTimePitchAlgorithm = .timeDomain
         playerItem?.preferredForwardBufferDuration = RadioPlayer.forwardBufferDuration
         sessionQueue.async {
             let session = AVAudioSession.sharedInstance()
@@ -93,11 +80,6 @@ class RadioPlayer: ObservableObject {
             }
             self.activateSessionOnQueue { _ in }
         }
-        NotificationCenter.default.post(
-            name: RadioPlayer.stabilityModeDidChange,
-            object: nil,
-            userInfo: ["mode": mode]
-        )
     }
 
     func activateSession() {
@@ -129,22 +111,20 @@ class RadioPlayer: ObservableObject {
         }
     }
 
-    /// Records the user's choice (banner or mode menu) and applies it.
-    func choosePreference(_ preference: AudioStabilityPreference) {
-        AudioStabilityPreference.current = preference
-        applyPreferredMode()
-    }
-
     /// Applies whatever mode the saved preference and current route call for.
     func applyPreferredMode() {
-        applyStabilitySettings(mode: currentModeForRoute())
+        applyInterruptionMode(currentModeForRoute())
     }
 
-    private func currentModeForRoute() -> AudioStabilityMode {
-        switch AudioStabilityPreference.current {
-        case .neverStability: return .fidelity
-        case .alwaysStability: return .stability
-        case .ask: return isUsingHearingAids() ? .stability : .fidelity
+    private func currentModeForRoute() -> InterruptionMode {
+        InterruptionPreference.current.mode(hearingAidsConnected: isUsingHearingAids())
+    }
+
+    /// The Settings app changed the preference (delivered when RadioSpiral becomes active).
+    @objc private func handleDefaultsChange() {
+        DispatchQueue.main.async {
+            let mode = self.currentModeForRoute()
+            if mode != self.appliedMode { self.applyInterruptionMode(mode) }
         }
     }
 
@@ -165,8 +145,9 @@ class RadioPlayer: ObservableObject {
             DispatchQueue.main.async {
                 // Hearing aids already connected at launch fire no route change,
                 // so apply the preferred mode here once the initial route is known.
-                if hasHearingAids { self.applyPreferredMode() }
-                self.setHearingAidsConnected(hasHearingAids)
+                // Set the cache first: Automatic reads it to pick the mode.
+                self.hearingAidsConnected = hasHearingAids
+                self.applyPreferredMode()
             }
         }
 
@@ -176,6 +157,9 @@ class RadioPlayer: ObservableObject {
         NotificationCenter.default.addObserver(
             self, selector: #selector(handleRouteChange),
             name: AVAudioSession.routeChangeNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleDefaultsChange),
+            name: UserDefaults.didChangeNotification, object: nil)
     }
 
     deinit {
@@ -233,7 +217,7 @@ class RadioPlayer: ObservableObject {
         // which keeps the rate locked at 1.0 and prevents pitch wobble on live streams.
 
         setupObservations()
-        applyStabilitySettings(mode: currentModeForRoute())
+        applyInterruptionMode(currentModeForRoute())
     }
 
     // MARK: - KVO
@@ -306,21 +290,18 @@ class RadioPlayer: ObservableObject {
 
         // Refresh the cache first; the main-queue blocks below run after this one, in order.
         let hasHearingAids = RadioPlayer.routeHasHearingAids()
-        DispatchQueue.main.async { self.setHearingAidsConnected(hasHearingAids) }
+        DispatchQueue.main.async { self.hearingAidsConnected = hasHearingAids }
 
         switch reason {
         case .newDeviceAvailable:
             DispatchQueue.main.async {
                 guard self.isUsingHearingAids() else { return }
                 self.applyPreferredMode()
-                // First-run banner is shown by NowPlayingVC via hearingAidStateDidChange.
             }
 
         case .oldDeviceUnavailable:
             DispatchQueue.main.async {
-                if !self.isUsingHearingAids() {
-                    self.applyStabilitySettings(mode: .fidelity)
-                }
+                self.applyPreferredMode()
                 // Pause on any device removal (preserves existing behaviour for wired headphones)
                 self.pause()
             }
