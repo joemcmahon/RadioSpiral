@@ -66,6 +66,11 @@ class RadioPlayer: ObservableObject {
     /// and calling them on main while the session is active triggers UI-unresponsiveness warnings.
     private let sessionQueue = DispatchQueue(label: "RadioPlayer.audioSession", qos: .userInitiated)
 
+    /// Forward buffer for every mode. A short (2s) buffer let the stream go audibly
+    /// slow and out of tune on poor connections; 30s absorbs the jitter. Playback still
+    /// starts immediately (playImmediately(atRate:)), so the larger target doesn't delay it.
+    static let forwardBufferDuration: TimeInterval = 30.0
+
     func applyStabilitySettings(mode: AudioStabilityMode) {
         // No category options: .playback already routes to A2DP/AirPlay, and HFP/AirPlay
         // options are only valid with .playAndRecord (passing them fails with paramErr -50).
@@ -74,12 +79,11 @@ class RadioPlayer: ObservableObject {
         case .stability:
             sessionMode = .spokenAudio
             playerItem?.audioTimePitchAlgorithm = .timeDomain
-            playerItem?.preferredForwardBufferDuration = 30.0
         case .fidelity:
             sessionMode = .default
             playerItem?.audioTimePitchAlgorithm = .spectral
-            playerItem?.preferredForwardBufferDuration = 2.0
         }
+        playerItem?.preferredForwardBufferDuration = RadioPlayer.forwardBufferDuration
         sessionQueue.async {
             let session = AVAudioSession.sharedInstance()
             do {
@@ -221,7 +225,7 @@ class RadioPlayer: ObservableObject {
             "hasProtectedContent"
         ]
         playerItem = AVPlayerItem(asset: asset, automaticallyLoadedAssetKeys: requiredAssetKeys)
-        playerItem?.preferredForwardBufferDuration = 2.0
+        playerItem?.preferredForwardBufferDuration = RadioPlayer.forwardBufferDuration
 
         player = AVPlayer(playerItem: playerItem!)
         player?.allowsExternalPlayback = false
