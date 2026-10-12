@@ -52,25 +52,21 @@ import MediaPlayer
     /// Updates the displayed sections in the existing stations template.
     private func refreshTemplate(with stations: [RadioStation]) {
         guard let template = stationsListTemplate else { return }
+        template.updateSections([stationsSection(for: stations)])
+    }
+
+    /// Until a station is loaded, Play on the Now Playing screen has nothing to play,
+    /// so the header prompts the user to pick one.
+    private func stationsSection(for stations: [RadioStation]) -> CPListSection {
         let items = stations.map { createStationListItem(for: $0) }
-        template.updateSections([CPListSection(items: items)])
+        let header = StationsManager.shared.currentStation == nil ? "Select a station to start" : nil
+        return CPListSection(items: items, header: header, sectionIndexTitle: nil)
     }
 
     /// Creates the stations list template
     private func createStationsListTemplate() -> CPListTemplate {
-        let title = "Stations"
-        var listItems: [CPListItem] = []
-
-        // Create list items for each station
-        for station in StationsManager.shared.stations {
-            let listItem = createStationListItem(for: station)
-            listItems.append(listItem)
-        }
-
-        let section = CPListSection(items: listItems)
-        let template = CPListTemplate(title: title, sections: [section])
-
-        return template
+        let section = stationsSection(for: StationsManager.shared.stations)
+        return CPListTemplate(title: "Stations", sections: [section])
     }
 
     /// Creates a list item for a single station
@@ -154,5 +150,8 @@ extension CarPlaySceneDelegate: StationsManagerObserver {
         DispatchQueue.main.async { [weak self] in self?.refreshTemplate(with: stations) }
     }
 
-    func stationsManager(_ manager: StationsManager, stationDidChange station: RadioStation?) {}
+    func stationsManager(_ manager: StationsManager, stationDidChange station: RadioStation?) {
+        // Show or hide the "Select a station to start" header.
+        DispatchQueue.main.async { [weak self] in self?.refreshTemplate(with: manager.stations) }
+    }
 }
