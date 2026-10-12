@@ -21,13 +21,11 @@ class LogoShareView: UIView {
     }
     
     func shareSetup(albumArt : UIImage, radioShoutout: String, trackTitle: String, trackArtist: String) {
+        // ShareActivity has already downloaded the art; set it synchronously so it's
+        // present when the view is rendered to an image.
+        self.albumArtImageView.image = albumArt
         let metadataManager = StationMetadataManager.shared
         if let metadata = metadataManager.getCurrentMetadata() {
-            Task {
-                if let artworkURL = metadata.artworkURL {
-                    self.albumArtImageView.kf.setImage(with: artworkURL)
-                }
-            }
             self.radioShoutoutLabel.text = radioShoutout
             self.trackTitleLabel.text = metadata.trackName
             self.trackArtistLabel.text = metadata.artistName
