@@ -115,20 +115,7 @@ extension MainCoordinator: NowPlayingViewControllerDelegate {
     }
 }
 
-// MARK: - PopUpMenuViewControllerDelegate
-
-extension MainCoordinator: PopUpMenuViewControllerDelegate {
-    
-    func didTapWebsiteButton(_ popUpMenuViewController: PopUpMenuViewController) {
-        openWebsite()
-    }
-    
-    func didTapAboutButton(_ popUpMenuViewController: PopUpMenuViewController) {
-        openAbout(in: popUpMenuViewController)
-    }
-}
-
-// MARK: - PopUpMenuViewControllerDelegate
+// MARK: - AboutViewControllerDelegate
 
 extension MainCoordinator: AboutViewControllerDelegate {
     func didTapEmailButton(_ aboutViewController: AboutViewController) {

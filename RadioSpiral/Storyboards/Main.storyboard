@@ -9,142 +9,6 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Menu View Controller-->
-        <scene sceneID="4lL-TA-52h">
-            <objects>
-                <viewController storyboardIdentifier="PopUpMenuViewController" id="61j-j7-6ve" userLabel="Menu View Controller" customClass="PopUpMenuViewController" customModule="RadioSpiral" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="OfZ-BE-wMy">
-                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <view clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="K6v-dQ-Ces" userLabel="Pop-up View">
-                                <rect key="frame" x="78" y="319" width="248" height="232"/>
-                                <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4YL-N4-xkC" userLabel="Close Button">
-                                        <rect key="frame" x="8" y="8" width="16" height="16"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="16" id="Fwj-Pc-cZx"/>
-                                            <constraint firstAttribute="width" constant="16" id="zOq-pb-kph"/>
-                                        </constraints>
-                                        <color key="tintColor" red="0.20579981803894043" green="0.49201503396034241" blue="0.70883911848068237" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <state key="normal" image="btn-close"/>
-                                        <connections>
-                                            <action selector="closeButtonPressed" destination="61j-j7-6ve" eventType="touchUpInside" id="i59-HZ-ayG"/>
-                                        </connections>
-                                    </button>
-                                    <stackView opaque="NO" contentMode="scaleToFill" misplaced="YES" axis="vertical" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="7mN-C5-TQp">
-                                        <rect key="frame" x="35" y="15" width="179" height="175.66666666666666"/>
-                                        <subviews>
-                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="radiospiral" translatesAutoresizingMaskIntoConstraints="NO" id="6p5-La-eLs" customClass="SpringImageView" customModule="RadioSpiral" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="179" height="108"/>
-                                                <userDefinedRuntimeAttributes>
-                                                    <userDefinedRuntimeAttribute type="boolean" keyPath="autostart" value="YES"/>
-                                                    <userDefinedRuntimeAttribute type="string" keyPath="animation" value="zoomIn"/>
-                                                    <userDefinedRuntimeAttribute type="number" keyPath="delay">
-                                                        <real key="value" value="0.29999999999999999"/>
-                                                    </userDefinedRuntimeAttribute>
-                                                </userDefinedRuntimeAttributes>
-                                            </imageView>
-                                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wSU-lN-ktR">
-                                                <rect key="frame" x="3.3333333333333286" y="118" width="172" height="32"/>
-                                                <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Be5-hL-qtx" customClass="SpringButton" customModule="Spring">
-                                                        <rect key="frame" x="0.0" y="0.0" width="86" height="32"/>
-                                                        <color key="backgroundColor" red="0.24706900119781494" green="0.56329798698425293" blue="0.81052231788635254" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="32" id="otZ-mF-Bce"/>
-                                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="86" id="qbR-b5-GDF"/>
-                                                        </constraints>
-                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                                        <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                        <state key="normal" title="About">
-                                                            <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                        </state>
-                                                        <userDefinedRuntimeAttributes>
-                                                            <userDefinedRuntimeAttribute type="boolean" keyPath="autostart" value="YES"/>
-                                                            <userDefinedRuntimeAttribute type="string" keyPath="animation" value="slideRight"/>
-                                                            <userDefinedRuntimeAttribute type="number" keyPath="delay">
-                                                                <real key="value" value="0.59999999999999998"/>
-                                                            </userDefinedRuntimeAttribute>
-                                                            <userDefinedRuntimeAttribute type="number" keyPath="damping">
-                                                                <real key="value" value="1"/>
-                                                            </userDefinedRuntimeAttribute>
-                                                        </userDefinedRuntimeAttributes>
-                                                        <connections>
-                                                            <action selector="aboutButtonPressed:" destination="61j-j7-6ve" eventType="touchUpInside" id="2fl-6D-TRa"/>
-                                                        </connections>
-                                                    </button>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NDa-S4-n0n" customClass="SpringButton" customModule="Spring">
-                                                        <rect key="frame" x="86" y="0.0" width="86" height="32"/>
-                                                        <color key="backgroundColor" red="0.20579981803894043" green="0.49201503396034241" blue="0.70883911848068237" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="32" id="TH4-oX-IOh"/>
-                                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="86" id="lC5-vy-gFK"/>
-                                                        </constraints>
-                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                                        <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                        <state key="normal" title="Website">
-                                                            <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                        </state>
-                                                        <userDefinedRuntimeAttributes>
-                                                            <userDefinedRuntimeAttribute type="boolean" keyPath="autostart" value="YES"/>
-                                                            <userDefinedRuntimeAttribute type="string" keyPath="animation" value="slideLeft"/>
-                                                            <userDefinedRuntimeAttribute type="number" keyPath="delay">
-                                                                <real key="value" value="0.59999999999999998"/>
-                                                            </userDefinedRuntimeAttribute>
-                                                            <userDefinedRuntimeAttribute type="number" keyPath="damping">
-                                                                <real key="value" value="1"/>
-                                                            </userDefinedRuntimeAttribute>
-                                                        </userDefinedRuntimeAttributes>
-                                                        <connections>
-                                                            <action selector="websiteButtonPressed:" destination="61j-j7-6ve" eventType="touchUpInside" id="0oo-aK-VC7"/>
-                                                        </connections>
-                                                    </button>
-                                                </subviews>
-                                            </stackView>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Joe McMahon" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hYi-2l-6dj" userLabel="Matthew Fecher &amp; Fethi El Hassasna">
-                                                <rect key="frame" x="46.666666666666679" y="160" width="85.333333333333314" height="15.666666666666657"/>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
-                                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                        </subviews>
-                                    </stackView>
-                                </subviews>
-                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <constraints>
-                                    <constraint firstItem="4YL-N4-xkC" firstAttribute="top" secondItem="K6v-dQ-Ces" secondAttribute="top" constant="8" id="EP4-Qc-tOn"/>
-                                    <constraint firstItem="4YL-N4-xkC" firstAttribute="leading" secondItem="K6v-dQ-Ces" secondAttribute="leading" constant="8" id="LJH-vM-Cww"/>
-                                    <constraint firstAttribute="bottom" secondItem="7mN-C5-TQp" secondAttribute="bottom" constant="14" id="Umj-Ey-MiX"/>
-                                    <constraint firstItem="7mN-C5-TQp" firstAttribute="centerX" secondItem="K6v-dQ-Ces" secondAttribute="centerX" id="cru-rn-YaR"/>
-                                    <constraint firstAttribute="width" constant="250" id="fgN-uQ-6Dx"/>
-                                    <constraint firstAttribute="height" constant="206" id="grb-dB-tzx"/>
-                                </constraints>
-                            </view>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="background" translatesAutoresizingMaskIntoConstraints="NO" id="GpH-v2-Q95" userLabel="Background Image View">
-                                <rect key="frame" x="78" y="-293" width="390" height="844"/>
-                            </imageView>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="Ogy-0t-iKH"/>
-                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
-                        <constraints>
-                            <constraint firstItem="Ogy-0t-iKH" firstAttribute="trailing" secondItem="GpH-v2-Q95" secondAttribute="trailing" id="2ZC-Gw-pfb"/>
-                            <constraint firstItem="GpH-v2-Q95" firstAttribute="leading" secondItem="Ogy-0t-iKH" secondAttribute="leading" id="5h5-Vc-Qn3"/>
-                            <constraint firstAttribute="centerY" secondItem="K6v-dQ-Ces" secondAttribute="centerY" id="Bje-b4-6zD"/>
-                            <constraint firstItem="GpH-v2-Q95" firstAttribute="top" secondItem="OfZ-BE-wMy" secondAttribute="top" id="RN4-ZB-lbp"/>
-                            <constraint firstItem="Ogy-0t-iKH" firstAttribute="centerX" secondItem="K6v-dQ-Ces" secondAttribute="centerX" id="rSF-5v-a7F"/>
-                            <constraint firstAttribute="bottom" secondItem="GpH-v2-Q95" secondAttribute="bottom" id="xS9-r4-beH"/>
-                        </constraints>
-                    </view>
-                    <connections>
-                        <outlet property="backgroundView" destination="GpH-v2-Q95" id="1HK-ui-e7J"/>
-                        <outlet property="popupView" destination="K6v-dQ-Ces" id="7au-Js-ODA"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="zrd-1T-mPM" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="447.82608695652175" y="1122.9910714285713"/>
-        </scene>
         <!--Now Playing View-->
         <scene sceneID="ufC-wZ-h7g">
             <objects>
@@ -412,13 +276,11 @@
     </scenes>
     <resources>
         <image name="background" width="320" height="568"/>
-        <image name="btn-close" width="22.666666030883789" height="22.666666030883789"/>
         <image name="btn-next" width="44" height="44"/>
         <image name="btn-pause" width="44" height="44"/>
         <image name="btn-play" width="44" height="44"/>
         <image name="btn-previous" width="44" height="44"/>
         <image name="music.quarternote.3" catalog="system" width="128" height="102"/>
-        <image name="radiospiral" width="179" height="108"/>
         <image name="share" width="32" height="32"/>
         <image name="vol-max" width="16.666666030883789" height="14"/>
         <image name="vol-min" width="11" height="12.666666984558105"/>
