@@ -76,7 +76,7 @@ class ConfigClientTests: XCTestCase {
             }
         }
 
-        waitForExpectations(timeout: 5.0)
+        waitForExpectations(timeout: 15.0)
     }
 
     func testFetchedStationHasRequiredFields() {
@@ -98,7 +98,7 @@ class ConfigClientTests: XCTestCase {
             }
         }
 
-        waitForExpectations(timeout: 5.0)
+        waitForExpectations(timeout: 15.0)
     }
 
     // MARK: - Station Lookup After Fetch Tests
@@ -118,7 +118,7 @@ class ConfigClientTests: XCTestCase {
             }
         }
 
-        waitForExpectations(timeout: 5.0)
+        waitForExpectations(timeout: 15.0)
     }
 
     // MARK: - Config Structure Tests
@@ -178,7 +178,7 @@ class ConfigClientTests: XCTestCase {
             }
         }
 
-        waitForExpectations(timeout: 5.0)
+        waitForExpectations(timeout: 15.0)
     }
 
     func testAzuracastStationParsing() {
@@ -271,7 +271,7 @@ class ConfigClientTests: XCTestCase {
             }
         }
 
-        waitForExpectations(timeout: 5.0)
+        waitForExpectations(timeout: 15.0)
     }
 
     // MARK: - Live Azuracast Public API Tests (No auth required!)
@@ -355,7 +355,7 @@ class ConfigClientTests: XCTestCase {
             }
         }
 
-        waitForExpectations(timeout: 5.0)
+        waitForExpectations(timeout: 15.0)
     }
 
     // MARK: - ConfigClient Fallback Lookup Tests
@@ -391,7 +391,8 @@ class ConfigClientTests: XCTestCase {
             }
         }
 
-        waitForExpectations(timeout: 5.0)
+        // Live network fetch; CI simulators can take well over 5 s.
+        waitForExpectations(timeout: 15.0)
     }
 
     // MARK: - Production Configuration Tests
@@ -450,7 +451,7 @@ class ConfigClientTests: XCTestCase {
             expectation.fulfill()
         }
 
-        waitForExpectations(timeout: 5.0)
+        waitForExpectations(timeout: 15.0)
     }
 
     func testCreditsClientFallbackOnInvalidURL() {
@@ -463,7 +464,7 @@ class ConfigClientTests: XCTestCase {
             expectation.fulfill()
         }
 
-        waitForExpectations(timeout: 5.0)
+        waitForExpectations(timeout: 15.0)
     }
 
     func testCreditsClientCaching() {
@@ -480,7 +481,7 @@ class ConfigClientTests: XCTestCase {
             XCTAssertEqual(credits.count, 2)
             exp1.fulfill()
         }
-        waitForExpectations(timeout: 5.0)
+        waitForExpectations(timeout: 15.0)
 
         // Second fetch should return cached data immediately
         let exp2 = self.expectation(description: "Second fetch (cached)")
