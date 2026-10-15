@@ -11,6 +11,10 @@ import MediaPlayer
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
+    /// Next/previous presses closer together than this count as one; CarPlay sometimes delivers a press twice.
+    private static let stationSkipInterval: TimeInterval = 0.5
+    private var lastStationSkip = Date.distantPast
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
         // AzuraCast WebSocket debug - disable by default
@@ -85,18 +89,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
         // Add handler for Next Command
-        commandCenter.nextTrackCommand.addTarget { event in
+        commandCenter.nextTrackCommand.addTarget { [weak self] event in
+            guard self?.acceptStationSkip() ?? false else { return .success }
             StationsManager.shared.setNext()
             return .success
         }
         
         // Add handler for Previous Command
-        commandCenter.previousTrackCommand.addTarget { event in
+        commandCenter.previousTrackCommand.addTarget { [weak self] event in
+            guard self?.acceptStationSkip() ?? false else { return .success }
             StationsManager.shared.setPrevious()
             return .success
         }
     }
     
+    /// True if enough time has passed since the last next/previous to act on this one.
+    private func acceptStationSkip() -> Bool {
+        let now = Date()
+        guard now.timeIntervalSince(lastStationSkip) >= Self.stationSkipInterval else { return false }
+        lastStationSkip = now
+        return true
+    }
+
     // MARK: - Activate Audio Session
     
     private func activateAudioSession() {
