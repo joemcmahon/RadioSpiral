@@ -95,10 +95,8 @@ extension MainCoordinator: StationsViewControllerDelegate {
         navigationController.pushViewController(nowPlayingController, animated: true)
     }
     
-    func presentPopUpMenuController(_ stationsViewController: StationsViewController) {
-        let popUpMenuController = Storyboard.viewController as PopUpMenuViewController
-        popUpMenuController.delegate = self
-        navigationController.present(popUpMenuController, animated: true)
+    func didTapInfoButton(_ stationsViewController: StationsViewController) {
+        openAbout(in: stationsViewController, station: StationsManager.shared.currentStation)
     }
 }
 

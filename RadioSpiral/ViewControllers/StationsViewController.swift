@@ -11,7 +11,7 @@ import Combine
 
 protocol StationsViewControllerDelegate: AnyObject {
     func pushNowPlayingController(_ stationsViewController: StationsViewController, newStation: Bool)
-    func presentPopUpMenuController(_ stationsViewController: StationsViewController)
+    func didTapInfoButton(_ stationsViewController: StationsViewController)
 }
 
 class StationsViewController: BaseController, Handoffable {
@@ -69,7 +69,10 @@ class StationsViewController: BaseController, Handoffable {
         navigationController?.navigationBar.prefersLargeTitles = true
         
         // NavigationBar items
-        navigationItem.leftBarButtonItem = UIBarButtonItem(image: #imageLiteral(resourceName: "icon-hamburger"), style: .plain, target: self, action: #selector(handleMenuTap))
+        // Same About screen as the info button on Now Playing
+        let infoItem = UIBarButtonItem(image: UIImage(systemName: "info.circle"), style: .plain, target: self, action: #selector(handleInfoTap))
+        infoItem.accessibilityLabel = "About RadioSpiral"
+        navigationItem.leftBarButtonItem = infoItem
         
         // Setup Player
         RadioPlayer.shared.$playbackState
@@ -165,8 +168,8 @@ class StationsViewController: BaseController, Handoffable {
         pushNowPlayingController()
     }
     
-    @objc func handleMenuTap() {
-        delegate?.presentPopUpMenuController(self)
+    @objc func handleInfoTap() {
+        delegate?.didTapInfoButton(self)
     }
 
     func pushNowPlayingController(with station: RadioStation? = nil) {
