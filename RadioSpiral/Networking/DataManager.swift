@@ -88,6 +88,14 @@ struct DataManager {
 
     // Load stations from ConfigClient
     private static func loadConfigClient(_ completion: @escaping (StationsResult) -> Void) {
+        // The install environment decides whether a tester's test-server choice applies.
+        InstallEnvironment.resolve { _ in
+            configClient.configURL = StationServer.current.configURL
+            fetchConfigClientStations(completion)
+        }
+    }
+
+    private static func fetchConfigClientStations(_ completion: @escaping (StationsResult) -> Void) {
         configClient.fetchStations { result in
             switch result {
             case .success(let stationConfigs):

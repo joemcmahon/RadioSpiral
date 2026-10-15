@@ -59,8 +59,11 @@ import MediaPlayer
     /// so the header prompts the user to pick one.
     private func stationsSection(for stations: [RadioStation]) -> CPListSection {
         let items = stations.map { createStationListItem(for: $0) }
-        let header = StationsManager.shared.currentStation == nil ? "Select a station to start" : nil
-        return CPListSection(items: items, header: header, sectionIndexTitle: nil)
+        let prompt = StationsManager.shared.currentStation == nil ? "Select a station to start" : nil
+        // CPListTemplate's title can't change after creation, so the test-server label goes here.
+        let testLabel = StationServer.current == .test ? "TEST server" : nil
+        let header = [testLabel, prompt].compactMap { $0 }.joined(separator: " · ")
+        return CPListSection(items: items, header: header.isEmpty ? nil : header, sectionIndexTitle: nil)
     }
 
     /// Creates the stations list template

@@ -140,4 +140,23 @@ extension MainCoordinator: AboutViewControllerDelegate {
     func didTapWebsiteButton(_ aboutViewController: AboutViewController) {
         openWebsite()
     }
+
+    /// Reload stations from the newly chosen server and start over from the stations list.
+    func didChangeStationServer(_ aboutViewController: AboutViewController) {
+        navigationController.dismiss(animated: true)
+        StationsManager.shared.fetch { [weak self] _ in
+            DispatchQueue.main.async {
+                guard let self = self,
+                      let stationsVC = self.navigationController.viewControllers.first as? StationsViewController else { return }
+                if self.navigationController.topViewController === stationsVC {
+                    // About was opened from the list. Dismissing a sheet doesn't re-run the
+                    // list's viewWillAppear, so apply its single-station rule here.
+                    stationsVC.showNowPlayingIfOnlyStation()
+                } else {
+                    // Popping back to the list runs viewWillAppear, which applies the rule.
+                    self.navigationController.popToRootViewController(animated: true)
+                }
+            }
+        }
+    }
 }

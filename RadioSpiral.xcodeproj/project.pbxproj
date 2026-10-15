@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1B2C3D4E5F6A7B8C9D0E1F3 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* Settings.bundle */; };
 		27D776512BD747B293E5A498 /* InterruptionPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB1F0A11DE24DA9A9641A24 /* InterruptionPreference.swift */; };
 		2C5545BD1C1124DE00728469 /* SwiftRadioUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C5545BC1C1124DE00728469 /* SwiftRadioUITests.swift */; };
 		53113F39230C720900462C0E /* ShareActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53113F38230C720900462C0E /* ShareActivity.swift */; };
@@ -49,6 +48,8 @@
 		94D260911B45D20000DE671C /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D260901B45D20000DE671C /* Config.swift */; };
 		94D260961B45E3FA00DE671C /* AnimationFrames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D260951B45E3FA00DE671C /* AnimationFrames.swift */; };
 		94E9761C1B1A8F3200F52B1E /* UIImage+DropShadow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E9761B1B1A8F3200F52B1E /* UIImage+DropShadow.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F3 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* Settings.bundle */; };
+		A1B2C3D4E5F6A7B8C9D0E1F5 /* StationServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F4 /* StationServer.swift */; };
 		B2C601433BBD45CD9F6DE9A3 /* test-config-live-azuracast.json in Resources */ = {isa = PBXBuildFile; fileRef = 8AAF0ECFA82245D0A3C4E3A1 /* test-config-live-azuracast.json */; };
 		B6B0CEB08FFF4CC6A8931B5F /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
 		B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
@@ -91,7 +92,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		2C5545BA1C1124DE00728469 /* RadioSpiralUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RadioSpiralUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C5545BC1C1124DE00728469 /* SwiftRadioUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftRadioUITests.swift; sourceTree = "<group>"; };
 		2C5545BE1C1124DE00728469 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -135,6 +135,8 @@
 		94D260901B45D20000DE671C /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		94D260951B45E3FA00DE671C /* AnimationFrames.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnimationFrames.swift; sourceTree = "<group>"; };
 		94E9761B1B1A8F3200F52B1E /* UIImage+DropShadow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+DropShadow.swift"; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F4 /* StationServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationServer.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsClient.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B61 /* test-credits.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-credits.json"; sourceTree = "<group>"; };
 		CE321FF229371140001572BD /* Bundle+appName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+appName.swift"; sourceTree = "<group>"; };
@@ -355,6 +357,7 @@
 			isa = PBXGroup;
 			children = (
 				FEB1F0A11DE24DA9A9641A24 /* InterruptionPreference.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F4 /* StationServer.swift */,
 				71B3D01E2E2989C5001E8F5A /* StationMetadataManager.swift */,
 				94AC70AD1AD05C6200652982 /* RadioStation.swift */,
 				CE963ECB29135A6F004F299E /* StationsManager.swift */,
@@ -606,6 +609,7 @@
 				CEDABBED29121BBA00C0367F /* UIImage+Cache.swift in Sources */,
 				CE6036252A48F68D00E15E15 /* NowPlayingView.swift in Sources */,
 				27D776512BD747B293E5A498 /* InterruptionPreference.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F5 /* StationServer.swift in Sources */,
 				94AC70AE1AD05C6200652982 /* RadioStation.swift in Sources */,
 				CE9EE8E1293C048A00F62041 /* LoaderController.swift in Sources */,
 				CE6036132A47A87A00E15E15 /* StationsViewController.swift in Sources */,
@@ -796,6 +800,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;

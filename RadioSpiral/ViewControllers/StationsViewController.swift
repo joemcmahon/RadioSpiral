@@ -96,11 +96,15 @@ class StationsViewController: BaseController, Handoffable {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(false)
         title = "RadioSpiral streams"
-        guard !manager.stations.isEmpty else { return }
-        let station = manager.stations[0]
-        if manager.stations.count < 2 {
-            pushNowPlayingController(with: station)
-        }
+        // A large title can't wrap, so the test-server label goes on its own line above it
+        navigationItem.prompt = StationServer.current == .test ? "TEST SERVER" : nil
+        showNowPlayingIfOnlyStation()
+    }
+
+    /// With a single station there's nothing to choose, so go straight to Now Playing.
+    func showNowPlayingIfOnlyStation() {
+        guard manager.stations.count == 1 else { return }
+        pushNowPlayingController(with: manager.stations[0])
     }
     
     @objc func refresh(sender: AnyObject) {

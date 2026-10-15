@@ -566,4 +566,63 @@ class ConfigClientTests: XCTestCase {
         XCTAssertEqual(item["Values"] as? [String], ["ask", "alwaysStability", "neverStability"])
         XCTAssertEqual(item["DefaultValue"] as? String, InterruptionPreference.automatic.rawValue)
     }
+
+    // MARK: - StationServer Tests
+
+    func testAppStoreAlwaysUsesProduction() {
+        XCTAssertEqual(StationServer.effective(selected: .test, environment: .appStore), .production)
+        XCTAssertEqual(StationServer.effective(selected: .production, environment: .appStore), .production)
+    }
+
+    func testUnresolvedEnvironmentUsesProduction() {
+        XCTAssertEqual(StationServer.effective(selected: .test, environment: nil), .production)
+    }
+
+    func testTestersGetTheirChoice() {
+        for environment in [InstallEnvironment.testFlight, .xcode] {
+            XCTAssertEqual(StationServer.effective(selected: .test, environment: environment), .test)
+            XCTAssertEqual(StationServer.effective(selected: .production, environment: environment), .production)
+        }
+    }
+
+    func testOnlyTestersMaySwitch() {
+        XCTAssertFalse(InstallEnvironment.appStore.allowsTestServer)
+        XCTAssertTrue(InstallEnvironment.testFlight.allowsTestServer)
+        XCTAssertTrue(InstallEnvironment.xcode.allowsTestServer)
+    }
+
+    func testSelectedDefaultsToProduction() {
+        UserDefaults.standard.removeObject(forKey: StationServer.key)
+        XCTAssertEqual(StationServer.selected, .production)
+        UserDefaults.standard.set("bogus", forKey: StationServer.key)
+        XCTAssertEqual(StationServer.selected, .production)
+        StationServer.selected = .test
+        XCTAssertEqual(StationServer.selected, .test)
+        UserDefaults.standard.removeObject(forKey: StationServer.key)
+    }
+
+    func testServerConfigURLs() {
+        XCTAssertTrue(StationServer.production.configURL.hasSuffix("/config.json"))
+        XCTAssertTrue(StationServer.test.configURL.hasSuffix("/config-test.json"))
+        // The production URL must stay the one ConfigClient has always used.
+        XCTAssertEqual(StationServer.production.configURL,
+                       "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config.json")
+    }
+
+    func testChangingConfigURLDropsCachedStations() throws {
+        let loaded = expectation(description: "stations loaded")
+        let fileURL = try XCTUnwrap(Bundle(for: type(of: self)).url(forResource: "test-config-with-fallback", withExtension: "json"))
+        let client = ConfigClient(configURL: fileURL.absoluteString)
+        var shortCode: String?
+        client.fetchStations { result in
+            shortCode = try? result.get().first?.shortCode
+            loaded.fulfill()
+        }
+        wait(for: [loaded], timeout: 15)
+        let code = try XCTUnwrap(shortCode)
+        XCTAssertNotNil(client.getStationInfo(byShortCode: code))
+
+        client.configURL = "file:///nonexistent.json"
+        XCTAssertNil(client.getStationInfo(byShortCode: code))
+    }
 }

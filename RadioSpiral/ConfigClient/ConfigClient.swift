@@ -14,7 +14,10 @@ import UIKit
 public class ConfigClient {
     public static let shared = ConfigClient()
 
-    private let configURL: String
+    /// Changing it (e.g. switching station servers) drops stations cached from the old config.
+    public var configURL: String {
+        didSet { if configURL != oldValue { cachedStations = [] } }
+    }
     private let apiKey: String?
     private var cachedStations: [StationConfig] = []
 

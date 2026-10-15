@@ -12,6 +12,7 @@ import MessageUI
 protocol AboutViewControllerDelegate: AnyObject {
     func didTapEmailButton(_ aboutViewController: AboutViewController)
     func didTapWebsiteButton(_ aboutViewController: AboutViewController)
+    func didChangeStationServer(_ aboutViewController: AboutViewController)
 }
 
 class AboutViewController: UIViewController {
@@ -185,6 +186,7 @@ class AboutViewController: UIViewController {
         stack.addArrangedSubview(makeAttribution())
         stack.addArrangedSubview(websiteButton)
         stack.addArrangedSubview(emailButton)
+        if let selector = makeServerSelector() { stack.addArrangedSubview(selector) }
     }
 
     // MARK: Landscape layout: scrolling credits left, buttons right
@@ -217,7 +219,7 @@ class AboutViewController: UIViewController {
         ])
 
         // Right side: buttons stacked vertically, centered (30% width)
-        let buttonStack = UIStackView(arrangedSubviews: [websiteButton, emailButton])
+        let buttonStack = UIStackView(arrangedSubviews: [websiteButton, emailButton] + [makeServerSelector()].compactMap { $0 })
         buttonStack.axis = .vertical
         buttonStack.spacing = 12
         buttonStack.alignment = .center
@@ -435,6 +437,34 @@ class AboutViewController: UIViewController {
         label.textAlignment = .center
         label.numberOfLines = 0
         return label
+    }
+
+    // MARK: - Station server (TestFlight and Xcode builds only)
+
+    private func makeServerSelector() -> UIView? {
+        guard InstallEnvironment.current?.allowsTestServer == true else { return nil }
+
+        let label = UILabel()
+        label.text = "Station server (testers only)"
+        label.font = UIFont.preferredFont(forTextStyle: .caption1)
+        label.textColor = .white
+        label.textAlignment = .center
+
+        let control = UISegmentedControl(items: ["Production", "Test"])
+        control.overrideUserInterfaceStyle = .dark
+        control.selectedSegmentIndex = StationServer.selected == .test ? 1 : 0
+        control.accessibilityLabel = "Station server"
+        control.addTarget(self, action: #selector(serverChanged(_:)), for: .valueChanged)
+
+        let stack = UIStackView(arrangedSubviews: [label, control])
+        stack.axis = .vertical
+        stack.spacing = 4
+        return stack
+    }
+
+    @objc private func serverChanged(_ control: UISegmentedControl) {
+        StationServer.selected = control.selectedSegmentIndex == 1 ? .test : .production
+        delegate?.didChangeStationServer(self)
     }
 
     // MARK: - Actions
