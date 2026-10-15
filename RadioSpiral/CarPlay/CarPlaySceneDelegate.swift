@@ -16,6 +16,9 @@ import MediaPlayer
 
     var interfaceController: CPInterfaceController?
     private var stationsListTemplate: CPListTemplate?
+    /// Alternates the Now Playing artist line between artist and station name.
+    private var stationNameTimer: Timer?
+    private static let stationNameInterval: TimeInterval = 10
 
     // MARK: - CPTemplateApplicationSceneDelegate
 
@@ -30,6 +33,7 @@ import MediaPlayer
         interfaceController.setRootTemplate(stationsTemplate, animated: false, completion: nil)
 
         StationsManager.shared.addObserver(self)
+        restartStationNameTimer()
 
         let existing = StationsManager.shared.stations
         if !existing.isEmpty {
@@ -107,16 +111,14 @@ import MediaPlayer
     private func updateMPNowPlayingInfo(station: RadioStation?) {
         var nowPlayingInfo = [String: Any]()
 
+        // Until the new station's metadata arrives, show only its name: the socket
+        // client's status still describes the previous station's track.
         if let station = station {
             nowPlayingInfo[MPMediaItemPropertyTitle] = station.name
         }
 
-        let client = ACWebSocketClient.shared
-        nowPlayingInfo[MPMediaItemPropertyArtist] = client.status.artist
-        nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = client.status.track
-        let duration = client.status.duration
-        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = duration > 0 ? duration : 0
-        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = client.status.elapsed > 0 ? client.status.elapsed : 0.0
+        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = 0
+        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = 0.0
         nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = 1.0
 
         if let station = station {
@@ -142,6 +144,25 @@ extension CarPlaySceneDelegate {
     ) {
         self.interfaceController = nil
         self.stationsListTemplate = nil
+        stationNameTimer?.invalidate()
+        stationNameTimer = nil
+        StationsManager.shared.showsStationInArtistLine = false
+    }
+
+    /// Shows the station name now, then swaps it with the artist every 10 s.
+    /// With a single station there's nothing to tell apart, so the artist stays.
+    private func restartStationNameTimer() {
+        stationNameTimer?.invalidate()
+        stationNameTimer = nil
+        let manager = StationsManager.shared
+        guard interfaceController != nil, manager.stations.count > 1 else {
+            manager.showsStationInArtistLine = false
+            return
+        }
+        manager.showsStationInArtistLine = true
+        stationNameTimer = Timer.scheduledTimer(withTimeInterval: Self.stationNameInterval, repeats: true) { _ in
+            manager.showsStationInArtistLine.toggle()
+        }
     }
 }
 
@@ -150,11 +171,17 @@ extension CarPlaySceneDelegate {
 extension CarPlaySceneDelegate: StationsManagerObserver {
     func stationsManager(_ manager: StationsManager, stationsDidUpdate stations: [RadioStation]) {
         guard !stations.isEmpty else { return }
-        DispatchQueue.main.async { [weak self] in self?.refreshTemplate(with: stations) }
+        DispatchQueue.main.async { [weak self] in
+            self?.refreshTemplate(with: stations)
+            self?.restartStationNameTimer()
+        }
     }
 
     func stationsManager(_ manager: StationsManager, stationDidChange station: RadioStation?) {
         // Show or hide the "Select a station to start" header.
-        DispatchQueue.main.async { [weak self] in self?.refreshTemplate(with: manager.stations) }
+        DispatchQueue.main.async { [weak self] in
+            self?.refreshTemplate(with: manager.stations)
+            self?.restartStationNameTimer()
+        }
     }
 }

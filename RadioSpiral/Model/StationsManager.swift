@@ -49,6 +49,16 @@ class StationsManager {
     }
         
     var searchedStations: [RadioStation] = []
+
+    /// CarPlay's Now Playing screen shows only title and artist, so while it's connected
+    /// CarPlaySceneDelegate flips this on a timer and the artist line alternates with the
+    /// station name. Shared with the lock screen; there's no CarPlay-only Now Playing info.
+    var showsStationInArtistLine = false {
+        didSet {
+            guard showsStationInArtistLine != oldValue else { return }
+            refreshArtistLine()
+        }
+    }
     
     private var observations = [ObjectIdentifier : Observation]()
     private let player = RadioPlayer.shared
@@ -195,15 +205,26 @@ extension StationsManager {
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
     }
 
+    private func artistLine(for artist: String) -> String {
+        guard showsStationInArtistLine, let station = currentStation else { return artist }
+        return station.name
+    }
+
+    /// Rewrites only the artist line, keeping the artwork and everything else.
+    private func refreshArtistLine() {
+        guard var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo,
+              let metadata = metadataManager.getCurrentMetadata() else { return }
+        nowPlayingInfo[MPMediaItemPropertyArtist] = artistLine(for: metadata.artistName)
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+    }
+
     private func updateLockScreen(with metadata: UnifiedMetadata?) {
         let nowPLayingInfoCenter = MPNowPlayingInfoCenter.default()
         var nowPlayingInfo = nowPLayingInfoCenter.nowPlayingInfo ?? [String : Any]()
         if let metadata = metadata {
-            nowPlayingInfo[MPMediaItemPropertyArtist] = metadata.artistName
+            nowPlayingInfo[MPMediaItemPropertyArtist] = artistLine(for: metadata.artistName)
             nowPlayingInfo[MPMediaItemPropertyTitle] = metadata.trackName
-            if let albumName = metadata.albumName {
-                nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = albumName
-            }
+            nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = metadata.albumName
             if let duration = metadata.duration {
                 nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = duration
             }
