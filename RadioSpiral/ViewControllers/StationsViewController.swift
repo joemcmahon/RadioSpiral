@@ -80,6 +80,15 @@ class StationsViewController: BaseController, Handoffable {
             }
             .store(in: &cancellables)
         manager.addObserver(self)
+
+        // Keep the bottom bar's track info current while the station plays
+        StationMetadataManager.shared.$currentMetadata
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] metadata in
+                guard let self = self, let station = self.manager.currentStation else { return }
+                self.updateNowPlayingButton(station: station, metadata: metadata)
+            }
+            .store(in: &cancellables)
         
         // Setup Handoff User Activity
         setupHandoffUserActivity()
@@ -125,9 +134,8 @@ class StationsViewController: BaseController, Handoffable {
     }
     
     // Update the now playing button title
-    private func updateNowPlayingButton(station: RadioStation?) {
+    private func updateNowPlayingButton(station: RadioStation?, metadata: UnifiedMetadata? = StationMetadataManager.shared.getCurrentMetadata()) {
         
-        let metadataManager = StationMetadataManager.shared
         guard let station = station else {
             print("no station, resetting")
             nowPlayingView.reset()
@@ -136,7 +144,7 @@ class StationsViewController: BaseController, Handoffable {
         
         var playingTitle: String?
         
-        if let metadata = metadataManager.getCurrentMetadata(), !metadata.trackName.isEmpty && !metadata.artistName.isEmpty {
+        if let metadata, !metadata.trackName.isEmpty && !metadata.artistName.isEmpty {
             playingTitle = "\(metadata.trackName) + \(metadata.artistName)"
         }
         
