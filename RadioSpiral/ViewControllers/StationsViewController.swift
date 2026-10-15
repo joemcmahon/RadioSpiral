@@ -39,20 +39,68 @@ class StationsViewController: BaseController, Handoffable {
         return controller
     }()
     
-    private lazy var tableView: UITableView = {
-        let tableView = UITableView()
-        tableView.backgroundColor = .clear
-        tableView.backgroundView = nil
-        tableView.separatorStyle = .none
-        let cellNib = UINib(nibName: "NothingFoundCell", bundle: nil)
-        tableView.register(cellNib, forCellReuseIdentifier: "NothingFound")
-        tableView.register(StationTableViewCell.self)
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        // Set fixed row height
-        tableView.rowHeight = 140.0
-        return tableView
+    private static let rowHeight: CGFloat = 140
+
+    /// Two columns in a regular-width environment (the iPhone Duo's inner display, large
+    /// phones in landscape), one otherwise. Apple's Duo guidance: use the extra width to show
+    /// more rather than scaling text up, and prefer an even column count so the fold
+    /// falls between columns.
+    private static func columnCount(for traits: UITraitCollection) -> Int {
+        traits.horizontalSizeClass == .regular ? 2 : 1
+    }
+
+    /// Space between the two columns.
+    private static let columnGap: CGFloat = 12
+
+    /// Where the two columns meet and how far in they start, in the collection view's
+    /// coordinates. Updated on layout.
+    private struct ColumnSplit: Equatable {
+        var x: CGFloat
+        var leftEdge: CGFloat
+        var rightEdge: CGFloat
+    }
+    private var columnSplit: ColumnSplit?
+
+    private lazy var collectionView: UICollectionView = {
+        let layout = UICollectionViewCompositionalLayout { [weak self] _, environment in
+            let columns = Self.columnCount(for: environment.traitCollection)
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
+                                                   heightDimension: .absolute(Self.rowHeight))
+            guard columns == 2, let self = self, let split = self.columnSplit else {
+                let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1)))
+                return NSCollectionLayoutSection(group: .horizontal(layoutSize: groupSize, repeatingSubitem: item, count: 1))
+            }
+            // Frames are in full-width coordinates (no automatic safe-area inset), so the
+            // gap between the columns can sit exactly on the split.
+            let height = Self.rowHeight
+            let left = CGRect(x: split.leftEdge, y: 0, width: split.x - Self.columnGap / 2 - split.leftEdge, height: height)
+            let rightX = split.x + Self.columnGap / 2
+            let right = CGRect(x: rightX, y: 0, width: split.rightEdge - rightX, height: height)
+            let group = NSCollectionLayoutGroup.custom(layoutSize: groupSize) { _ in
+                [NSCollectionLayoutGroupCustomItem(frame: left), NSCollectionLayoutGroupCustomItem(frame: right)]
+            }
+            let section = NSCollectionLayoutSection(group: group)
+            section.contentInsetsReference = .none
+            return section
+        }
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .clear
+        collectionView.register(StationCell.self, forCellWithReuseIdentifier: StationCell.reuseIdentifier)
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        return collectionView
+    }()
+
+    /// Shown in place of the list until stations arrive.
+    private let loadingLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Loading Stations..."
+        label.font = .preferredFont(forTextStyle: .headline)
+        label.textColor = UIColor(white: 0.85, alpha: 1)
+        label.textAlignment = .center
+        return label
     }()
     
     private let nowPlayingView: NowPlayingView = {
@@ -99,12 +147,42 @@ class StationsViewController: BaseController, Handoffable {
         // Setup Search Bar
         setupSearchController()
         
+        // Row shading depends on the column count, which changes with the size class.
+        registerForTraitChanges([UITraitHorizontalSizeClass.self]) { (self: Self, _: UITraitCollection) in
+            self.collectionView.reloadData()
+        }
+
         // Now Playing View
         nowPlayingView.tapHandler = { [weak self] in
             self?.nowPlayingBarButtonPressed()
         }
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        let split = currentColumnSplit()
+        if split != columnSplit {
+            columnSplit = split
+            collectionView.collectionViewLayout.invalidateLayout()
+        }
+    }
+
+    /// Wide inner display: the gap sits on the fold (reported even while the device lies
+    /// flat, via includeInactive), and each column stops at its own safe-area edge, so the
+    /// side control strip narrows only its column.
+    /// Otherwise (tall inner display, where the fold runs across the columns, or no fold):
+    /// equal columns centered on the screen, with the larger side inset used on both sides.
+    private func currentColumnSplit() -> ColumnSplit {
+        let bounds = collectionView.bounds
+        let safe = collectionView.safeAreaInsets
+        if #available(iOS 27.1, *), bounds.width > bounds.height,
+           let fold = collectionView.reservedRegions(kind: .division, options: .includeInactive).first {
+            return ColumnSplit(x: fold.frame.midX, leftEdge: safe.left, rightEdge: bounds.width - safe.right)
+        }
+        let inset = max(safe.left, safe.right)
+        return ColumnSplit(x: bounds.width / 2, leftEdge: inset, rightEdge: bounds.width - inset)
+    }
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(false)
         title = "RadioSpiral streams"
@@ -194,11 +272,11 @@ class StationsViewController: BaseController, Handoffable {
     override func setupViews() {
         super.setupViews()
         
-        let stackView = UIStackView(arrangedSubviews: [tableView, nowPlayingView])
+        let stackView = UIStackView(arrangedSubviews: [collectionView, nowPlayingView])
         stackView.axis = .vertical
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
-        tableView.addSubview(refreshControl)
+        collectionView.refreshControl = refreshControl
         view.addSubview(stackView)
         
         NSLayoutConstraint.activate([
@@ -210,56 +288,38 @@ class StationsViewController: BaseController, Handoffable {
     }
 }
 
-// MARK: - TableViewDataSource
+// MARK: - UICollectionViewDataSource
 
-extension StationsViewController: UITableViewDataSource {
+extension StationsViewController: UICollectionViewDataSource {
     
-    func numberOfSections(in tableView: UITableView) -> Int {
-        1
+    private var displayedStations: [RadioStation] {
+        searchController.isActive ? manager.searchedStations : manager.stations
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if searchController.isActive {
-            return manager.searchedStations.count
-        } else {
-            return manager.stations.isEmpty ? 1 : manager.stations.count
-        }
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        collectionView.backgroundView = manager.stations.isEmpty ? loadingLabel : nil
+        return displayedStations.count
     }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        140.0
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: StationCell.reuseIdentifier, for: indexPath) as! StationCell
         
-        if manager.stations.isEmpty {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "NothingFound", for: indexPath)
-            cell.backgroundColor = .clear
-            cell.selectionStyle = .none
-            return cell
-        } else {
-            let cell = tableView.dequeueReusableCell(for: indexPath) as StationTableViewCell
-            
-            // alternate background color
-            cell.backgroundColor = (indexPath.row % 2 == 0) ? .clear : .black.withAlphaComponent(0.2)
-            
-            let station = searchController.isActive ? manager.searchedStations[indexPath.row] : manager.stations[indexPath.row]
-            cell.configureStationCell(station: station)
-            return cell
-        }
+        // alternate background color by row
+        let row = indexPath.item / Self.columnCount(for: collectionView.traitCollection)
+        cell.backgroundColor = (row % 2 == 0) ? .clear : .black.withAlphaComponent(0.2)
+        
+        cell.configureStationCell(station: displayedStations[indexPath.item])
+        return cell
     }
 }
 
-// MARK: - TableViewDelegate
+// MARK: - UICollectionViewDelegate
 
-extension StationsViewController: UITableViewDelegate {
+extension StationsViewController: UICollectionViewDelegate {
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        
-        let station = searchController.isActive ? manager.searchedStations[indexPath.item] : manager.stations[indexPath.item]
-        
-        pushNowPlayingController(with: station)
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+        pushNowPlayingController(with: displayedStations[indexPath.item])
     }
 }
 
@@ -278,14 +338,14 @@ extension StationsViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         guard let filter = searchController.searchBar.text else { return }
         manager.updateSearch(with: filter)
-        tableView.reloadData()
+        collectionView.reloadData()
     }
 }
 
 extension StationsViewController: StationsManagerObserver {
     
     func stationsManager(_ manager: StationsManager, stationsDidUpdate stations: [RadioStation]) {
-        tableView.reloadData()
+        collectionView.reloadData()
     }
     
     func stationsManager(_ manager: StationsManager, stationDidChange station: RadioStation?) {

@@ -1,5 +1,5 @@
 //
-//  StationTableViewCell.swift
+//  StationCell.swift
 //  SwiftRadio
 //
 //  Created by Fethi El Hassasna on 2023-06-24.
@@ -9,7 +9,11 @@
 import UIKit
 import NVActivityIndicatorView
 
-class StationTableViewCell: UITableViewCell {
+/// One station in the stations list. A collection view cell so the list can show
+/// two columns where there's room (the iPhone Duo's inner display).
+class StationCell: UICollectionViewCell {
+
+    static let reuseIdentifier = "StationCell"
     
     let stationImageView: UIImageView = {
         let imageView = UIImageView()
@@ -40,8 +44,8 @@ class StationTableViewCell: UITableViewCell {
         return label
     }()
     
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
+    override init(frame: CGRect) {
+        super.init(frame: frame)
         setupViews()
     }
     
@@ -58,7 +62,10 @@ class StationTableViewCell: UITableViewCell {
     
     private func setupViews() {
         
-        selectionStyle = .default
+        // Collection view cells have no built-in highlight; match the table's gray one.
+        let highlight = UIView()
+        highlight.backgroundColor = .systemGray4
+        selectedBackgroundView = highlight
         
         let vStackView = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
         vStackView.spacing = 8
@@ -87,7 +94,7 @@ class StationTableViewCell: UITableViewCell {
     }
 }
 
-extension StationTableViewCell {
+extension StationCell {
     func configureStationCell(station: RadioStation) {
         
         // Configure the cell...
