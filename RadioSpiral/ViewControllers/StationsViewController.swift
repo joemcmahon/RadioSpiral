@@ -52,21 +52,28 @@ class StationsViewController: BaseController, Handoffable {
     /// Space between the two columns.
     private static let columnGap: CGFloat = 12
 
+    /// Below this, a column can't hold a station card, so the list stays single-column.
+    private static let minimumColumnWidth: CGFloat = 200
+
     /// Where the two columns meet and how far in they start, in the collection view's
-    /// coordinates. Updated on layout.
-    private struct ColumnSplit: Equatable {
+    /// coordinates.
+    private struct ColumnSplit {
         var x: CGFloat
         var leftEdge: CGFloat
         var rightEdge: CGFloat
     }
-    private var columnSplit: ColumnSplit?
 
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewCompositionalLayout { [weak self] _, environment in
             let columns = Self.columnCount(for: environment.traitCollection)
             let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
                                                    heightDimension: .absolute(Self.rowHeight))
-            guard columns == 2, let self = self, let split = self.columnSplit else {
+            // The split comes from the size being laid out, not one cached in
+            // viewDidLayoutSubviews: the collection view sits in a stack view, so at that
+            // point it can still have its old (or initial, near-zero) width.
+            let width = environment.container.contentSize.width
+            guard columns == 2, let self = self,
+                  let split = self.columnSplit(forWidth: width) else {
                 let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1)))
                 return NSCollectionLayoutSection(group: .horizontal(layoutSize: groupSize, repeatingSubitem: item, count: 1))
@@ -158,13 +165,10 @@ class StationsViewController: BaseController, Handoffable {
         }
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        let split = currentColumnSplit()
-        if split != columnSplit {
-            columnSplit = split
-            collectionView.collectionViewLayout.invalidateLayout()
-        }
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        // Column edges follow the safe area, which can change without a size change.
+        collectionView.collectionViewLayout.invalidateLayout()
     }
 
     /// Wide inner display: the gap sits on the fold (reported even while the device lies
@@ -172,15 +176,20 @@ class StationsViewController: BaseController, Handoffable {
     /// side control strip narrows only its column.
     /// Otherwise (tall inner display, where the fold runs across the columns, or no fold):
     /// equal columns centered on the screen, with the larger side inset used on both sides.
-    private func currentColumnSplit() -> ColumnSplit {
-        let bounds = collectionView.bounds
+    /// Nil when the width is too narrow for two usable columns.
+    private func columnSplit(forWidth width: CGFloat) -> ColumnSplit? {
+        let height = collectionView.bounds.height
         let safe = collectionView.safeAreaInsets
-        if #available(iOS 27.1, *), bounds.width > bounds.height,
+        var split: ColumnSplit
+        if #available(iOS 27.1, *), width > height,
            let fold = collectionView.reservedRegions(kind: .division, options: .includeInactive).first {
-            return ColumnSplit(x: fold.frame.midX, leftEdge: safe.left, rightEdge: bounds.width - safe.right)
+            split = ColumnSplit(x: fold.frame.midX, leftEdge: safe.left, rightEdge: width - safe.right)
+        } else {
+            let inset = max(safe.left, safe.right)
+            split = ColumnSplit(x: width / 2, leftEdge: inset, rightEdge: width - inset)
         }
-        let inset = max(safe.left, safe.right)
-        return ColumnSplit(x: bounds.width / 2, leftEdge: inset, rightEdge: bounds.width - inset)
+        let narrowest = min(split.x - split.leftEdge, split.rightEdge - split.x) - Self.columnGap / 2
+        return narrowest >= Self.minimumColumnWidth ? split : nil
     }
 
     override func viewWillAppear(_ animated: Bool) {
