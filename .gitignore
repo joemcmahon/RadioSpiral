@@ -11,3 +11,4 @@ backlog
 .worktrees/
 screenshots/
 fastlane/edited-screenshots/
+build/
