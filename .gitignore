@@ -12,3 +12,9 @@ backlog
 screenshots/
 fastlane/edited-screenshots/
 build/
+
+# Archived agent handoffs/plans stay local
+docs/archive/
+
+# Agent handoffs stay local in public repos
+docs/HANDOFF.md
