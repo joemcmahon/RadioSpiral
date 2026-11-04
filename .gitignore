@@ -18,3 +18,6 @@ docs/archive/
 
 # Agent handoffs stay local in public repos
 docs/HANDOFF.md
+
+# PAAD review reports stay local
+paad/
