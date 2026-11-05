@@ -36,6 +36,7 @@
 		71CA8E8E2EC57AD400F7F157 /* ConfigClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71CA8E8B2EC57AD400F7F157 /* ConfigClientTests.swift */; };
 		A1C0DE0100000000000000A5 /* ParseChannelMessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000A6 /* ParseChannelMessageTests.swift */; };
 		A1C0DE0100000000000000A7 /* ParseDJRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000A8 /* ParseDJRulesTests.swift */; };
+		A1C0DE0100000000000000A9 /* StationAndMetadataRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000AA /* StationAndMetadataRulesTests.swift */; };
 		A1C0DE0100000000000000A1 /* ParseConnectMessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000A2 /* ParseConnectMessageTests.swift */; };
 		A1C0DE0100000000000000A3 /* ws-connect-message.json in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000A4 /* ws-connect-message.json */; };
 		71CA8E8F2EC57AD400F7F157 /* test-config-with-fallback.json in Resources */ = {isa = PBXBuildFile; fileRef = 71CA8E8C2EC57AD400F7F157 /* test-config-with-fallback.json */; };
@@ -121,6 +122,7 @@
 		71CA8E8B2EC57AD400F7F157 /* ConfigClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigClientTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000A6 /* ParseChannelMessageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseChannelMessageTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000A8 /* ParseDJRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseDJRulesTests.swift; sourceTree = "<group>"; };
+		A1C0DE0100000000000000AA /* StationAndMetadataRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationAndMetadataRulesTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000A2 /* ParseConnectMessageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseConnectMessageTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000A4 /* ws-connect-message.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "ws-connect-message.json"; sourceTree = "<group>"; };
 		71CA8E8C2EC57AD400F7F157 /* test-config-with-fallback.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-config-with-fallback.json"; sourceTree = "<group>"; };
@@ -247,6 +249,7 @@
 				71CA8E8B2EC57AD400F7F157 /* ConfigClientTests.swift */,
 				A1C0DE0100000000000000A6 /* ParseChannelMessageTests.swift */,
 				A1C0DE0100000000000000A8 /* ParseDJRulesTests.swift */,
+				A1C0DE0100000000000000AA /* StationAndMetadataRulesTests.swift */,
 				A1C0DE0100000000000000A2 /* ParseConnectMessageTests.swift */,
 				A1C0DE0100000000000000A4 /* ws-connect-message.json */,
 				71CA8E8C2EC57AD400F7F157 /* test-config-with-fallback.json */,
@@ -573,6 +576,7 @@
 				71CA8E8E2EC57AD400F7F157 /* ConfigClientTests.swift in Sources */,
 				A1C0DE0100000000000000A5 /* ParseChannelMessageTests.swift in Sources */,
 				A1C0DE0100000000000000A7 /* ParseDJRulesTests.swift in Sources */,
+				A1C0DE0100000000000000A9 /* StationAndMetadataRulesTests.swift in Sources */,
 				A1C0DE0100000000000000A1 /* ParseConnectMessageTests.swift in Sources */,
 				711BB18B2F45A71200B9D8DF /* Credits.swift in Sources */,
 				B6B0CEB08FFF4CC6A8931B5F /* CreditsClient.swift in Sources */,
