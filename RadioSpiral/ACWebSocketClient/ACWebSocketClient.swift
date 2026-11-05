@@ -17,6 +17,43 @@ public let ACActivityTrace = 16
 /// Type describing a callback to send the current status to a subscriber.
 public typealias MetadataCallback<T> = (T) -> Void
 
+/// The parts of `URLSessionWebSocketTask` the client uses, so tests can supply a fake socket.
+/// `URLProtocol` can't stand in for one: it sees the task, but its bytes never become messages.
+protocol WebSocketTasking: AnyObject {
+    func resume()
+    func cancel(with closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?)
+    func send(_ message: URLSessionWebSocketTask.Message, completionHandler: @escaping @Sendable (Error?) -> Void)
+    func receive(completionHandler: @escaping @Sendable (Result<URLSessionWebSocketTask.Message, Error>) -> Void)
+}
+
+extension URLSessionWebSocketTask: WebSocketTasking {}
+
+/// A running liveness timer.
+protocol LivenessTimer {
+    func invalidate()
+}
+
+extension Timer: LivenessTimer {}
+
+/// The client's two kinds of delay, so tests can run them without waiting.
+protocol SocketClock {
+    /// Runs `action` after `delay`. Can't be cancelled.
+    func runAfter(_ delay: TimeInterval, _ action: @escaping () -> Void)
+    /// Starts a one-shot timer on the current run loop.
+    func startTimer(interval: TimeInterval, _ action: @escaping () -> Void) -> LivenessTimer
+}
+
+/// The clock used outside tests.
+struct LiveSocketClock: SocketClock {
+    func runAfter(_ delay: TimeInterval, _ action: @escaping () -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: action)
+    }
+
+    func startTimer(interval: TimeInterval, _ action: @escaping () -> Void) -> LivenessTimer {
+        Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in action() }
+    }
+}
+
 ///  The `ACWebSocketClient` class allows us to connect to an Azuracast websocket server
 ///  for realtime stream metadata updates via a  supplied callback.
 public class ACWebSocketClient: ObservableObject {
@@ -31,8 +68,9 @@ public class ACWebSocketClient: ObservableObject {
     /// for all references to the client.
     public var status = ACStreamStatus()
         
-    private var webSocketTask: URLSessionWebSocketTask?
-    private var urlSession = URLSession(configuration: .default)
+    private var webSocketTask: WebSocketTasking?
+    private var makeSocket = ACWebSocketClient.liveSocketMaker()
+    private var clock: SocketClock = LiveSocketClock()
     private var webSocketURL: URL?
     
     // Used to monitor connection to the metadata API. When we receive a connect
@@ -42,7 +80,7 @@ public class ACWebSocketClient: ObservableObject {
     // If we don't get a message before then, the timer pops, we disconnect the API,
     // reconnect, and set a new timer when the connect message is received.
     //
-    private var stillAliveTimer: Timer? {
+    private var stillAliveTimer: LivenessTimer? {
         willSet {
             if let timer = stillAliveTimer {
                 timer.invalidate()
@@ -107,6 +145,24 @@ public class ACWebSocketClient: ObservableObject {
         }
     }
     
+    /// Initializes a client for tests, with a fake clock and socket.
+    init(serverName: String?, shortCode: String?, defaultDJ: String? = "",
+         clock: SocketClock, makeSocket: @escaping (URL) -> WebSocketTasking) {
+        self.clock = clock
+        self.makeSocket = makeSocket
+        self.defaultDJ = defaultDJ
+        if let serverName, let shortCode {
+            self.serverName = serverName
+            self.shortCode = shortCode
+            constructWebSocketURL(serverName: serverName)
+        }
+    }
+
+    private static func liveSocketMaker() -> (URL) -> WebSocketTasking {
+        let session = URLSession(configuration: .default)
+        return { session.webSocketTask(with: $0) }
+    }
+
     private func constructWebSocketURL(serverName: String) {
         guard let webSocketURL = URL(string: "wss://\(String(describing: serverName))/api/live/nowplaying/websocket") else {
             fatalError("Invalid server name for WebSocket URL")
@@ -186,7 +242,7 @@ public class ACWebSocketClient: ObservableObject {
         }
         if let _ = self.webSocketURL {
             debugLog("[Connect]", "Starting websocket task to \(self.webSocketURL!)", ACActivityTrace | ACConnectivityChecks)
-            webSocketTask = urlSession.webSocketTask(with: self.webSocketURL!)
+            webSocketTask = makeSocket(self.webSocketURL!)
             webSocketTask?.resume()
             status.connection = .connecting
             debugLog("[Connect]", "State set to connecting", ACActivityTrace | ACConnectivityChecks)
@@ -211,7 +267,7 @@ public class ACWebSocketClient: ObservableObject {
     }
     
     // Called if the liveness timer goes off.
-    @objc func fellOver() {
+    func fellOver() {
         debugLog("[FellOver]", "Liveness timer expired after \(String(describing: status.pingInterval)) seconds, state: \(status.connection)")
         connect()
     }
@@ -225,7 +281,7 @@ public class ACWebSocketClient: ObservableObject {
         let reconnectDelay = min(baseDelay * pow(2.0, Double(consecutiveFailures)), maxDelay)
         consecutiveFailures += 1
         debugLog("[ScheduleReconnect]", "Scheduling reconnect in \(reconnectDelay) seconds (attempt \(consecutiveFailures)), current state: \(status.connection)")
-        DispatchQueue.main.asyncAfter(deadline: .now() + reconnectDelay) { [weak self] in
+        clock.runAfter(reconnectDelay) { [weak self] in
             guard let self = self else { return }
             self.debugLog("[ScheduleReconnect]", "Timer fired, state: \(self.status.connection)")
             if self.status.connection != .connected && self.status.connection != .connecting {
@@ -334,12 +390,7 @@ public class ACWebSocketClient: ObservableObject {
         DispatchQueue.main.async {
             self.stillAliveTimer?.invalidate()
             let interval = self.lastKnownPingInterval * 1.5
-            self.stillAliveTimer = Timer.scheduledTimer(
-                timeInterval: interval,
-                target: self,
-                selector: #selector(self.fellOver),
-                userInfo: nil,
-                repeats: false)
+            self.stillAliveTimer = self.clock.startTimer(interval: interval) { self.fellOver() }
             self.debugLog("[HandleMessage]", "liveness timer reset to \(interval)s (pingInterval \(self.lastKnownPingInterval)s + 50% leeway)", ACActivityTrace)
         }
 
