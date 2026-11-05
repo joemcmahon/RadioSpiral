@@ -1,0 +1,346 @@
+{
+  "connect": {
+    "client": "a733c65e-ac5b-49e4-80c2-c3673d0e7ec5",
+    "version": "6.10.2 OSS",
+    "subs": {
+      "station:rs-one": {
+        "recoverable": true,
+        "epoch": "wKVqnqEk",
+        "publications": [
+          {
+            "data": {
+              "np": {
+                "station": {
+                  "id": 1,
+                  "name": "Radiospiral ONE",
+                  "shortcode": "rs-one",
+                  "description": "Our primary channel, with an eclectic selection of music 24/7. We have shows and live performances from our many DJs and continuous music the rest of the time from Spud the Ambient Robot.",
+                  "frontend": "icecast",
+                  "backend": "liquidsoap",
+                  "timezone": "America/Los_Angeles",
+                  "listen_url": "https://spiraltest.harriman4.com/listen/rs-one/radio.mp3",
+                  "url": "https://radiospiral.net",
+                  "public_player_url": "https://spiraltest.harriman4.com/public/rs-one",
+                  "playlist_pls_url": "https://spiraltest.harriman4.com/public/rs-one/playlist.pls",
+                  "playlist_m3u_url": "https://spiraltest.harriman4.com/public/rs-one/playlist.m3u",
+                  "is_public": true,
+                  "requests_enabled": false,
+                  "mounts": [
+                    {
+                      "id": 1,
+                      "name": "/radio.mp3 (128kbps MP3)",
+                      "url": "https://spiraltest.harriman4.com/listen/rs-one/radio.mp3",
+                      "bitrate": 128,
+                      "format": "mp3",
+                      "listeners": {
+                        "total": 0,
+                        "unique": 0,
+                        "current": 0
+                      },
+                      "path": "/radio.mp3",
+                      "is_default": true
+                    }
+                  ],
+                  "remotes": [],
+                  "hls_enabled": false,
+                  "hls_is_default": false,
+                  "hls_url": null,
+                  "hls_listeners": 0
+                },
+                "listeners": {
+                  "total": 0,
+                  "unique": 0,
+                  "current": 0
+                },
+                "live": {
+                  "is_live": false,
+                  "streamer_name": "",
+                  "broadcast_start": null,
+                  "art": null
+                },
+                "now_playing": {
+                  "sh_id": 13615,
+                  "played_at": 1793852483,
+                  "duration": 121,
+                  "playlist": "default",
+                  "playlist_chain": null,
+                  "playlist_source": "songs",
+                  "streamer": "",
+                  "is_request": false,
+                  "song": {
+                    "id": "442e3b8065cd2333272b8c6fef56cd32",
+                    "art": "https://spiraltest.harriman4.com/api/station/rs-one/art/f6ca7e2331309e86952a0a94",
+                    "custom_fields": [],
+                    "text": "4T Thieves - Futures End - Lost Tape II",
+                    "artist": "4T Thieves",
+                    "title": "Lost Tape II",
+                    "album": "Futures End",
+                    "genre": "",
+                    "isrc": "",
+                    "lyrics": ""
+                  },
+                  "elapsed": 42,
+                  "remaining": 79
+                },
+                "playing_next": {
+                  "cued_at": 1793852306,
+                  "played_at": 1793852599,
+                  "duration": 273.789375,
+                  "playlist": "default",
+                  "playlist_chain": null,
+                  "playlist_source": "songs",
+                  "is_request": false,
+                  "song": {
+                    "id": "9a0664559e5a9d509079309a6f4bc063",
+                    "art": "https://spiraltest.harriman4.com/api/station/rs-one/art/e2dae367e19994a903076f6c",
+                    "custom_fields": [],
+                    "text": "Loneward - Ferric Expeditions - Fading Oscilations",
+                    "artist": "Loneward",
+                    "title": "Fading Oscilations",
+                    "album": "Ferric Expeditions",
+                    "genre": "",
+                    "isrc": "UKR6V2311267",
+                    "lyrics": ""
+                  }
+                },
+                "song_history": [
+                  {
+                    "sh_id": 13614,
+                    "played_at": 1793852311,
+                    "duration": 231,
+                    "playlist": "default",
+                    "playlist_chain": null,
+                    "playlist_source": "songs",
+                    "streamer": "",
+                    "is_request": false,
+                    "song": {
+                      "id": "e2e2fe4e2e7ecd11ce0301c08d9d187b",
+                      "art": "https://spiraltest.harriman4.com/api/station/rs-one/art/0b699b28fc9d5fe568e2cfb9-1792032082.jpg",
+                      "custom_fields": [],
+                      "text": "Erik Wøllo - Where the River Widens - Open Waters",
+                      "artist": "Erik Wøllo",
+                      "title": "Open Waters",
+                      "album": "Where the River Widens",
+                      "genre": "",
+                      "isrc": "",
+                      "lyrics": ""
+                    }
+                  },
+                  {
+                    "sh_id": 13610,
+                    "played_at": 1793852016,
+                    "duration": 295,
+                    "playlist": "default",
+                    "playlist_chain": null,
+                    "playlist_source": "songs",
+                    "streamer": "",
+                    "is_request": false,
+                    "song": {
+                      "id": "7ad8e9447731e024081b8137596af18a",
+                      "art": "https://spiraltest.harriman4.com/api/station/rs-one/art/82040e5f2237f1e5e0856a68-1792030928.jpg",
+                      "custom_fields": [],
+                      "text": "brokenkites - Liminal Whispers - Lucidara",
+                      "artist": "brokenkites",
+                      "title": "Lucidara",
+                      "album": "Liminal Whispers",
+                      "genre": "",
+                      "isrc": "",
+                      "lyrics": ""
+                    }
+                  },
+                  {
+                    "sh_id": 13608,
+                    "played_at": 1793851808,
+                    "duration": 210,
+                    "playlist": "default",
+                    "playlist_chain": null,
+                    "playlist_source": "songs",
+                    "streamer": "",
+                    "is_request": false,
+                    "song": {
+                      "id": "9e27398ede935e17d3d98347b2879f46",
+                      "art": "https://spiraltest.harriman4.com/api/station/rs-one/art/2ee87f5020029d3d5475d606",
+                      "custom_fields": [],
+                      "text": "Heaven Topology - Worldpath Yggdrasil - Glacial Nothing 5",
+                      "artist": "Heaven Topology",
+                      "title": "Glacial Nothing 5",
+                      "album": "Worldpath Yggdrasil",
+                      "genre": "",
+                      "isrc": "",
+                      "lyrics": ""
+                    }
+                  },
+                  {
+                    "sh_id": 13607,
+                    "played_at": 1793851638,
+                    "duration": 178,
+                    "playlist": "default",
+                    "playlist_chain": null,
+                    "playlist_source": "songs",
+                    "streamer": "",
+                    "is_request": false,
+                    "song": {
+                      "id": "145db52f125d7e0d89f37c9ebc92620a",
+                      "art": "https://spiraltest.harriman4.com/api/station/rs-one/art/c8b035a8e55b6d4878b3db3d",
+                      "custom_fields": [],
+                      "text": "Elsehow - Afterimage (Instrumental Edition) - The Endless Dusk (Instrumental)",
+                      "artist": "Elsehow",
+                      "title": "The Endless Dusk (Instrumental)",
+                      "album": "Afterimage (Instrumental Edition)",
+                      "genre": "",
+                      "isrc": "",
+                      "lyrics": ""
+                    }
+                  },
+                  {
+                    "sh_id": 13605,
+                    "played_at": 1793851394,
+                    "duration": 250,
+                    "playlist": "default",
+                    "playlist_chain": null,
+                    "playlist_source": "songs",
+                    "streamer": "",
+                    "is_request": false,
+                    "song": {
+                      "id": "d56c9c3f9adee9dec479bf76b20b3498",
+                      "art": "https://spiraltest.harriman4.com/api/station/rs-one/art/1357c68034c62f6009b0121a",
+                      "custom_fields": [],
+                      "text": "Jörg Erren - Snapshots - Mine Shaft",
+                      "artist": "Jörg Erren",
+                      "title": "Mine Shaft",
+                      "album": "Snapshots",
+                      "genre": "",
+                      "isrc": "",
+                      "lyrics": ""
+                    }
+                  },
+                  {
+                    "sh_id": 13603,
+                    "played_at": 1793851202,
+                    "duration": 196,
+                    "playlist": "default",
+                    "playlist_chain": null,
+                    "playlist_source": "songs",
+                    "streamer": "",
+                    "is_request": false,
+                    "song": {
+                      "id": "280dddeede127cc68a76c750f4eb92d8",
+                      "art": "https://spiraltest.harriman4.com/api/station/rs-one/art/12ad4c895a05a9315ad0bbd8",
+                      "custom_fields": [],
+                      "text": "01 Sunshine Shorty",
+                      "artist": "",
+                      "title": "01 Sunshine Shorty",
+                      "album": "",
+                      "genre": "",
+                      "isrc": "",
+                      "lyrics": ""
+                    }
+                  },
+                  {
+                    "sh_id": 13598,
+                    "played_at": 1793850919,
+                    "duration": 293,
+                    "playlist": "default",
+                    "playlist_chain": null,
+                    "playlist_source": "songs",
+                    "streamer": "",
+                    "is_request": false,
+                    "song": {
+                      "id": "fb91fa4d7776ebccfd38deb793a06cab",
+                      "art": "https://spiraltest.harriman4.com/api/station/rs-one/art/de41170218c1e76d3286bb74",
+                      "custom_fields": [],
+                      "text": "Palancar - Halo of Light - The Tumbleweed Waltz",
+                      "artist": "Palancar",
+                      "title": "The Tumbleweed Waltz",
+                      "album": "Halo of Light",
+                      "genre": "",
+                      "isrc": "",
+                      "lyrics": ""
+                    }
+                  },
+                  {
+                    "sh_id": 13595,
+                    "played_at": 1793850442,
+                    "duration": 496,
+                    "playlist": "default",
+                    "playlist_chain": null,
+                    "playlist_source": "songs",
+                    "streamer": "",
+                    "is_request": false,
+                    "song": {
+                      "id": "1b62dae55021469f70c8cbb8a3d23cc1",
+                      "art": "https://spiraltest.harriman4.com/api/station/rs-one/art/dd0750f541eb6d84ece6fdd7",
+                      "custom_fields": [],
+                      "text": "Chelidon Frame - Noumena: Reimaginings - From Dusk To Dawn (Sonaura Rework)",
+                      "artist": "Chelidon Frame",
+                      "title": "From Dusk To Dawn (Sonaura Rework)",
+                      "album": "Noumena: Reimaginings",
+                      "genre": "",
+                      "isrc": "",
+                      "lyrics": ""
+                    }
+                  },
+                  {
+                    "sh_id": 13590,
+                    "played_at": 1793850089,
+                    "duration": 368,
+                    "playlist": "default",
+                    "playlist_chain": null,
+                    "playlist_source": "songs",
+                    "streamer": "",
+                    "is_request": false,
+                    "song": {
+                      "id": "ed9196701ca5aa1cc4ae195e1dab3191",
+                      "art": "https://spiraltest.harriman4.com/api/station/rs-one/art/9042b3cc00baaf3211dc62fb",
+                      "custom_fields": [],
+                      "text": "jarguna - Retrospective of Deep Days (2006-2023) - Paranoia in Supermarket — Excerpt",
+                      "artist": "jarguna",
+                      "title": "Paranoia in Supermarket — Excerpt",
+                      "album": "Retrospective of Deep Days (2006-2023)",
+                      "genre": "",
+                      "isrc": "",
+                      "lyrics": ""
+                    }
+                  },
+                  {
+                    "sh_id": 13589,
+                    "played_at": 1793849745,
+                    "duration": 350,
+                    "playlist": "default",
+                    "playlist_chain": null,
+                    "playlist_source": "songs",
+                    "streamer": "",
+                    "is_request": false,
+                    "song": {
+                      "id": "90489ec23cc8587d5c1546e249e434fa",
+                      "art": "https://spiraltest.harriman4.com/api/station/rs-one/art/f22107d6320d9c4ae534505f",
+                      "custom_fields": [],
+                      "text": "Cousin Silas - Snapshots - Mini Dronescape 001 (Radio Edit)",
+                      "artist": "Cousin Silas",
+                      "title": "Mini Dronescape 001 (Radio Edit)",
+                      "album": "Snapshots",
+                      "genre": "",
+                      "isrc": "",
+                      "lyrics": ""
+                    }
+                  }
+                ],
+                "is_online": true,
+                "cache": "event"
+              },
+              "triggers": [],
+              "current_time": 1793852520
+            },
+            "offset": 62369
+          }
+        ],
+        "recovered": true,
+        "positioned": true,
+        "was_recovering": true
+      }
+    },
+    "ping": 25,
+    "session": "9a3be8df-88a3-4ee4-b82c-4acd1462e6c6",
+    "time": 1793852525854
+  }
+}

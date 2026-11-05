@@ -34,6 +34,8 @@
 		71CA8E8A2EC57A5100F7F157 /* StationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71CA8E8A2EC57A5000F7F157 /* StationConfig.swift */; };
 		71CA8E8A2EC57A5200F7F157 /* StationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71CA8E8A2EC57A5000F7F157 /* StationConfig.swift */; };
 		71CA8E8E2EC57AD400F7F157 /* ConfigClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71CA8E8B2EC57AD400F7F157 /* ConfigClientTests.swift */; };
+		A1C0DE0100000000000000A1 /* ParseConnectMessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000A2 /* ParseConnectMessageTests.swift */; };
+		A1C0DE0100000000000000A3 /* ws-connect-message.json in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000A4 /* ws-connect-message.json */; };
 		71CA8E8F2EC57AD400F7F157 /* test-config-with-fallback.json in Resources */ = {isa = PBXBuildFile; fileRef = 71CA8E8C2EC57AD400F7F157 /* test-config-with-fallback.json */; };
 		71CA8E912EC57AD500F7F157 /* test-config-production.json in Resources */ = {isa = PBXBuildFile; fileRef = 71CA8E902EC57AD500F7F157 /* test-config-production.json */; };
 		9409E11C1ABF6FEA00312E2B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9409E11B1ABF6FEA00312E2B /* AppDelegate.swift */; };
@@ -115,6 +117,8 @@
 		71CA8E852EC57A5000F7F157 /* ConfigClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigClient.swift; sourceTree = "<group>"; };
 		71CA8E8A2EC57A5000F7F157 /* StationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationConfig.swift; sourceTree = "<group>"; };
 		71CA8E8B2EC57AD400F7F157 /* ConfigClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigClientTests.swift; sourceTree = "<group>"; };
+		A1C0DE0100000000000000A2 /* ParseConnectMessageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseConnectMessageTests.swift; sourceTree = "<group>"; };
+		A1C0DE0100000000000000A4 /* ws-connect-message.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "ws-connect-message.json"; sourceTree = "<group>"; };
 		71CA8E8C2EC57AD400F7F157 /* test-config-with-fallback.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-config-with-fallback.json"; sourceTree = "<group>"; };
 		71CA8E902EC57AD500F7F157 /* test-config-production.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-config-production.json"; sourceTree = "<group>"; };
 		8AAF0ECFA82245D0A3C4E3A1 /* test-config-live-azuracast.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-config-live-azuracast.json"; sourceTree = "<group>"; };
@@ -237,6 +241,8 @@
 			isa = PBXGroup;
 			children = (
 				71CA8E8B2EC57AD400F7F157 /* ConfigClientTests.swift */,
+				A1C0DE0100000000000000A2 /* ParseConnectMessageTests.swift */,
+				A1C0DE0100000000000000A4 /* ws-connect-message.json */,
 				71CA8E8C2EC57AD400F7F157 /* test-config-with-fallback.json */,
 				6F4444B16407430F8A42EFDD /* test-config-with-real-server.json */,
 				8AAF0ECFA82245D0A3C4E3A1 /* test-config-live-azuracast.json */,
@@ -524,6 +530,7 @@
 				B2C601433BBD45CD9F6DE9A3 /* test-config-live-azuracast.json in Resources */,
 				B6B0CEB08FFF4CC6A8931B62 /* test-credits.json in Resources */,
 				71CA8E912EC57AD500F7F157 /* test-config-production.json in Resources */,
+				A1C0DE0100000000000000A3 /* ws-connect-message.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -558,6 +565,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				71CA8E8E2EC57AD400F7F157 /* ConfigClientTests.swift in Sources */,
+				A1C0DE0100000000000000A1 /* ParseConnectMessageTests.swift in Sources */,
 				711BB18B2F45A71200B9D8DF /* Credits.swift in Sources */,
 				B6B0CEB08FFF4CC6A8931B5F /* CreditsClient.swift in Sources */,
 				71CA8E882EC57A5000F7F157 /* ConfigClient.swift in Sources */,
