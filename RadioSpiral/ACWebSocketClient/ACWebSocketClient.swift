@@ -159,6 +159,9 @@ public class ACWebSocketClient: ObservableObject {
         self.serverName = station.serverName
         self.shortCode = station.shortCode
         self.defaultDJ = station.defaultDJ
+        // The status still describes the previous station. Left in place, it would be
+        // republished as the new station's metadata until the first message arrives.
+        self.status = ACStreamStatus()
         self.disconnect()
         self.constructWebSocketURL(serverName: station.serverName)
         self.connect()
