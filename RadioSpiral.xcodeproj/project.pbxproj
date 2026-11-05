@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		27D776512BD747B293E5A498 /* InterruptionPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB1F0A11DE24DA9A9641A24 /* InterruptionPreference.swift */; };
+		A1C0DE0100000000000000AD /* StationListE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000AE /* StationListE2ETests.swift */; };
 		2C5545BD1C1124DE00728469 /* SwiftRadioUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C5545BC1C1124DE00728469 /* SwiftRadioUITests.swift */; };
 		53113F39230C720900462C0E /* ShareActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53113F38230C720900462C0E /* ShareActivity.swift */; };
 		5FDEE0221F72FF980064333C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5FDEE0211F72FF980064333C /* LaunchScreen.storyboard */; };
@@ -96,6 +97,7 @@
 
 /* Begin PBXFileReference section */
 		2C5545BA1C1124DE00728469 /* RadioSpiralUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RadioSpiralUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1C0DE0100000000000000AE /* StationListE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationListE2ETests.swift; sourceTree = "<group>"; };
 		2C5545BC1C1124DE00728469 /* SwiftRadioUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftRadioUITests.swift; sourceTree = "<group>"; };
 		2C5545BE1C1124DE00728469 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		53113F38230C720900462C0E /* ShareActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareActivity.swift; sourceTree = "<group>"; };
@@ -199,6 +201,7 @@
 			children = (
 				715C87A52B23E141003FC57A /* SnapshotHelper.swift */,
 				2C5545BC1C1124DE00728469 /* SwiftRadioUITests.swift */,
+				A1C0DE0100000000000000AE /* StationListE2ETests.swift */,
 				2C5545BE1C1124DE00728469 /* Info.plist */,
 			);
 			path = RadioSpiralUITests;
@@ -568,6 +571,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2C5545BD1C1124DE00728469 /* SwiftRadioUITests.swift in Sources */,
+				A1C0DE0100000000000000AD /* StationListE2ETests.swift in Sources */,
 				715C87A62B23E141003FC57A /* SnapshotHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
