@@ -52,7 +52,7 @@ We needed to completely revamp metadata management, as FRadioPlayer (the existin
 
 This branch has been updated to build under Xcode 26 and Swift 5.
 
-We use SPM for dependency management: Spring for enhanced UI, Kingfisher for wasy image management, NVActivityIndicatorView for our "playing" animation.
+We use SPM for dependency management: Spring for enhanced UI, Kingfisher for easy image management, NVActivityIndicatorView for our "playing" animation.
 
 RadioSpiral is no longer a generic radio app, but one tuned specifically for our purposes and server. I do want to credit the Swift Radio Pro developers for 
 providing me with a great platform that I've turned into a mutant of my own design:
