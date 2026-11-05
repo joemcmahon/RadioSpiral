@@ -11,175 +11,7 @@ import XCTest
 
 class ConfigClientTests: XCTestCase {
 
-    var sut: ConfigClient!
-    var testConfigURL: String!
-
-    override func setUp() {
-        super.setUp()
-
-        // Get path to test config file
-        let testBundle = Bundle(for: ConfigClientTests.self)
-        if let testConfigPath = testBundle.path(forResource: "test-config-with-fallback", ofType: "json") {
-            testConfigURL = URL(fileURLWithPath: testConfigPath).absoluteString
-            sut = ConfigClient(configURL: testConfigURL)
-        } else {
-            XCTFail("Could not find test config file")
-        }
-    }
-
-    override func tearDown() {
-        sut = nil
-        testConfigURL = nil
-        super.tearDown()
-    }
-
-    // MARK: - Initialization Tests
-
-    func testConfigClientInitializationWithDefaultURL() {
-        let client = ConfigClient()
-        XCTAssertNotNil(client, "ConfigClient should initialize with default URL")
-    }
-
-    func testConfigClientInitializationWithCustomURL() {
-        let customURL = "file:///test/path/config.json"
-        let client = ConfigClient(configURL: customURL)
-        XCTAssertNotNil(client, "ConfigClient should initialize with custom URL")
-    }
-
-    // MARK: - Station Lookup Tests
-
-    func testGetStationInfoWithValidShortCode() {
-        let station = sut.getStationInfo(byShortCode: "test_station")
-        // Initially should be nil until stations are fetched
-        XCTAssertNil(station, "Station lookup should return nil before stations are loaded")
-    }
-
-    func testGetStationInfoWithInvalidShortCode() {
-        let station = sut.getStationInfo(byShortCode: "nonexistent_station")
-        XCTAssertNil(station, "Station lookup with invalid short code should return nil")
-    }
-
-    // MARK: - Fetch Stations Tests
-
-    func testFetchStationsFromLocalConfig() {
-        let expectation = self.expectation(description: "Fetch stations from local config")
-
-        sut.fetchStations { result in
-            switch result {
-            case .success(let stations):
-                XCTAssertFalse(stations.isEmpty, "Should fetch at least one station")
-                XCTAssertTrue(stations.contains { $0.shortCode == "test_station" },
-                             "Should contain test_station from static config")
-                expectation.fulfill()
-            case .failure(let error):
-                XCTFail("Failed to fetch stations: \(error)")
-            }
-        }
-
-        waitForExpectations(timeout: 15.0)
-    }
-
-    func testFetchedStationHasRequiredFields() {
-        let expectation = self.expectation(description: "Fetched station has required fields")
-
-        sut.fetchStations { result in
-            switch result {
-            case .success(let stations):
-                if let testStation = stations.first(where: { $0.shortCode == "test_station" }) {
-                    XCTAssertFalse(testStation.name.isEmpty, "Station should have name")
-                    XCTAssertFalse(testStation.shortCode.isEmpty, "Station should have shortCode")
-                    XCTAssertFalse(testStation.desc.isEmpty, "Station should have desc")
-                    expectation.fulfill()
-                } else {
-                    XCTFail("test_station not found in fetched stations")
-                }
-            case .failure(let error):
-                XCTFail("Failed to fetch stations: \(error)")
-            }
-        }
-
-        waitForExpectations(timeout: 15.0)
-    }
-
-    // MARK: - Station Lookup After Fetch Tests
-
-    func testGetStationInfoAfterFetch() {
-        let expectation = self.expectation(description: "Get station info after fetch")
-
-        sut.fetchStations { [weak self] result in
-            switch result {
-            case .success:
-                let station = self?.sut.getStationInfo(byShortCode: "test_station")
-                XCTAssertNotNil(station, "Should find station after fetch")
-                XCTAssertEqual(station?.name, "Test Station", "Station name should match")
-                expectation.fulfill()
-            case .failure(let error):
-                XCTFail("Failed to fetch stations: \(error)")
-            }
-        }
-
-        waitForExpectations(timeout: 15.0)
-    }
-
-    // MARK: - Config Structure Tests
-
-    func testConfigWrapperDecoding() {
-        guard let testConfigPath = Bundle(for: ConfigClientTests.self).path(forResource: "test-config-with-fallback", ofType: "json") else {
-            XCTFail("Could not find test config file")
-            return
-        }
-
-        do {
-            let data = try Data(contentsOf: URL(fileURLWithPath: testConfigPath))
-            let config = try JSONDecoder().decode(ConfigWrapper.self, from: data)
-
-            XCTAssertFalse(config.configs.isEmpty, "Config should have at least one source")
-            XCTAssertTrue(config.configs.contains { $0.format == .static },
-                         "Config should include static format")
-        } catch {
-            XCTFail("Failed to decode config: \(error)")
-        }
-    }
-
-    func testStaticConfigSourceDecoding() {
-        guard let testConfigPath = Bundle(for: ConfigClientTests.self).path(forResource: "test-config-with-fallback", ofType: "json") else {
-            XCTFail("Could not find test config file")
-            return
-        }
-
-        do {
-            let data = try Data(contentsOf: URL(fileURLWithPath: testConfigPath))
-            let config = try JSONDecoder().decode(ConfigWrapper.self, from: data)
-
-            if let staticConfig = config.configs.first(where: { $0.format == .static }) {
-                XCTAssertNotNil(staticConfig.stations, "Static config should have stations")
-                XCTAssertFalse(staticConfig.stations?.isEmpty ?? true, "Static config should have at least one station")
-            } else {
-                XCTFail("Could not find static config source")
-            }
-        } catch {
-            XCTFail("Failed to decode config: \(error)")
-        }
-    }
-
     // MARK: - Early-Stop and Fallback Chain Tests
-
-    func testEarlyStopOnFirstSuccessfulConfig() {
-        let expectation = self.expectation(description: "Early stop on first successful config")
-
-        sut.fetchStations { result in
-            switch result {
-            case .success(let stations):
-                // Should have exactly 1 station from static config (since Azuracast servers fail)
-                XCTAssertEqual(stations.count, 1, "Should get exactly one station from fallback static config")
-                expectation.fulfill()
-            case .failure(let error):
-                XCTFail("Failed to fetch stations: \(error)")
-            }
-        }
-
-        waitForExpectations(timeout: 15.0)
-    }
 
     func testAzuracastStationParsing() {
         guard let testConfigPath = Bundle(for: ConfigClientTests.self).path(forResource: "test-config-with-fallback", ofType: "json") else {
@@ -207,31 +39,6 @@ class ConfigClientTests: XCTestCase {
             } else {
                 XCTFail("Could not find static config source")
             }
-        } catch {
-            XCTFail("Failed to decode config: \(error)")
-        }
-    }
-
-    func testFallbackChainOrder() {
-        guard let testConfigPath = Bundle(for: ConfigClientTests.self).path(forResource: "test-config-with-fallback", ofType: "json") else {
-            XCTFail("Could not find test config file")
-            return
-        }
-
-        do {
-            let data = try Data(contentsOf: URL(fileURLWithPath: testConfigPath))
-            let config = try JSONDecoder().decode(ConfigWrapper.self, from: data)
-
-            // Verify config has all three sources in order
-            XCTAssertEqual(config.configs.count, 3, "Should have 3 config sources")
-            XCTAssertEqual(config.configs[0].format, .azuracast, "First should be azuracast")
-            XCTAssertEqual(config.configs[1].format, .azuracast, "Second should be azuracast")
-            XCTAssertEqual(config.configs[2].format, .static, "Third should be static")
-
-            // Verify first Azuracast has server set
-            XCTAssertEqual(config.configs[0].server, "primary.example.com", "Primary server should be set")
-            // Verify second Azuracast has server set
-            XCTAssertEqual(config.configs[1].server, "fallback.example.com", "Fallback server should be set")
         } catch {
             XCTFail("Failed to decode config: \(error)")
         }
@@ -313,88 +120,6 @@ class ConfigClientTests: XCTestCase {
         waitForExpectations(timeout: 15.0)
     }
 
-    // MARK: - RadioStation Converter Tests
-
-    func testStationConfigToDictionary() {
-        // Simple test to verify StationConfig can be created
-        let sampleConfig = StationConfig(
-            name: "Test Radio",
-            streamURL: "https://example.com/stream",
-            imageURL: "https://example.com/image.png",
-            desc: "Test Description",
-            longDesc: "Test Long Description",
-            serverName: "example.com",
-            shortCode: "test_radio",
-            defaultDJ: "DJ Test"
-        )
-
-        // Verify the config was created with correct values
-        XCTAssertEqual(sampleConfig.name, "Test Radio", "Name should be set correctly")
-        XCTAssertEqual(sampleConfig.shortCode, "test_radio", "Short code should be set correctly")
-        XCTAssertEqual(sampleConfig.streamURL, "https://example.com/stream", "Stream URL should be set correctly")
-    }
-
-    func testStationConfigFromFetchedData() {
-        let expectation = self.expectation(description: "Fetch and verify StationConfig")
-
-        sut.fetchStations { result in
-            switch result {
-            case .success(let stationConfigs):
-                XCTAssertFalse(stationConfigs.isEmpty, "Should have fetched at least one station")
-
-                // Verify first config has all required fields
-                if let firstConfig = stationConfigs.first {
-                    XCTAssertFalse(firstConfig.name.isEmpty, "Config name should not be empty")
-                    XCTAssertFalse(firstConfig.shortCode.isEmpty, "Config short code should not be empty")
-                    expectation.fulfill()
-                } else {
-                    XCTFail("No stations were fetched")
-                }
-            case .failure(let error):
-                XCTFail("Failed to fetch stations: \(error)")
-            }
-        }
-
-        waitForExpectations(timeout: 15.0)
-    }
-
-    // MARK: - ConfigClient Fallback Lookup Tests
-
-    func testConfigClientCachingForFallback() {
-        let expectation = self.expectation(description: "ConfigClient caches stations for fallback lookup")
-
-        // Fetch stations to populate cache
-        sut.fetchStations { result in
-            switch result {
-            case .success(let stationConfigs):
-                XCTAssertFalse(stationConfigs.isEmpty, "Should fetch at least one station")
-
-                // Verify we can look up a station from the cache by shortCode
-                if let firstConfig = stationConfigs.first {
-                    let lookedUpStation = self.sut.getStationInfo(byShortCode: firstConfig.shortCode)
-
-                    // Verify the looked-up station matches the original
-                    XCTAssertNotNil(lookedUpStation, "Should find station in cache by shortCode")
-                    XCTAssertEqual(lookedUpStation?.name, firstConfig.name, "Station name should match")
-                    XCTAssertEqual(lookedUpStation?.shortCode, firstConfig.shortCode, "Station shortCode should match")
-
-                    // Verify all fields are available for metadata fallback
-                    XCTAssertFalse(lookedUpStation?.desc.isEmpty ?? true, "Station description should not be empty")
-                    XCTAssertFalse(lookedUpStation?.defaultDJ.isEmpty ?? true, "Station defaultDJ should not be empty")
-
-                    expectation.fulfill()
-                } else {
-                    XCTFail("No stations were fetched")
-                }
-            case .failure(let error):
-                XCTFail("Failed to fetch stations: \(error)")
-            }
-        }
-
-        // Live network fetch; CI simulators can take well over 5 s.
-        waitForExpectations(timeout: 15.0)
-    }
-
     // MARK: - Production Configuration Tests
 
     func testProductionConfigurationWithSpiralRadio() {
@@ -465,32 +190,6 @@ class ConfigClientTests: XCTestCase {
         }
 
         waitForExpectations(timeout: 15.0)
-    }
-
-    func testCreditsClientCaching() {
-        let testBundle = Bundle(for: ConfigClientTests.self)
-        guard let path = testBundle.path(forResource: "test-credits", ofType: "json") else {
-            XCTFail("test-credits.json not found in test bundle")
-            return
-        }
-        let url = URL(fileURLWithPath: path).absoluteString
-        let client = CreditsClient(creditsURL: url)
-        let exp1 = self.expectation(description: "First fetch")
-
-        client.fetchCredits { credits in
-            XCTAssertEqual(credits.count, 2)
-            exp1.fulfill()
-        }
-        waitForExpectations(timeout: 15.0)
-
-        // Second fetch should return cached data immediately
-        let exp2 = self.expectation(description: "Second fetch (cached)")
-        client.fetchCredits { credits in
-            XCTAssertEqual(credits.count, 2)
-            XCTAssertEqual(credits[0].role, "Test Role 1")
-            exp2.fulfill()
-        }
-        waitForExpectations(timeout: 1.0)
     }
 
     func testCreditPairCodable() {
@@ -609,21 +308,315 @@ class ConfigClientTests: XCTestCase {
         XCTAssertEqual(StationServer.production.configURL,
                        "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config.json")
     }
+}
+
+// MARK: - Config and credits from local files
+
+/// Pins how ConfigClient and CreditsClient load from local files: exact values,
+/// the failure paths, and what the caches do. Every test builds its own temp file
+/// and no source names a server, so none of these touch the network.
+///
+/// Sources that fail here are the ones that can fail offline: an AzuraCast source
+/// with no server, and a static source with no usable stations. Stubbed HTTP comes
+/// with Phase 9.
+final class ConfigOfflineTests: XCTestCase {
+
+    private let alpha = ConfigOfflineTests.station("alpha")
+    private let beta = ConfigOfflineTests.station("beta")
+
+    private static let fieldNames = ["name", "streamURL", "imageURL", "desc", "longDesc",
+                                     "serverName", "shortCode", "defaultDJ"]
+
+    // MARK: Helpers
+
+    /// Every value is distinct, so a value landing in the wrong field fails the test.
+    private static func station(_ tag: String) -> [String: String] {
+        ["name": "\(tag) name",
+         "streamURL": "https://\(tag).test/stream",
+         "imageURL": "https://\(tag).test/image.png",
+         "desc": "\(tag) desc",
+         "longDesc": "\(tag) long desc",
+         "serverName": "\(tag).server",
+         "shortCode": "\(tag)_code",
+         "defaultDJ": "\(tag) DJ"]
+    }
+
+    private func fields(_ station: StationConfig) -> [String: String] {
+        ["name": station.name,
+         "streamURL": station.streamURL,
+         "imageURL": station.imageURL,
+         "desc": station.desc,
+         "longDesc": station.longDesc,
+         "serverName": station.serverName,
+         "shortCode": station.shortCode,
+         "defaultDJ": station.defaultDJ]
+    }
+
+    private func staticSource(_ stations: [[String: String]]) -> [String: Any] {
+        ["format": "static", "stations": stations]
+    }
+
+    /// An AzuraCast source that fails before any request is made.
+    private let azuracastWithNoServer: [String: Any] = ["format": "azuracast"]
+
+    private func configData(_ sources: [[String: Any]]) throws -> Data {
+        try JSONSerialization.data(withJSONObject: ["configs": sources])
+    }
+
+    private func tempFile(_ data: Data) throws -> URL {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("config-offline-\(UUID().uuidString).json")
+        try data.write(to: url)
+        addTeardownBlock { try? FileManager.default.removeItem(at: url) }
+        return url
+    }
+
+    private func makeClient(_ sources: [[String: Any]]) throws -> (client: ConfigClient, file: URL) {
+        let file = try tempFile(try configData(sources))
+        return (ConfigClient(configURL: file.absoluteString), file)
+    }
+
+    private func fetch(_ client: ConfigClient) -> Result<[StationConfig], Error>? {
+        let done = expectation(description: "fetchStations finished")
+        var outcome: Result<[StationConfig], Error>?
+        client.fetchStations { result in
+            outcome = result
+            done.fulfill()
+        }
+        wait(for: [done], timeout: 5)
+        return outcome
+    }
+
+    private func assertFetch(_ client: ConfigClient,
+                             returns expected: [[String: String]],
+                             _ message: String = "",
+                             file: StaticString = #filePath,
+                             line: UInt = #line) {
+        switch fetch(client) {
+        case .success(let stations):
+            XCTAssertEqual(stations.map(fields), expected, message, file: file, line: line)
+        case .failure(let error):
+            XCTFail("Fetch failed: \(error). \(message)", file: file, line: line)
+        case nil:
+            XCTFail("Fetch never finished. \(message)", file: file, line: line)
+        }
+    }
+
+    /// Every failure reaches the caller as dataNotFound, whatever the cause.
+    private func assertFetchFails(_ client: ConfigClient,
+                                  _ message: String = "",
+                                  file: StaticString = #filePath,
+                                  line: UInt = #line) {
+        switch fetch(client) {
+        case .failure(let error):
+            XCTAssertEqual(error as? ConfigClientError, .dataNotFound, message, file: file, line: line)
+        case .success(let stations):
+            XCTFail("Expected failure, got \(stations.count) stations. \(message)", file: file, line: line)
+        case nil:
+            XCTFail("Fetch never finished. \(message)", file: file, line: line)
+        }
+    }
+
+    // MARK: Config URL
+
+    func testDefaultConfigURLIsTheProductionConfig() {
+        XCTAssertEqual(ConfigClient().configURL,
+                       "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config.json")
+    }
+
+    func testCustomConfigURLIsKept() {
+        XCTAssertEqual(ConfigClient(configURL: "file:///test/path/config.json").configURL,
+                       "file:///test/path/config.json")
+    }
+
+    // MARK: Loading stations
+
+    func testFetchReturnsEveryFieldOfEveryStationInOrder() throws {
+        let (client, _) = try makeClient([staticSource([alpha, beta])])
+        assertFetch(client, returns: [alpha, beta])
+    }
+
+    func testLookupFindsOnlyLoadedStations() throws {
+        let (client, _) = try makeClient([staticSource([alpha, beta])])
+        XCTAssertNil(client.getStationInfo(byShortCode: "beta_code"), "Nothing is loaded yet")
+
+        assertFetch(client, returns: [alpha, beta])
+
+        XCTAssertEqual(client.getStationInfo(byShortCode: "beta_code").map(fields), beta)
+        XCTAssertNil(client.getStationInfo(byShortCode: "unknown_code"))
+    }
+
+    func testConfigDecodesEverySourceExactly() throws {
+        let data = try configData([
+            ["format": "azuracast", "server": "primary.test", "exclude": ["rstest", "other"]],
+            azuracastWithNoServer,
+            staticSource([alpha]),
+        ])
+
+        let sources = try JSONDecoder().decode(ConfigWrapper.self, from: data).configs
+
+        XCTAssertEqual(sources.map(\.format), [.azuracast, .azuracast, .static])
+        XCTAssertEqual(sources[0].safeServer, "primary.test")
+        XCTAssertEqual(sources[0].safeExclude, ["rstest", "other"])
+        XCTAssertEqual(sources[1].safeServer, "")
+        XCTAssertEqual(sources[1].safeExclude, [])
+        XCTAssertEqual(sources[0].safeStations.count, 0)
+        XCTAssertEqual(sources[2].safeStations.map(fields), [alpha])
+    }
+
+    // MARK: Moving past a source that fails
+
+    func testFailedSourcesAreSkippedAndTheFirstGoodOneWins() throws {
+        let (client, _) = try makeClient([azuracastWithNoServer,
+                                          staticSource([]),
+                                          staticSource([alpha]),
+                                          staticSource([beta])])
+        assertFetch(client, returns: [alpha])
+    }
+
+    func testStaticEntryMissingAnyFieldIsDropped() throws {
+        for field in Self.fieldNames {
+            var incomplete = alpha
+            incomplete.removeValue(forKey: field)
+            let (client, _) = try makeClient([staticSource([incomplete, beta])])
+            assertFetch(client, returns: [beta], "missing \(field)")
+        }
+    }
+
+    func testSourceWithOnlyIncompleteEntriesCountsAsFailed() throws {
+        var incomplete = alpha
+        incomplete.removeValue(forKey: "defaultDJ")
+        let (client, _) = try makeClient([staticSource([incomplete]), staticSource([beta])])
+        assertFetch(client, returns: [beta])
+    }
+
+    // MARK: Fetches that fail
+
+    func testMalformedConfigFails() throws {
+        let malformed = [
+            "not JSON": "this is not json",
+            "wrong top-level key": #"{"sources": []}"#,
+            "top-level array": "[]",
+            "unknown format": #"{"configs": [{"format": "bogus"}]}"#,
+            "non-string station value": #"{"configs": [{"format": "static", "stations": [{"name": 5}]}]}"#,
+        ]
+        for (label, text) in malformed {
+            let file = try tempFile(Data(text.utf8))
+            assertFetchFails(ConfigClient(configURL: file.absoluteString), label)
+        }
+    }
+
+    func testMissingConfigFileFails() {
+        let file = FileManager.default.temporaryDirectory
+            .appendingPathComponent("config-offline-absent-\(UUID().uuidString).json")
+        assertFetchFails(ConfigClient(configURL: file.absoluteString))
+    }
+
+    func testUnusableConfigURLFails() {
+        assertFetchFails(ConfigClient(configURL: ""))
+    }
+
+    func testEmptyStaticListFails() throws {
+        assertFetchFails(try makeClient([staticSource([])]).client, "empty list")
+        assertFetchFails(try makeClient([["format": "static"]]).client, "no list at all")
+    }
+
+    func testAllSourcesFailingFails() throws {
+        var incomplete = alpha
+        incomplete.removeValue(forKey: "name")
+        let (client, _) = try makeClient([azuracastWithNoServer,
+                                          staticSource([]),
+                                          staticSource([incomplete])])
+        assertFetchFails(client)
+        XCTAssertNil(client.getStationInfo(byShortCode: "alpha_code"))
+    }
+
+    func testConfigWithNoSourcesFails() throws {
+        assertFetchFails(try makeClient([]).client)
+    }
+
+    // MARK: The station cache
+
+    func testCachedStationsAreReturnedWhenTheConfigTurnsMalformed() throws {
+        let (client, file) = try makeClient([staticSource([alpha, beta])])
+        assertFetch(client, returns: [alpha, beta])
+
+        try Data("this is not json".utf8).write(to: file)
+
+        assertFetch(client, returns: [alpha, beta])
+        XCTAssertEqual(client.getStationInfo(byShortCode: "alpha_code").map(fields), alpha)
+    }
+
+    func testCachedStationsAreReturnedWhenTheConfigDisappears() throws {
+        let (client, file) = try makeClient([staticSource([alpha])])
+        assertFetch(client, returns: [alpha])
+
+        try FileManager.default.removeItem(at: file)
+
+        assertFetch(client, returns: [alpha])
+    }
+
+    func testCachedStationsAreReturnedWhenEverySourceFails() throws {
+        let (client, file) = try makeClient([staticSource([alpha])])
+        assertFetch(client, returns: [alpha])
+
+        try configData([azuracastWithNoServer, staticSource([])]).write(to: file)
+
+        assertFetch(client, returns: [alpha])
+        XCTAssertEqual(client.getStationInfo(byShortCode: "alpha_code").map(fields), alpha)
+    }
+
+    func testASuccessfulFetchReplacesTheCache() throws {
+        let (client, file) = try makeClient([staticSource([alpha])])
+        assertFetch(client, returns: [alpha])
+
+        try configData([staticSource([beta])]).write(to: file)
+
+        assertFetch(client, returns: [beta])
+        XCTAssertNil(client.getStationInfo(byShortCode: "alpha_code"))
+        XCTAssertEqual(client.getStationInfo(byShortCode: "beta_code").map(fields), beta)
+    }
 
     func testChangingConfigURLDropsCachedStations() throws {
-        let loaded = expectation(description: "stations loaded")
-        let fileURL = try XCTUnwrap(Bundle(for: type(of: self)).url(forResource: "test-config-with-fallback", withExtension: "json"))
-        let client = ConfigClient(configURL: fileURL.absoluteString)
-        var shortCode: String?
-        client.fetchStations { result in
-            shortCode = try? result.get().first?.shortCode
-            loaded.fulfill()
-        }
-        wait(for: [loaded], timeout: 15)
-        let code = try XCTUnwrap(shortCode)
-        XCTAssertNotNil(client.getStationInfo(byShortCode: code))
+        let (client, file) = try makeClient([staticSource([alpha])])
+        assertFetch(client, returns: [alpha])
+
+        client.configURL = file.absoluteString
+        XCTAssertNotNil(client.getStationInfo(byShortCode: "alpha_code"), "The same URL keeps the cache")
 
         client.configURL = "file:///nonexistent.json"
-        XCTAssertNil(client.getStationInfo(byShortCode: code))
+        XCTAssertNil(client.getStationInfo(byShortCode: "alpha_code"))
+        assertFetchFails(client, "The dropped cache can't answer a failed fetch either")
+    }
+
+    // MARK: The credits cache
+
+    private func credits(_ pairs: [CreditPair]) throws -> Data {
+        try JSONEncoder().encode(CreditsWrapper(credits: pairs))
+    }
+
+    private func fetchCredits(_ client: CreditsClient) -> [CreditPair]? {
+        let done = expectation(description: "fetchCredits finished")
+        var outcome: [CreditPair]?
+        client.fetchCredits { credits in
+            outcome = credits
+            done.fulfill()
+        }
+        wait(for: [done], timeout: 5)
+        return outcome
+    }
+
+    func testCreditsAreServedFromTheCacheAfterTheFileChanges() throws {
+        let original = [CreditPair(role: "Original role", name: "Original name")]
+        let file = try tempFile(try credits(original))
+        let client = CreditsClient(creditsURL: file.absoluteString)
+        XCTAssertEqual(client.credits, [], "Nothing is cached before the first fetch")
+
+        XCTAssertEqual(fetchCredits(client), original)
+
+        try credits([CreditPair(role: "New role", name: "New name")]).write(to: file)
+
+        XCTAssertEqual(fetchCredits(client), original)
+        XCTAssertEqual(client.credits, original)
     }
 }
