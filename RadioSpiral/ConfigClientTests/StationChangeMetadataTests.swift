@@ -42,4 +42,39 @@ final class StationChangeMetadataTests: XCTestCase {
         XCTAssertEqual(metadata?.artistName, "Next description")
         XCTAssertNil(metadata?.artworkURL, "Nil artwork makes Now Playing use the station's art")
     }
+
+    private func unreachableStation() -> RadioStation {
+        RadioStation(name: "Next Station",
+                     streamURL: "https://example.invalid/next.mp3",
+                     imageURL: "stationImage",
+                     desc: "Next description",
+                     serverName: "example.invalid",
+                     shortCode: "next-station",
+                     defaultDJ: "")
+    }
+
+    /// Leaving the app while paused disconnects. Play from the lock screen or CarPlay
+    /// has to bring the metadata back, since nothing else will until the app is reopened.
+    func testPlaybackReconnectsADisconnectedStation() {
+        let client = ACWebSocketClient.shared
+        let manager = StationMetadataManager.shared
+        addTeardownBlock { manager.disconnectCurrentStation() }
+        manager.connectToStation(unreachableStation())
+        client.disconnect()
+        XCTAssertEqual(client.status.connection, .disconnected)
+
+        manager.reconnectForPlayback()
+
+        XCTAssertEqual(client.status.connection, .connecting)
+    }
+
+    func testPlaybackWithNoStationDoesNotConnect() {
+        let client = ACWebSocketClient.shared
+        let manager = StationMetadataManager.shared
+        manager.disconnectCurrentStation()
+
+        manager.reconnectForPlayback()
+
+        XCTAssertEqual(client.status.connection, .disconnected)
+    }
 }

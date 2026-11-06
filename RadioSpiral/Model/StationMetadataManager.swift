@@ -120,6 +120,13 @@ public class StationMetadataManager: ObservableObject {
         notifySubscribers(with: nil)
     }
     
+    /// Brings metadata back when playback starts on a disconnected station. Leaving the app while
+    /// paused disconnects the socket, and Play from the lock screen or CarPlay doesn't reopen the app.
+    public func reconnectForPlayback() {
+        guard currentStation != nil, azuracastClient.status.connection == .disconnected else { return }
+        azuracastClient.connect()
+    }
+
     /// Subscribe to metadata changes
     public func subscribeToMetadataChanges(_ callback: @escaping MetadataChangeCallback) {
         subscribers.append(callback)

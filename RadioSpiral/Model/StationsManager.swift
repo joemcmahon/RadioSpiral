@@ -149,6 +149,7 @@ class StationsManager {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 self?.updateLockScreenPlaybackRate(isPlaying: state == .playing)
+                if state == .playing { self?.metadataManager.reconnectForPlayback() }
             }
             .store(in: &cancellables)
     }

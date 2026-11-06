@@ -112,6 +112,13 @@ class NowPlayingViewController: UIViewController {
     private var metadataCallback: MetadataChangeCallback?
     private var lastStatusMessage: String?
     private var wasPlaying = false
+
+    /// Restart only audio that has stopped. Play from the lock screen or CarPlay starts audio before
+    /// the socket connects, and rebuilding the player then would interrupt it. A network drop stops
+    /// the player first, so recovery still restarts.
+    static func shouldRestartAudioOnConnect(wasPlaying: Bool, isPlaying: Bool) -> Bool {
+        wasPlaying && !isPlaying
+    }
     private var cancellables = Set<AnyCancellable>()
     private var connectionBanner: UILabel!
     private var timeBubble: UILabel!
@@ -246,7 +253,7 @@ class NowPlayingViewController: UIViewController {
                 guard let self = self else { return }
                 if current == .connected && previous != .connected {
                     self.hideConnectionBanner()
-                    if self.wasPlaying {
+                    if Self.shouldRestartAudioOnConnect(wasPlaying: self.wasPlaying, isPlaying: self.player.isPlaying) {
                         self.player.radioURL = URL(string: self.manager.currentStation?.streamURL ?? "")
                         self.player.play()
                     }
