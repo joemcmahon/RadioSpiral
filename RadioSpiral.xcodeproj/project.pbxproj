@@ -42,6 +42,7 @@
 		A1C0DE0100000000000000D1 /* SocketClientIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000D2 /* SocketClientIntegrationTests.swift */; };
 		A1C0DE0100000000000000D3 /* StubURLProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000D4 /* StubURLProtocol.swift */; };
 		A1C0DE0100000000000000D5 /* ConfigClientHTTPIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */; };
+		A1C0DE0100000000000000D7 /* StationsManagerIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000D8 /* StationsManagerIntegrationTests.swift */; };
 		A1C0DE0100000000000000AB /* MetadataManagerIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000AC /* MetadataManagerIntegrationTests.swift */; };
 		A1C0DE0100000000000000A1 /* ParseConnectMessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000A2 /* ParseConnectMessageTests.swift */; };
 		A1C0DE0100000000000000A3 /* ws-connect-message.json in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000A4 /* ws-connect-message.json */; };
@@ -132,6 +133,7 @@
 		A1C0DE0100000000000000D2 /* SocketClientIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketClientIntegrationTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000D4 /* StubURLProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StubURLProtocol.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigClientHTTPIntegrationTests.swift; sourceTree = "<group>"; };
+		A1C0DE0100000000000000D8 /* StationsManagerIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationsManagerIntegrationTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000AC /* MetadataManagerIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataManagerIntegrationTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000A2 /* ParseConnectMessageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseConnectMessageTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000A4 /* ws-connect-message.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "ws-connect-message.json"; sourceTree = "<group>"; };
@@ -263,6 +265,7 @@
 				A1C0DE0100000000000000D2 /* SocketClientIntegrationTests.swift */,
 				A1C0DE0100000000000000D4 /* StubURLProtocol.swift */,
 				A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */,
+				A1C0DE0100000000000000D8 /* StationsManagerIntegrationTests.swift */,
 				A1C0DE0100000000000000A2 /* ParseConnectMessageTests.swift */,
 				A1C0DE0100000000000000A4 /* ws-connect-message.json */,
 				A1C0DE0200000000000000A2 /* StationChangeMetadataTests.swift */,
@@ -592,6 +595,7 @@
 				A1C0DE0100000000000000D1 /* SocketClientIntegrationTests.swift in Sources */,
 				A1C0DE0100000000000000D3 /* StubURLProtocol.swift in Sources */,
 				A1C0DE0100000000000000D5 /* ConfigClientHTTPIntegrationTests.swift in Sources */,
+				A1C0DE0100000000000000D7 /* StationsManagerIntegrationTests.swift in Sources */,
 				A1C0DE0100000000000000A1 /* ParseConnectMessageTests.swift in Sources */,
 				A1C0DE0200000000000000A1 /* StationChangeMetadataTests.swift in Sources */,
 				711BB18B2F45A71200B9D8DF /* Credits.swift in Sources */,
