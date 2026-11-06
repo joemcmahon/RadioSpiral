@@ -234,6 +234,46 @@ class ConfigClientTests: XCTestCase {
         XCTAssertEqual(StationServer.production.configURL,
                        "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config.json")
     }
+
+    // MARK: - BuildInfo Tests
+
+    func testBuildTextShowsVersionBuildAndCommit() {
+        XCTAssertEqual(BuildInfo.text(version: "3.1.1", build: "74", commit: "fbd89f7", environment: .appStore),
+                       "Version 3.1.1 (74) fbd89f7")
+    }
+
+    func testBuildTextLeavesOutAMissingCommit() {
+        XCTAssertEqual(BuildInfo.text(version: "3.1.1", build: "74", commit: nil, environment: .appStore),
+                       "Version 3.1.1 (74)")
+    }
+
+    func testUnresolvedEnvironmentShowsNoEnvironmentText() {
+        XCTAssertEqual(BuildInfo.text(version: "3.1.1", build: "74", commit: "fbd89f7", environment: nil),
+                       "Version 3.1.1 (74) fbd89f7")
+    }
+
+    func testTesterBuildsShowTheirEnvironment() {
+        XCTAssertEqual(BuildInfo.text(version: "3.1.1", build: "74", commit: "fbd89f7", environment: .testFlight),
+                       "Version 3.1.1 (74) fbd89f7\nEnvironment: TestFlight")
+        XCTAssertEqual(BuildInfo.text(version: "3.1.1", build: "74", commit: "fbd89f7", environment: .xcode),
+                       "Version 3.1.1 (74) fbd89f7\nEnvironment: Xcode")
+    }
+
+    func testCommitFileContentsAreTrimmed() {
+        XCTAssertEqual(BuildInfo.commit(fromFileContents: "fbd89f7\n"), "fbd89f7")
+    }
+
+    func testCommitFileContentsThatArentAHashAreIgnored() {
+        XCTAssertNil(BuildInfo.commit(fromFileContents: nil))
+        XCTAssertNil(BuildInfo.commit(fromFileContents: ""))
+        XCTAssertNil(BuildInfo.commit(fromFileContents: "not a commit\n"))
+    }
+
+    /// The tests run inside the app, so this checks what the build phase put in the real bundle.
+    func testThisBuildCarriesItsCommit() throws {
+        let commit = try XCTUnwrap(BuildInfo.bundledCommit)
+        XCTAssertGreaterThanOrEqual(commit.count, 4)
+    }
 }
 
 // MARK: - Config and credits from local files

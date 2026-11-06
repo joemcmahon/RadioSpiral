@@ -187,6 +187,7 @@ class AboutViewController: UIViewController {
         stack.addArrangedSubview(websiteButton)
         stack.addArrangedSubview(emailButton)
         if let selector = makeServerSelector() { stack.addArrangedSubview(selector) }
+        stack.addArrangedSubview(makeBuildLabel())
     }
 
     // MARK: Landscape layout: scrolling credits left, buttons right
@@ -219,7 +220,7 @@ class AboutViewController: UIViewController {
         ])
 
         // Right side: buttons stacked vertically, centered (30% width)
-        let buttonStack = UIStackView(arrangedSubviews: [websiteButton, emailButton] + [makeServerSelector()].compactMap { $0 })
+        let buttonStack = UIStackView(arrangedSubviews: [websiteButton, emailButton] + [makeServerSelector()].compactMap { $0 } + [makeBuildLabel()])
         buttonStack.axis = .vertical
         buttonStack.spacing = 12
         buttonStack.alignment = .center
@@ -436,6 +437,19 @@ class AboutViewController: UIViewController {
         label.textColor = .white
         label.textAlignment = .center
         label.numberOfLines = 0
+        return label
+    }
+
+    // MARK: - Build information
+
+    private func makeBuildLabel() -> UILabel {
+        let label = UILabel()
+        label.text = BuildInfo.aboutText
+        label.font = UIFont.preferredFont(forTextStyle: .caption2)
+        label.textColor = .white
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.accessibilityIdentifier = "buildInfoLabel"
         return label
     }
 
