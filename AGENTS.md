@@ -13,8 +13,11 @@ xcodebuild test  -scheme ConfigClientTests -destination 'platform=iOS Simulator,
 Without `-destination`, `xcodebuild` does a signed device build, which can bring up a Keychain
 prompt: warn Joe before running one.
 
-`ConfigClientTests` include live network calls (GitHub, `spiral.radio`). Check connectivity before
-treating a failure as a regression, and don't rerun them in loops.
+`ConfigClient` and `CreditsClient` tests use canned responses (`StubURLProtocol`), so they need no
+network. The exception is `LiveServerSmokeTests`, two labeled tests that check the live formats of
+`spiral.radio/api/stations` and the GitHub `config.json`. They skip on a connection problem or a
+server error, and fail only on a format change. Don't rerun them in loops. Other tests may start real
+connections from the running app, so check connectivity before treating a failure as a regression.
 
 Real-device testing uses an iPhone 13 Pro; CarPlay is tested in the CarPlay Simulator.
 `CARPLAY-UPGRADE.md` documents the CarPlay work.

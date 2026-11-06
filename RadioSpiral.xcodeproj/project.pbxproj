@@ -46,7 +46,6 @@
 		A1C0DE0100000000000000A1 /* ParseConnectMessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000A2 /* ParseConnectMessageTests.swift */; };
 		A1C0DE0100000000000000A3 /* ws-connect-message.json in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000A4 /* ws-connect-message.json */; };
 		71CA8E8F2EC57AD400F7F157 /* test-config-with-fallback.json in Resources */ = {isa = PBXBuildFile; fileRef = 71CA8E8C2EC57AD400F7F157 /* test-config-with-fallback.json */; };
-		71CA8E912EC57AD500F7F157 /* test-config-production.json in Resources */ = {isa = PBXBuildFile; fileRef = 71CA8E902EC57AD500F7F157 /* test-config-production.json */; };
 		9409E11C1ABF6FEA00312E2B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9409E11B1ABF6FEA00312E2B /* AppDelegate.swift */; };
 		9409E1261ABF6FEA00312E2B /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9409E1251ABF6FEA00312E2B /* Images.xcassets */; };
 		9409E1401ABF78B000312E2B /* NowPlayingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9409E13F1ABF78B000312E2B /* NowPlayingViewController.swift */; };
@@ -59,7 +58,6 @@
 		94E9761C1B1A8F3200F52B1E /* UIImage+DropShadow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E9761B1B1A8F3200F52B1E /* UIImage+DropShadow.swift */; };
 		A1B2C3D4E5F6A7B8C9D0E1F3 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* Settings.bundle */; };
 		A1B2C3D4E5F6A7B8C9D0E1F5 /* StationServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F4 /* StationServer.swift */; };
-		B2C601433BBD45CD9F6DE9A3 /* test-config-live-azuracast.json in Resources */ = {isa = PBXBuildFile; fileRef = 8AAF0ECFA82245D0A3C4E3A1 /* test-config-live-azuracast.json */; };
 		B6B0CEB08FFF4CC6A8931B5F /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
 		B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
 		B6B0CEB08FFF4CC6A8931B62 /* test-credits.json in Resources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B61 /* test-credits.json */; };
@@ -138,8 +136,6 @@
 		A1C0DE0100000000000000A2 /* ParseConnectMessageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseConnectMessageTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000A4 /* ws-connect-message.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "ws-connect-message.json"; sourceTree = "<group>"; };
 		71CA8E8C2EC57AD400F7F157 /* test-config-with-fallback.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-config-with-fallback.json"; sourceTree = "<group>"; };
-		71CA8E902EC57AD500F7F157 /* test-config-production.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-config-production.json"; sourceTree = "<group>"; };
-		8AAF0ECFA82245D0A3C4E3A1 /* test-config-live-azuracast.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-config-live-azuracast.json"; sourceTree = "<group>"; };
 		9409E1161ABF6FEA00312E2B /* RadioSpiral.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RadioSpiral.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9409E11A1ABF6FEA00312E2B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9409E11B1ABF6FEA00312E2B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -272,9 +268,7 @@
 				A1C0DE0200000000000000A2 /* StationChangeMetadataTests.swift */,
 				71CA8E8C2EC57AD400F7F157 /* test-config-with-fallback.json */,
 				6F4444B16407430F8A42EFDD /* test-config-with-real-server.json */,
-				8AAF0ECFA82245D0A3C4E3A1 /* test-config-live-azuracast.json */,
 				B6B0CEB08FFF4CC6A8931B61 /* test-credits.json */,
-				71CA8E902EC57AD500F7F157 /* test-config-production.json */,
 			);
 			path = RadioSpiral/ConfigClientTests;
 			sourceTree = "<group>";
@@ -554,9 +548,7 @@
 			files = (
 				71CA8E8F2EC57AD400F7F157 /* test-config-with-fallback.json in Resources */,
 				60A288069DE14CA0B96295FA /* test-config-with-real-server.json in Resources */,
-				B2C601433BBD45CD9F6DE9A3 /* test-config-live-azuracast.json in Resources */,
 				B6B0CEB08FFF4CC6A8931B62 /* test-credits.json in Resources */,
-				71CA8E912EC57AD500F7F157 /* test-config-production.json in Resources */,
 				A1C0DE0100000000000000A3 /* ws-connect-message.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

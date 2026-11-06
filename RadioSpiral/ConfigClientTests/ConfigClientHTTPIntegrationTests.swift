@@ -3,6 +3,7 @@
 //  ConfigClientTests
 //
 //  ConfigClient and CreditsClient over HTTP, with canned responses and no network.
+//  The two live smoke tests are in LiveServerSmokeTests at the end of this file.
 //
 
 import XCTest
@@ -307,5 +308,54 @@ final class CreditsClientHTTPIntegrationTests: XCTestCase {
         StubURLProtocol.reply(to: creditsURL, with: .http(status: 200, body: Data("not json".utf8)))
 
         XCTAssertEqual(fetch(makeClient()), fallbackCredits)
+    }
+}
+
+// MARK: - Live smoke tests
+
+/// SMOKE TESTS: the only tests in this file that use the network, one request each.
+/// They catch a real change in a format the app depends on. A connection problem or a server
+/// error skips the test instead of failing it, so an outage can't look like a code regression.
+final class LiveServerSmokeTests: XCTestCase {
+
+    private func liveData(from address: String) async throws -> Data {
+        let url = try XCTUnwrap(URL(string: address))
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.timeoutIntervalForRequest = 20
+        let session = URLSession(configuration: configuration)
+        defer { session.finishTasksAndInvalidate() }
+
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await session.data(from: url)
+        } catch {
+            throw XCTSkip("Couldn't reach \(address): \(error.localizedDescription)")
+        }
+
+        let status = try XCTUnwrap(response as? HTTPURLResponse).statusCode
+        if status >= 500 { throw XCTSkip("\(address) returned HTTP \(status)") }
+        XCTAssertEqual(status, 200, "\(address) returned HTTP \(status)")
+        return data
+    }
+
+    func testSmokeLiveAzuracastStationsStillDecode() async throws {
+        let data = try await liveData(from: "https://spiral.radio/api/stations")
+
+        let stations = try JSONDecoder().decode([PublicAzuracastStation].self, from: data)
+
+        XCTAssertFalse(stations.isEmpty)
+        for station in stations {
+            XCTAssertFalse(station.shortcode.isEmpty)
+            XCTAssertNotNil(URL(string: station.listen_url), "listen_url of \(station.shortcode)")
+        }
+    }
+
+    func testSmokeLiveProductionConfigStillDecodes() async throws {
+        let data = try await liveData(from: ConfigClient().configURL)
+
+        let config = try JSONDecoder().decode(ConfigWrapper.self, from: data)
+
+        XCTAssertFalse(config.configs.isEmpty)
     }
 }
