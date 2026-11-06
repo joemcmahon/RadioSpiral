@@ -15,6 +15,9 @@ public class CreditsClient {
     private let creditsURL: String
     private var cachedCredits: [CreditPair] = []
 
+    /// Every request goes through this session. Tests replace it to supply canned responses.
+    var session = makeConfigSession()
+
     public init(creditsURL: String = "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/credits.json") {
         self.creditsURL = creditsURL
     }
@@ -53,11 +56,6 @@ public class CreditsClient {
             return
         }
 
-        let config = URLSessionConfiguration.default
-        config.requestCachePolicy = .reloadIgnoringLocalCacheData
-        config.timeoutIntervalForRequest = 10
-
-        let session = URLSession(configuration: config)
         let task = session.dataTask(with: url) { [weak self] data, response, error in
             guard let self = self else { return }
 

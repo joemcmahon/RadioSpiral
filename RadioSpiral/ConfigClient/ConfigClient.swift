@@ -8,6 +8,14 @@
 
 import UIKit
 
+/// The session the config and credits clients use in production: no local cache, 10 second timeout.
+func makeConfigSession() -> URLSession {
+    let configuration = URLSessionConfiguration.default
+    configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+    configuration.timeoutIntervalForRequest = 10
+    return URLSession(configuration: configuration)
+}
+
 /// Client for fetching server configuration and stations
 /// Supports multiple config sources: primary Azuracast, fallback Azuracast, static JSON
 /// Returns portable StationConfig objects
@@ -20,6 +28,9 @@ public class ConfigClient {
     }
     private let apiKey: String?
     private var cachedStations: [StationConfig] = []
+
+    /// Every request goes through this session. Tests replace it to supply canned responses.
+    var session = makeConfigSession()
 
     public init(configURL: String = "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config.json", apiKey: String? = nil) {
         self.configURL = configURL
@@ -74,11 +85,6 @@ public class ConfigClient {
         }
 
         // Handle HTTP/HTTPS URLs with URLSession
-        let config = URLSessionConfiguration.default
-        config.requestCachePolicy = .reloadIgnoringLocalCacheData
-        config.timeoutIntervalForRequest = 10
-
-        let session = URLSession(configuration: config)
         let task = session.dataTask(with: url) { data, response, error in
             if let error = error {
                 if ConfigClientDebug.debugLog { print("ConfigClient: Failed to fetch server config: \(error)") }
@@ -185,11 +191,6 @@ public class ConfigClient {
             return
         }
 
-        let sessionConfig = URLSessionConfiguration.default
-        sessionConfig.requestCachePolicy = .reloadIgnoringLocalCacheData
-        sessionConfig.timeoutIntervalForRequest = 10
-
-        let session = URLSession(configuration: sessionConfig)
         let task = session.dataTask(with: url) { data, response, error in
             if let error = error {
                 if ConfigClientDebug.debugLog { print("ConfigClient: Public API request failed: \(error)") }
@@ -254,11 +255,6 @@ public class ConfigClient {
             request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         }
 
-        let sessionConfig = URLSessionConfiguration.default
-        sessionConfig.requestCachePolicy = .reloadIgnoringLocalCacheData
-        sessionConfig.timeoutIntervalForRequest = 10
-
-        let session = URLSession(configuration: sessionConfig)
         let task = session.dataTask(with: request) { data, response, error in
             if let error = error {
                 if ConfigClientDebug.debugLog { print("ConfigClient: Admin API request failed: \(error)") }
