@@ -463,6 +463,7 @@
 				9409E1121ABF6FEA00312E2B /* Sources */,
 				9409E1131ABF6FEA00312E2B /* Frameworks */,
 				9409E1141ABF6FEA00312E2B /* Resources */,
+				A1C0DE0100000000000000DB /* Record build commit */,
 			);
 			buildRules = (
 			);
@@ -571,6 +572,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A1C0DE0100000000000000DB /* Record build commit */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Record build commit";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/BuildCommit.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "commit_file=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/BuildCommit.txt\"\n# --short=4 gives the shortest prefix that is unique in this repo, at least 4 characters.\nif commit=$(git -C \"${SRCROOT}\" rev-parse --short=4 HEAD 2>/dev/null); then\n  printf '%s\\n' \"$commit\" > \"$commit_file\"\nelse\n  # No git here: remove any earlier file so the app never shows a stale commit.\n  rm -f \"$commit_file\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		2C5545B61C1124DE00728469 /* Sources */ = {
@@ -898,6 +922,7 @@
 				CURRENT_PROJECT_VERSION = 74;
 				DEFINES_MODULE = YES;
 				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/RadioSpiral",
@@ -933,6 +958,7 @@
 				CURRENT_PROJECT_VERSION = 74;
 				DEFINES_MODULE = YES;
 				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/RadioSpiral",
