@@ -18,6 +18,9 @@ final class FakeSocket: WebSocketTasking {
     var sendError: Error?
     private var pendingReceive: ((Result<URLSessionWebSocketTask.Message, Error>) -> Void)?
 
+    var holdsSendResults = false
+    private var heldSendResult: (@Sendable (Error?) -> Void)?
+
     func resume() { resumeCount += 1 }
 
     func cancel(with closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) { cancelCount += 1 }
@@ -25,7 +28,18 @@ final class FakeSocket: WebSocketTasking {
     func send(_ message: URLSessionWebSocketTask.Message,
               completionHandler: @escaping @Sendable (Error?) -> Void) {
         sent.append(message)
-        completionHandler(sendError)
+        if holdsSendResults {
+            heldSendResult = completionHandler
+        } else {
+            completionHandler(sendError)
+        }
+    }
+
+    /// Reports the result of a send held back by `holdsSendResults`, as a real socket does some time later.
+    func finishHeldSend(with error: Error?) {
+        let handler = heldSendResult
+        heldSendResult = nil
+        handler?(error)
     }
 
     func receive(completionHandler: @escaping @Sendable (Result<URLSessionWebSocketTask.Message, Error>) -> Void) {
@@ -100,9 +114,11 @@ final class SocketClientIntegrationTests: XCTestCase {
     private var client: ACWebSocketClient!
     private var notified: [ACConnectionState] = []
     private var notifiedTracks: [String] = []
+    private var holdSendResults = false
 
     override func setUp() {
         super.setUp()
+        holdSendResults = false
         sockets = []
         requestedURLs = []
         notified = []
@@ -112,6 +128,7 @@ final class SocketClientIntegrationTests: XCTestCase {
                                    clock: clock) { [unowned self] url in
             self.requestedURLs.append(url)
             let socket = FakeSocket()
+            socket.holdsSendResults = self.holdSendResults
             self.sockets.append(socket)
             return socket
         }
@@ -435,9 +452,8 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertEqual(client.status.connection, .connecting)
     }
 
-    // Known-wrong (architecture report F-03): this and the next two tests pin what a
-    // cancelled socket's late failure does after a station change.
-    func testOldSocketsLateFailureMarksTheNewConnectionDisconnected() throws {
+    // A cancelled socket reports its failure some time later. By then it no longer counts.
+    func testOldSocketsLateFailureLeavesTheNewConnectionAlone() throws {
         client.connect()
         client.switchToStation(station())
         XCTAssertEqual(client.status.connection, .connecting)
@@ -445,13 +461,22 @@ final class SocketClientIntegrationTests: XCTestCase {
 
         try socket(0).drop()
 
-        XCTAssertEqual(client.status.connection, .disconnected)
-        XCTAssertEqual(notified, [.disconnected])
-        XCTAssertEqual(clock.delayed.first?.delay, 5)
+        XCTAssertEqual(client.status.connection, .connecting)
+        XCTAssertTrue(notified.isEmpty)
+        XCTAssertTrue(clock.delayed.isEmpty)
     }
 
-    // Known-wrong (F-03).
-    func testNewSocketsMessagesDontRepairTheStateAfterALateFailure() throws {
+    func testOldSocketsLateSendFailureLeavesTheNewConnectionAlone() throws {
+        holdSendResults = true
+        client.connect()
+        client.switchToStation(station())
+
+        try socket(0).finishHeldSend(with: URLError(.cancelled))
+
+        XCTAssertEqual(client.status.connection, .connecting)
+    }
+
+    func testNewSocketsFirstMessageConnectsAfterAnOldSocketsLateFailure() throws {
         client.connect()
         client.switchToStation(station())
         try socket(0).drop()
@@ -459,22 +484,22 @@ final class SocketClientIntegrationTests: XCTestCase {
 
         try socket(1).deliver(try connectMessage())
 
-        XCTAssertEqual(client.status.connection, .disconnected)
-        XCTAssertFalse(notified.contains(.connected))
+        XCTAssertEqual(client.status.connection, .connected)
+        XCTAssertTrue(notified.contains(.connected))
     }
 
-    // Known-wrong (F-03).
-    func testWaitAfterALateFailureOpensAThirdSocketWithoutClosingTheSecond() throws {
+    func testOldSocketsMessageIsNotTakenForTheNewStations() throws {
         client.connect()
         client.switchToStation(station())
-        try socket(0).drop()
-        try socket(1).deliver(try connectMessage())
+        notifiedTracks = []
 
-        clock.fireNextDelayed()
+        try socket(0).deliver(try connectMessage())
+        drainMainQueue()
 
-        XCTAssertEqual(sockets.count, 3)
-        XCTAssertEqual(try socket(1).cancelCount, 0)
-        XCTAssertTrue(try socket(1).isListening)
+        XCTAssertEqual(client.status.connection, .connecting)
+        XCTAssertEqual(client.status.track, "")
+        XCTAssertTrue(notifiedTracks.isEmpty)
+        XCTAssertTrue(clock.liveTimers.isEmpty)
     }
 
     // MARK: Disconnecting
@@ -491,44 +516,155 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertEqual(notified, [.disconnected])
     }
 
-    // Known-wrong (F7): this and the next two tests pin ways the client reconnects
-    // after being told to disconnect.
-    func testWaitStartedBeforeDisconnectStillReconnects() throws {
+    // disconnect() is final: nothing reconnects until connect() is called again.
+    func testDisconnectCancelsAWaitAlreadyRunning() throws {
         client.connect()
         try socket(0).drop()
         client.disconnect()
 
         clock.fireNextDelayed()
 
-        XCTAssertEqual(sockets.count, 2)
-        XCTAssertEqual(client.status.connection, .connecting)
+        XCTAssertEqual(sockets.count, 1)
+        XCTAssertEqual(client.status.connection, .disconnected)
     }
 
-    // Known-wrong (F7).
-    func testLateFailureAfterDisconnectStartsAWaitThatReconnects() throws {
+    func testLateFailureAfterDisconnectIsIgnored() throws {
+        client.connect()
+        client.disconnect()
+        notified = []
+
+        try socket(0).drop()
+
+        XCTAssertTrue(clock.delayed.isEmpty)
+        XCTAssertTrue(notified.isEmpty)
+        XCTAssertEqual(client.status.connection, .disconnected)
+    }
+
+    func testLateSendFailureAfterDisconnectIsIgnored() throws {
+        holdSendResults = true
         client.connect()
         client.disconnect()
 
-        try socket(0).drop()
+        try socket(0).finishHeldSend(with: URLError(.cancelled))
+
+        XCTAssertEqual(client.status.connection, .disconnected)
+    }
+
+    func testCurrentSocketsLateSendFailureIsStillRecorded() throws {
+        holdSendResults = true
+        client.connect()
+
+        try socket(0).finishHeldSend(with: URLError(.networkConnectionLost))
+
+        XCTAssertEqual(client.status.connection, .failedSubscribe)
+    }
+
+    /// Runs on a background thread, as URLSession does, and returns with the main thread having
+    /// run nothing in between: a semaphore, because an XCTest wait would drain the main queue.
+    private func onURLSessionThread(_ action: @escaping () -> Void) {
+        let finished = DispatchSemaphore(value: 0)
+        DispatchQueue.global().async {
+            action()
+            finished.signal()
+        }
+        finished.wait()
+    }
+
+    func testFailureRacingADisconnectStartsNoWait() throws {
+        client.connect()
+        let first = try socket(0)
+
+        onURLSessionThread { first.drop() }
+        client.disconnect()
+        drainMainQueue()
+
+        XCTAssertTrue(clock.delayed.isEmpty)
+        XCTAssertEqual(client.status.connection, .disconnected)
+    }
+
+    func testMessageRacingADisconnectDoesNotConnect() throws {
+        client.connect()
+        let first = try socket(0)
+        let message = try connectMessage()
+
+        onURLSessionThread { first.deliver(message) }
+        client.disconnect()
+        drainMainQueue()
+
+        XCTAssertEqual(client.status.connection, .disconnected)
+        XCTAssertFalse(notified.contains(.connected))
+    }
+
+    func testFailureFromTheURLSessionThreadStillStartsAWait() throws {
+        client.connect()
+        let first = try socket(0)
+
+        onURLSessionThread { first.drop() }
+        drainMainQueue()
+
         XCTAssertEqual(clock.delayed.first?.delay, 5)
-
-        clock.fireNextDelayed()
-
-        XCTAssertEqual(sockets.count, 2)
+        XCTAssertEqual(client.status.connection, .disconnected)
     }
 
-    // Known-wrong (F7).
-    func testLivenessTimerSurvivesDisconnectAndReconnects() throws {
+    func testDisconnectStopsTheLivenessTimer() throws {
         client.connect()
         try socket(0).deliver(try connectMessage(ping: 20))
         drainMainQueue()
+        XCTAssertEqual(clock.liveTimers.count, 1)
 
         client.disconnect()
-        let timer = try XCTUnwrap(clock.liveTimers.first, "disconnect should have left the timer running")
-        timer.action()
+
+        XCTAssertTrue(clock.liveTimers.isEmpty)
+    }
+
+    /// handleMessage queues its timer on the main thread, so a disconnect can get in first.
+    func testMessageJustBeforeDisconnectStartsNoTimerOrMetadata() throws {
+        client.connect()
+        try socket(0).deliver(try connectMessage(ping: 20))
+
+        client.disconnect()
+        drainMainQueue()
+
+        XCTAssertTrue(clock.liveTimers.isEmpty)
+        XCTAssertEqual(client.status.track, "")
+    }
+
+    func testMessageAfterDisconnectIsIgnored() throws {
+        client.connect()
+        client.disconnect()
+        notified = []
+
+        try socket(0).deliver(try connectMessage())
+        drainMainQueue()
+
+        XCTAssertEqual(client.status.connection, .disconnected)
+        XCTAssertTrue(notified.isEmpty)
+        XCTAssertFalse(try socket(0).isListening)
+    }
+
+    func testConnectAfterDisconnectOpensANewSocket() throws {
+        client.connect()
+        client.disconnect()
+
+        client.connect()
 
         XCTAssertEqual(sockets.count, 2)
         XCTAssertEqual(client.status.connection, .connecting)
+    }
+
+    /// A wait left over from before a connect() would otherwise cut the next wait short.
+    func testConnectReplacesAWaitAlreadyRunning() throws {
+        client.connect()
+        try socket(0).drop()
+        client.connect()
+        try socket(1).drop()
+        XCTAssertEqual(clock.delayed.count, 2)
+
+        clock.fireNextDelayed()
+        XCTAssertEqual(sockets.count, 2)
+
+        clock.fireNextDelayed()
+        XCTAssertEqual(sockets.count, 3)
     }
 
     // MARK: What subscribers receive

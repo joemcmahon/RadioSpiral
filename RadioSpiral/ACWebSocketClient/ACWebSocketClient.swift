@@ -110,6 +110,9 @@ public class ACWebSocketClient: ObservableObject {
     
     private var lastResult: ACStreamStatus?
     private var consecutiveFailures: Int = 0
+    // Moves on with every connect() and disconnect(), so a reconnect wait started before
+    // either one can tell it's out of date when it finishes.
+    private var reconnectGeneration: Int = 0
     private var lastKnownPingInterval: TimeInterval = 25.0
 
     /// Centralized debug logging with ISO timestamps and component tags.
@@ -237,6 +240,7 @@ public class ACWebSocketClient: ObservableObject {
         // turn off the liveness check; the first parse of the connect data will
         // turn it back on.
         debugLog("[Connect]", "connect() called, current state: \(status.connection)", ACActivityTrace | ACConnectivityChecks)
+        reconnectGeneration += 1
         self.stillAliveTimer?.invalidate()
         if status.connection == ACConnectionState.connected {
             debugLog("[Connect]", "Already connected, disconnecting first", ACActivityTrace | ACConnectivityChecks)
@@ -259,8 +263,13 @@ public class ACWebSocketClient: ObservableObject {
     /// Always notifies subscribers so downstream consumers (StationMetadataManager)
     /// track the actual connection state. Duplicate .disconnected notifications are
     /// harmless — removeDuplicates() on the Combine chain handles idempotency.
+    ///
+    /// Final: nothing reconnects until `connect()` is called again. It ends any reconnect wait
+    /// and the liveness timer, and the cancelled socket's own late failure is ignored.
     public func disconnect() {
         debugLog("[Disconnect]", "disconnect() called, current state: \(status.connection)", ACActivityTrace | ACConnectivityChecks)
+        reconnectGeneration += 1
+        stillAliveTimer = nil
         webSocketTask?.cancel(with: .goingAway, reason: nil)
         webSocketTask = nil
         status.connection = .disconnected
@@ -275,7 +284,8 @@ public class ACWebSocketClient: ObservableObject {
     }
 
     // Schedules a reconnection attempt after WebSocket error.
-    // Only reconnects if network is reachable and we're still disconnected.
+    // Reconnects only if no connect() or disconnect() has happened since, and we're still
+    // disconnected. Doesn't check whether the network is reachable.
     // Uses exponential backoff: 5s, 10s, 20s, 40s, 60s max.
     private func scheduleReconnect() {
         let baseDelay: TimeInterval = 5.0
@@ -283,8 +293,9 @@ public class ACWebSocketClient: ObservableObject {
         let reconnectDelay = min(baseDelay * pow(2.0, Double(consecutiveFailures)), maxDelay)
         consecutiveFailures += 1
         debugLog("[ScheduleReconnect]", "Scheduling reconnect in \(reconnectDelay) seconds (attempt \(consecutiveFailures)), current state: \(status.connection)")
+        let generation = reconnectGeneration
         clock.runAfter(reconnectDelay) { [weak self] in
-            guard let self = self else { return }
+            guard let self = self, generation == self.reconnectGeneration else { return }
             self.debugLog("[ScheduleReconnect]", "Timer fired, state: \(self.status.connection)")
             if self.status.connection != .connected && self.status.connection != .connecting {
                 self.debugLog("[ScheduleReconnect]", "Attempting connect")
@@ -317,8 +328,12 @@ public class ACWebSocketClient: ObservableObject {
             webSocketTask.send(.string(jsonString)) { error in
                 if let error = error {
                     print("Failed to send subscription message: \(error)")
-                    self.status.connection = ACConnectionState.failedSubscribe
-                    self.status.changed = true
+                    Self.onMain {
+                        // A replaced or cancelled socket no longer speaks for this client.
+                        guard webSocketTask === self.webSocketTask else { return }
+                        self.status.connection = ACConnectionState.failedSubscribe
+                        self.status.changed = true
+                    }
                 }
             }
         } else {
@@ -334,44 +349,62 @@ public class ACWebSocketClient: ObservableObject {
     // All incoming messages should be text.
     private func listenForMessages() {
         debugLog("[Listen]", "Start listening for messages", ACActivityTrace)
-        webSocketTask?.receive { [weak self] result in
-            guard let self = self else { return }
-
-            self.debugLog("[Listen]", "message received", ACActivityTrace)
-            switch result {
-            case .success(let message):
-                switch message {
-                case .string(let text):
-                    self.handleMessage(text)
-                case .data(let data):
-                    debugLog("[Received]","Received binary data: \(data)", ACExtractedData)
-                @unknown default:
-                    debugLog("[Received]","Received unknown message type", ACExtractedData)
-                }
-            case .failure(let error):
-                if self.debugLevel & ACConnectivityChecks != 0 {
-                    self.debugLog("[WebSocket]", "Error received: \(error), scheduling reconnect")
-                } else {
-                    print("WebSocket error: \(error)")
-                }
-                self.status.connection = .disconnected
-                self.status.changed = true
-                self.debugLog("[WebSocket]", "State set to disconnected after error")
-                // Notify subscribers of disconnection so NowPlayingVC can
-                // stop AVPlayer (prevents aggressive internal retries).
-                self.notifySubscribers(with: self.status)
-                // Don't keep listening on dead socket - schedule reconnection instead
-                self.scheduleReconnect()
-                return
-            }
-
-            // Keep listening for new messages (only on success)
-            self.listenForMessages()
+        guard let socket = webSocketTask else { return }
+        socket.receive { [weak self] result in
+            // URLSession calls this on its own thread. Everything that decides whether a socket
+            // is still current runs on main, like connect() and disconnect(), so they can't overlap.
+            Self.onMain { self?.handleReceive(result, from: socket) }
         }
+    }
+
+    // Runs right away on main, so that a caller already there sees the result at once.
+    private static func onMain(_ action: @escaping () -> Void) {
+        if Thread.isMainThread {
+            action()
+        } else {
+            DispatchQueue.main.async(execute: action)
+        }
+    }
+
+    private func handleReceive(_ result: Result<URLSessionWebSocketTask.Message, Error>, from socket: WebSocketTasking) {
+        // A replaced or cancelled socket no longer speaks for this client. Its late
+        // failure isn't a dropped connection, and its messages aren't current.
+        guard socket === webSocketTask else { return }
+
+        debugLog("[Listen]", "message received", ACActivityTrace)
+        switch result {
+        case .success(let message):
+            switch message {
+            case .string(let text):
+                handleMessage(text, from: socket)
+            case .data(let data):
+                debugLog("[Received]","Received binary data: \(data)", ACExtractedData)
+            @unknown default:
+                debugLog("[Received]","Received unknown message type", ACExtractedData)
+            }
+        case .failure(let error):
+            if debugLevel & ACConnectivityChecks != 0 {
+                debugLog("[WebSocket]", "Error received: \(error), scheduling reconnect")
+            } else {
+                print("WebSocket error: \(error)")
+            }
+            status.connection = .disconnected
+            status.changed = true
+            debugLog("[WebSocket]", "State set to disconnected after error")
+            // Notify subscribers of disconnection so NowPlayingVC can
+            // stop AVPlayer (prevents aggressive internal retries).
+            notifySubscribers(with: status)
+            // Don't keep listening on dead socket - schedule reconnection instead
+            scheduleReconnect()
+            return
+        }
+
+        // Keep listening for new messages (only on success)
+        listenForMessages()
     }
     
     // Handles incoming messages and updates the status.
-    private func handleMessage(_ message: String) {
+    private func handleMessage(_ message: String, from socket: WebSocketTasking) {
         debugLog("[HandleMessage]", "Handling message", ACActivityTrace)
 
         // First successful message confirms connection
@@ -387,9 +420,9 @@ public class ACWebSocketClient: ObservableObject {
 
         // Reset liveness timer BEFORE parsing. Any message at all proves
         // the WebSocket is alive — we don't need a successful parse for that.
-        // Must schedule on main run loop because handleMessage runs on
-        // URLSession's background thread.
         DispatchQueue.main.async {
+            // The socket may have been disconnected or replaced since this was queued.
+            guard socket === self.webSocketTask else { return }
             self.stillAliveTimer?.invalidate()
             let interval = self.lastKnownPingInterval * 1.5
             self.stillAliveTimer = self.clock.startTimer(interval: interval) { self.fellOver() }
@@ -424,6 +457,7 @@ public class ACWebSocketClient: ObservableObject {
             }
 
             DispatchQueue.main.async {
+                guard socket === self.webSocketTask else { return }
                 if result != self.lastResult && result.changed {
                     // Status changed from old values. (Note that the initial
                     // connect message and one or more subsequent channel
