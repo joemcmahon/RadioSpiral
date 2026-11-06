@@ -222,14 +222,11 @@ final class ParseChannelMessageTests: XCTestCase {
         XCTAssertThrowsError(try parseRaw(#"{push: 1}"#))
     }
 
-    func testJSONThatIsNotAnObjectGivesABlankStatusMarkedChanged() throws {
-        // Current behaviour, possibly not the right one: a message the parser can't
-        // use is "changed" here, but not when it's an unknown object.
+    func testJSONThatIsNotAnObjectIsMarkedEmptyAndUnchanged() throws {
         let status = try parseRaw("[1, 2, 3]")
 
-        XCTAssertEqual(status.recordType, .notSet)
-        XCTAssertTrue(status.changed)
-        XCTAssertEqual(status.connection, .disconnected)
+        XCTAssertEqual(status.recordType, .empty)
+        XCTAssertFalse(status.changed)
         assertBlankMetadata(status)
     }
 }

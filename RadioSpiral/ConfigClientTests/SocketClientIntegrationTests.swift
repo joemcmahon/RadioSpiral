@@ -346,6 +346,54 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertTrue(try socket(0).isListening)
     }
 
+    /// Unusable messages leave what's on screen alone, and the socket keeps listening.
+    private func assertIgnoredAfterASong(_ message: String, file: StaticString = #filePath, line: UInt = #line) throws {
+        client.connect()
+        try socket(0).deliver(try connectMessage())
+        drainMainQueue()
+        let track = client.status.track
+        let notifications = notifiedTracks.count
+        XCTAssertFalse(track.isEmpty, file: file, line: line)
+
+        try socket(0).deliver(message)
+        drainMainQueue()
+
+        XCTAssertEqual(client.status.track, track, file: file, line: line)
+        XCTAssertEqual(notifiedTracks.count, notifications, file: file, line: line)
+        XCTAssertTrue(try socket(0).isListening, file: file, line: line)
+    }
+
+    func testMalformedChannelMessageKeepsTheCurrentSong() throws {
+        try assertIgnoredAfterASong(#"{"channel": "station:rs-one", "pub": 5}"#)
+    }
+
+    func testMessageThatIsNotAnObjectKeepsTheCurrentSong() throws {
+        try assertIgnoredAfterASong("[1, 2, 3]")
+    }
+
+    func testMalformedServerNameOpensNoSocket() throws {
+        let client = ACWebSocketClient(serverName: "not a host", shortCode: shortCode, defaultDJ: "",
+                                       clock: clock) { [unowned self] url in
+            self.requestedURLs.append(url)
+            return FakeSocket()
+        }
+
+        client.connect()
+
+        XCTAssertTrue(requestedURLs.isEmpty)
+        XCTAssertEqual(client.status.connection, .disconnected)
+    }
+
+    /// Reconnecting to the old station would show its metadata under the new one.
+    func testSwitchingToAMalformedServerNameDoesNotReuseTheOldAddress() throws {
+        client.connect()
+
+        client.switchToStation(station(server: "not a host"))
+
+        XCTAssertEqual(requestedURLs.map(\.absoluteString),
+                       ["wss://radio.example/api/live/nowplaying/websocket"])
+    }
+
     func testNoAddressMeansNoSocket() throws {
         let empty = ACWebSocketClient(serverName: nil, shortCode: nil, defaultDJ: "",
                                       clock: clock) { [unowned self] url in

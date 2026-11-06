@@ -164,10 +164,12 @@ public class ACWebSocketClient: ObservableObject {
     }
 
     private func constructWebSocketURL(serverName: String) {
-        guard let webSocketURL = URL(string: "wss://\(String(describing: serverName))/api/live/nowplaying/websocket") else {
-            fatalError("Invalid server name for WebSocket URL")
+        // The name comes from the remote config. Without a usable address, `connect()` does
+        // nothing, rather than crashing or reconnecting to the previous station's address.
+        self.webSocketURL = URL(string: "wss://\(String(describing: serverName))/api/live/nowplaying/websocket")
+        if self.webSocketURL == nil {
+            debugLog("[Connect]", "Invalid server name for WebSocket URL: \(serverName)", ACActivityTrace | ACConnectivityChecks)
         }
-        self.webSocketURL = webSocketURL
     }
 
     

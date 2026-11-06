@@ -64,9 +64,14 @@ public class ParseWebSocketData {
                 status.recordType = .connect
                 
                 // chain down to the now-playing data
-                let connect = nowPlayingData["connect"] as? Dictionary<String, Any>
-                status.pingInterval = TimeInterval(Double(connect?["ping"] as! Int))
-                let subs = connect?["subs"] as? Dictionary<String, Any>
+                guard let connect = nowPlayingData["connect"] as? Dictionary<String, Any> else {
+                    return ignoredStatus()
+                }
+                // Not metadata: without one, the client keeps its previous interval.
+                if let ping = connect["ping"] as? Int {
+                    status.pingInterval = TimeInterval(Double(ping))
+                }
+                let subs = connect["subs"] as? Dictionary<String, Any>
                 let sub = subs?["station:\(shortCode)"] as? Dictionary<String, Any>
                 let publications = sub?["publications"] as? [Any]
                 // A bad shortcode will cause us to not have any publications.
@@ -77,17 +82,29 @@ public class ParseWebSocketData {
                     self.status.connection = ACConnectionState.failedSubscribe
                     return self.status
                 }
-                let pub = publications?[0] as? Dictionary<String, Any>
+                let pub = publications?.first as? Dictionary<String, Any>
                 let data = pub?["data"] as? Dictionary<String, Any>
-                let np = data?["np"] as? Dictionary<String, Any>
+
+                // Read everything required before setting anything, so an ignored
+                // message leaves no partial metadata behind.
+                guard let np = data?["np"] as? Dictionary<String, Any>,
+                      let current = np["now_playing"] as? Dictionary<String, Any>,
+                      let duration = current["duration"] as? Int,
+                      let current_song = current["song"] as? Dictionary<String, Any>,
+                      let album = current_song["album"] as? String,
+                      let artist = current_song["artist"] as? String,
+                      let title = current_song["title"] as? String,
+                      let artURLString = current_song["art"] as? String else {
+                    return ignoredStatus()
+                }
 
                 // Set connection state based on is_online
-                if let isOnline = np?["is_online"] as? Bool {
+                if let isOnline = np["is_online"] as? Bool {
                     status.connection = isOnline ? .connected : .disconnected
                 }
 
                 // Live segment. Contains info about the streamer.
-                let live = np?["live"] as? Dictionary<String, Any>
+                let live = np["live"] as? Dictionary<String, Any>
                 self.status = setDJ(live: live, status: self.status, defaultDJ: defaultDJ)
                 if let broadcastTimestamp = live?["broadcast_start"] as? Int {
                     status.broadcastStart = Date(timeIntervalSince1970: Double(broadcastTimestamp))
@@ -106,14 +123,10 @@ public class ParseWebSocketData {
                  let next_title = next_song?["title"] as! String
                  */
                 
-                // Chain down to current song segment.
-                let current = np?["now_playing"] as? Dictionary<String, Any>
-                let current_song = current?["song"] as? Dictionary<String, Any>
-                let duration = current?["duration"] as! Int
                 status.duration = TimeInterval(Double(duration))
 
                 // Extract played_at timestamp and compute elapsed seconds into track
-                if let playedAt = current?["played_at"] as? Int {
+                if let playedAt = current["played_at"] as? Int {
                     let elapsed = Date().timeIntervalSince1970 - Double(playedAt)
                     status.elapsed = max(0, elapsed)
                 }
@@ -122,13 +135,12 @@ public class ParseWebSocketData {
                 
                 // Extract track info from song segment.
                 // TODO: Generalize this for next song and songs in song history.
-                status.album = current_song?["album"] as! String
-                status.artist = current_song?["artist"] as! String
-                status.track = current_song?["title"] as! String
+                status.album = album
+                status.artist = artist
+                status.track = title
                 status = descramble(status: status)
                 
-                // Extract artwork URL as string, and convert to URL.
-                let artURLString = current_song?["art"] as! String
+                // Convert artwork URL string to URL.
                 status.artwork = URL(string: artURLString)
                 
                 // We parsed the data, so this struct has changed.
@@ -136,10 +148,20 @@ public class ParseWebSocketData {
             } else if nowPlayingData["channel"] != nil {
                 status.recordType = .channel
                 
-                // channel data. chain down to now-playing data.
-                let pub = nowPlayingData["pub"] as! Dictionary<String, Any>
-                let npData = pub["data"] as! Dictionary<String, Any>
-                let np = npData["np"] as! Dictionary<String, Any>
+                // channel data. chain down to now-playing data. Read everything required
+                // before setting anything, so an ignored message leaves no partial metadata.
+                guard let pub = nowPlayingData["pub"] as? Dictionary<String, Any>,
+                      let npData = pub["data"] as? Dictionary<String, Any>,
+                      let np = npData["np"] as? Dictionary<String, Any>,
+                      let nowPlaying = np["now_playing"] as? Dictionary<String, Any>,
+                      let duration = nowPlaying["duration"] as? Int,
+                      let song = nowPlaying["song"] as? Dictionary<String, Any>,
+                      let album = song["album"] as? String,
+                      let artist = song["artist"] as? String,
+                      let title = song["title"] as? String,
+                      let artURLString = song["art"] as? String else {
+                    return ignoredStatus()
+                }
 
                 // Set connection state based on is_online
                 if let isOnline = np["is_online"] as? Bool {
@@ -154,24 +176,19 @@ public class ParseWebSocketData {
                 }
 
                 // now_playing block. Extract track info.
-                let nowPlaying = np["now_playing"] as! Dictionary<String, Any>
-                let duration = nowPlaying["duration"] as! Int
-
                 // Extract played_at timestamp and compute elapsed seconds into track
                 if let playedAt = nowPlaying["played_at"] as? Int {
                     let elapsed = Date().timeIntervalSince1970 - Double(playedAt)
                     status.elapsed = max(0, elapsed)
                 }
 
-                let song = nowPlaying["song"] as! Dictionary<String, Any>
-                status.album = song["album"] as! String
-                status.artist = song["artist"] as! String
-                status.track = song["title"] as! String
+                status.album = album
+                status.artist = artist
+                status.track = title
                 status.duration = TimeInterval(Double(duration))
                 status = descramble(status: status)
                 
-                // Extract artwork URL string, and make it a real URL.
-                let artURLString = song["art"] as! String
+                // Make the artwork URL string a real URL.
                 status.artwork = URL(string: artURLString)
                 
                 // Mark as changed.
@@ -191,11 +208,22 @@ public class ParseWebSocketData {
                 print("type: \(status.recordType)")
                 print("ping interval: \(String(describing: status.pingInterval))")
             }
+        } else {
+            // Valid JSON that isn't an object: ignored, like a type we don't recognize.
+            status.recordType = .empty
+            status.changed = false
         }
         // Return the status of the parse. Anyone monitoring it via `@publishef
         return status
     }
     
+    // A message we recognize but can't fully read. Marked unchanged so that the client
+    // keeps the current metadata, and returned before any song fields are set.
+    private func ignoredStatus() -> ACStreamStatus {
+        status.changed = false
+        return status
+    }
+
     // Mapping of garbled DJ names to correct Unicode versions.
     // Icecast/SHOUTcast metadata only supports Latin-1, so characters
     // outside that range (e.g. IPA Extensions) get replaced with '?'
