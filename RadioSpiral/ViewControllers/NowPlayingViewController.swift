@@ -440,7 +440,10 @@ class NowPlayingViewController: UIViewController {
         }
     }
 
-    private func formatTime(_ seconds: TimeInterval) -> String {
+    /// Server times arrive unchecked, and converting one that doesn't fit in an Int would crash.
+    /// Anything finite up to just under 100 hours is shown; anything else gets the placeholder.
+    func formatTime(_ seconds: TimeInterval) -> String {
+        guard seconds.isFinite, abs(seconds) <= 359_999 else { return "--:--" }
         let totalSeconds = max(0, Int(seconds))
         let hours = totalSeconds / 3600
         let minutes = (totalSeconds % 3600) / 60

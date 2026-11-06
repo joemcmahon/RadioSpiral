@@ -328,3 +328,45 @@ final class StationAndMetadataRulesTests: XCTestCase {
         XCTAssertFalse(ACStreamStatus().isValid)
     }
 }
+
+/// The time bubble's formatting. Server times reach it unchecked, so it has to survive any value.
+final class TrackTimeFormatTests: XCTestCase {
+    private let controller = NowPlayingViewController()
+
+    func testOrdinaryTimesAreFormatted() {
+        XCTAssertEqual(controller.formatTime(0), "0:00")
+        XCTAssertEqual(controller.formatTime(65), "1:05")
+        XCTAssertEqual(controller.formatTime(3725), "1:02:05")
+    }
+
+    func testFractionalElapsedTimesAreFormatted() {
+        XCTAssertEqual(controller.formatTime(12.5), "0:12")
+    }
+
+    func testSlightlyNegativeTimesShowZero() {
+        // The device clock can be a little behind the server's.
+        XCTAssertEqual(controller.formatTime(-5), "0:00")
+    }
+
+    func testTheLongestTimeShownIsJustUnderAHundredHours() {
+        XCTAssertEqual(controller.formatTime(359_999), "99:59:59")
+        XCTAssertEqual(controller.formatTime(360_000), "--:--")
+    }
+
+    func testNonFiniteTimesShowThePlaceholder() {
+        XCTAssertEqual(controller.formatTime(.nan), "--:--")
+        XCTAssertEqual(controller.formatTime(.infinity), "--:--")
+        XCTAssertEqual(controller.formatTime(-.infinity), "--:--")
+    }
+
+    /// `Double(Int.max)` rounds up to a value that doesn't fit back into an Int.
+    func testTimesTooLargeForAnIntShowThePlaceholder() {
+        XCTAssertEqual(controller.formatTime(TimeInterval(Int.max)), "--:--")
+        XCTAssertEqual(controller.formatTime(.greatestFiniteMagnitude), "--:--")
+    }
+
+    func testHugeNegativeTimesShowThePlaceholder() {
+        XCTAssertEqual(controller.formatTime(-TimeInterval(Int.max)), "--:--")
+        XCTAssertEqual(controller.formatTime(-.greatestFiniteMagnitude), "--:--")
+    }
+}
