@@ -35,9 +35,11 @@ protocol LivenessTimer {
 
 extension Timer: LivenessTimer {}
 
-/// The client's delays and the time, so tests can control them.
+/// The client's delays, the time and its randomness, so tests can control them.
 protocol SocketClock {
     var now: Date { get }
+    /// A random value from 0 to 1, for spreading out retry waits.
+    func randomFraction() -> Double
     /// Runs `action` after `delay`. Can't be cancelled.
     func runAfter(_ delay: TimeInterval, _ action: @escaping () -> Void)
     /// Starts a one-shot timer on the current run loop.
@@ -47,6 +49,8 @@ protocol SocketClock {
 /// The clock used outside tests.
 struct LiveSocketClock: SocketClock {
     var now: Date { Date() }
+
+    func randomFraction() -> Double { Double.random(in: 0...1) }
 
     func runAfter(_ delay: TimeInterval, _ action: @escaping () -> Void) {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: action)
@@ -323,11 +327,13 @@ public class ACWebSocketClient: ObservableObject {
     // Schedules a reconnection attempt after a failure.
     // Reconnects only if no connect() or disconnect() has happened since, and we're still
     // disconnected. Doesn't check whether the network is reachable.
-    // Uses exponential backoff: 5s, 10s, 20s, 40s, 60s max.
+    // Uses exponential backoff: 5s, 10s, 20s, 40s, 60s max. Each wait lands at random
+    // between half that and all of it, so listeners dropped together don't return together.
     private func scheduleReconnect() {
         let baseDelay: TimeInterval = 5.0
         let maxDelay: TimeInterval = 60.0
-        let reconnectDelay = min(baseDelay * pow(2.0, Double(consecutiveFailures)), maxDelay)
+        let longestDelay = min(baseDelay * pow(2.0, Double(consecutiveFailures)), maxDelay)
+        let reconnectDelay = longestDelay * (0.5 + 0.5 * clock.randomFraction())
         consecutiveFailures += 1
         debugLog("[ScheduleReconnect]", "Scheduling reconnect in \(reconnectDelay) seconds (attempt \(consecutiveFailures)), current state: \(status.connection)")
         let generation = reconnectGeneration

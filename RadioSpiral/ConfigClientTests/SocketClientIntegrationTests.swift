@@ -88,6 +88,10 @@ final class FakeClock: SocketClock {
     private(set) var timers: [FakeTimer] = []
     /// Moves only when a test moves it.
     var now = Date(timeIntervalSinceReferenceDate: 0)
+    /// Where each wait lands between its shortest and longest. 1 is the longest.
+    var jitterFraction = 1.0
+
+    func randomFraction() -> Double { jitterFraction }
 
     func runAfter(_ delay: TimeInterval, _ action: @escaping () -> Void) {
         delayed.append((delay, action))
@@ -347,6 +351,31 @@ final class SocketClientIntegrationTests: XCTestCase {
         try XCTUnwrap(sockets.last).drop()
 
         XCTAssertEqual(clock.delayed.last?.delay, 5)
+    }
+
+    // MARK: Jitter
+
+    func testWaitsNeverDropBelowHalfTheirLength() throws {
+        clock.jitterFraction = 0
+        client.connect()
+
+        var waits: [TimeInterval] = []
+        for _ in 0..<6 {
+            sockets.last?.drop()
+            waits.append(try XCTUnwrap(clock.delayed.first?.delay))
+            clock.fireNextDelayed()
+        }
+
+        XCTAssertEqual(waits, [2.5, 5, 10, 20, 30, 30])
+    }
+
+    func testAWaitLandsBetweenItsShortestAndLongest() throws {
+        clock.jitterFraction = 0.5
+        client.connect()
+
+        try socket(0).drop()
+
+        XCTAssertEqual(clock.delayed.first?.delay, 3.75)
     }
 
     func testFinishedWaitDoesNothingIfAlreadyConnecting() throws {
