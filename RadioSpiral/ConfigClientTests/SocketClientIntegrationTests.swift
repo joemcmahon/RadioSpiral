@@ -289,27 +289,66 @@ final class SocketClientIntegrationTests: XCTestCase {
         client.connect()
         try socket(0).deliver(try connectMessage(ping: 20))
         drainMainQueue()
-        let first = try XCTUnwrap(clock.timers.first)
+        let first = try XCTUnwrap(clock.liveTimers.first)
 
         try socket(0).deliver(try connectMessage(ping: 20))
         drainMainQueue()
 
         XCTAssertTrue(first.isInvalidated)
-        XCTAssertEqual(clock.timers.count, 2)
         XCTAssertEqual(clock.liveTimers.count, 1)
     }
 
-    func testTimerRunningOutClosesTheSocketAndOpensANewOne() throws {
+    func testTimerRunningOutClosesTheSocketAndOpensANewOneAfterAWait() throws {
         client.connect()
         try socket(0).deliver(try connectMessage(ping: 20))
         drainMainQueue()
+        notified = []
 
         try XCTUnwrap(clock.liveTimers.first).action()
 
         XCTAssertEqual(try socket(0).cancelCount, 1)
+        XCTAssertEqual(client.status.connection, .disconnected)
+        XCTAssertEqual(notified, [.disconnected])
+        XCTAssertEqual(sockets.count, 1, "nothing should reconnect before the wait is over")
+        XCTAssertEqual(clock.delayed.map(\.delay), [5])
+
+        clock.fireNextDelayed()
+
         XCTAssertEqual(sockets.count, 2)
         XCTAssertEqual(try socket(1).resumeCount, 1)
         XCTAssertEqual(client.status.connection, .connecting)
+    }
+
+    func testTimedOutSocketsLateFailureStartsNoSecondWait() throws {
+        client.connect()
+        try socket(0).deliver(try connectMessage(ping: 20))
+        drainMainQueue()
+        try XCTUnwrap(clock.liveTimers.first).action()
+
+        try socket(0).drop()
+
+        XCTAssertEqual(clock.delayed.count, 1)
+    }
+
+    /// Left running, the timer would go off during the wait and count the same failure twice.
+    func testADropStopsTheTimer() throws {
+        client.connect()
+        try socket(0).deliver(try connectMessage(ping: 20))
+        drainMainQueue()
+
+        try socket(0).drop()
+
+        XCTAssertTrue(clock.liveTimers.isEmpty)
+    }
+
+    func testAMessageJustBeforeADropStartsNoTimer() throws {
+        client.connect()
+        try socket(0).deliver(try connectMessage(ping: 20))
+
+        try socket(0).drop()
+        drainMainQueue()
+
+        XCTAssertTrue(clock.liveTimers.isEmpty)
     }
 
     func testNoTimerRunsBeforeTheFirstMessage() throws {
@@ -335,20 +374,6 @@ final class SocketClientIntegrationTests: XCTestCase {
         client.connect()
 
         XCTAssertTrue(clock.liveTimers.isEmpty)
-    }
-
-    // Known-wrong: expected to change with task-35.
-    func testTimerRunningOutReconnectsWithNoWait() throws {
-        client.connect()
-        try socket(0).deliver(try connectMessage(ping: 20))
-        drainMainQueue()
-
-        try XCTUnwrap(clock.liveTimers.first).action()
-
-        XCTAssertTrue(clock.delayed.isEmpty)
-
-        try socket(1).drop()
-        XCTAssertEqual(clock.delayed.first?.delay, 5, "the timeout shouldn't have lengthened the wait")
     }
 
     // MARK: Other messages
@@ -492,6 +517,7 @@ final class SocketClientIntegrationTests: XCTestCase {
         client.connect()
         client.switchToStation(station())
         notifiedTracks = []
+        let timersBefore = clock.timers.count
 
         try socket(0).deliver(try connectMessage())
         drainMainQueue()
@@ -499,7 +525,7 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertEqual(client.status.connection, .connecting)
         XCTAssertEqual(client.status.track, "")
         XCTAssertTrue(notifiedTracks.isEmpty)
-        XCTAssertTrue(clock.liveTimers.isEmpty)
+        XCTAssertEqual(clock.timers.count, timersBefore, "the old socket shouldn't start a timer")
     }
 
     // MARK: Disconnecting

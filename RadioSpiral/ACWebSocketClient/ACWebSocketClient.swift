@@ -77,8 +77,8 @@ public class ACWebSocketClient: ObservableObject {
     // message, we clear out any old timer, then set a new one for a little after
     // the runtime of the track that's playing now. If all goes well, we'll get
     // another message before the time goes off, cancel it, and set a new one.
-    // If we don't get a message before then, the timer pops, we disconnect the API,
-    // reconnect, and set a new timer when the connect message is received.
+    // If we don't get a message before then, the timer pops, we close the socket,
+    // and reconnect after the retry wait, like any other failure.
     //
     private var stillAliveTimer: LivenessTimer? {
         willSet {
@@ -232,10 +232,6 @@ public class ACWebSocketClient: ObservableObject {
     /// Connects to the websocket API and sends the subscription message. Can be used to connect a
     /// currently-disconnected `ACWebSocketClient` or to reconnect an already-connected one.
     /// Marks the global status as `connected`.
-    ///
-    ///  This function is called if the liveness check timer goes off; this happens only if we haven't received
-    ///  another message from the websocket by the time the timer goes off. The timer takes the API's
-    ///  delivery guarantee, doubles it, and waits for that long before deciding we've lost the connection.
     public func connect() {
         // turn off the liveness check; the first parse of the connect data will
         // turn it back on.
@@ -269,21 +265,38 @@ public class ACWebSocketClient: ObservableObject {
     public func disconnect() {
         debugLog("[Disconnect]", "disconnect() called, current state: \(status.connection)", ACActivityTrace | ACConnectivityChecks)
         reconnectGeneration += 1
-        stillAliveTimer = nil
-        webSocketTask?.cancel(with: .goingAway, reason: nil)
-        webSocketTask = nil
+        endConnection()
         status.connection = .disconnected
         debugLog("[Disconnect]", "State set to disconnected", ACActivityTrace | ACConnectivityChecks)
         notifySubscribers(with: status)
     }
     
-    // Called if the liveness timer goes off.
-    func fellOver() {
-        debugLog("[FellOver]", "Liveness timer expired after \(String(describing: status.pingInterval)) seconds, state: \(status.connection)")
-        connect()
+    // Stops the timer and closes the socket, so nothing more from it counts.
+    private func endConnection() {
+        stillAliveTimer = nil
+        webSocketTask?.cancel(with: .goingAway, reason: nil)
+        webSocketTask = nil
     }
 
-    // Schedules a reconnection attempt after WebSocket error.
+    // Called if the liveness timer goes off.
+    func fellOver() {
+        debugLog("[FellOver]", "Timer expired, last ping \(lastKnownPingInterval) seconds, state: \(status.connection)")
+        connectionFailed()
+    }
+
+    // Everything that ends a connection unasked comes here, and waits its turn to retry.
+    private func connectionFailed() {
+        endConnection()
+        status.connection = .disconnected
+        status.changed = true
+        debugLog("[WebSocket]", "State set to disconnected after failure")
+        // Notify subscribers of disconnection so NowPlayingVC can
+        // stop AVPlayer (prevents aggressive internal retries).
+        notifySubscribers(with: status)
+        scheduleReconnect()
+    }
+
+    // Schedules a reconnection attempt after a failure.
     // Reconnects only if no connect() or disconnect() has happened since, and we're still
     // disconnected. Doesn't check whether the network is reachable.
     // Uses exponential backoff: 5s, 10s, 20s, 40s, 60s max.
@@ -388,14 +401,8 @@ public class ACWebSocketClient: ObservableObject {
             } else {
                 print("WebSocket error: \(error)")
             }
-            status.connection = .disconnected
-            status.changed = true
-            debugLog("[WebSocket]", "State set to disconnected after error")
-            // Notify subscribers of disconnection so NowPlayingVC can
-            // stop AVPlayer (prevents aggressive internal retries).
-            notifySubscribers(with: status)
             // Don't keep listening on dead socket - schedule reconnection instead
-            scheduleReconnect()
+            connectionFailed()
             return
         }
 
