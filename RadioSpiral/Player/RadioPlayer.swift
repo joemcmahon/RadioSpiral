@@ -145,6 +145,8 @@ class RadioPlayer: ObservableObject {
     private var stallTimer: Timer?
     private let networkMonitor = NWPathMonitor()
     private var networkUp = true  // main thread only
+    private var startFade = StartFade()
+    private var fadeTimer: Timer?
 
     // MARK: - Init
 
@@ -184,6 +186,7 @@ class RadioPlayer: ObservableObject {
         guard let player = player else { return }
         if player.currentItem == nil, let item = playerItem {
             player.replaceCurrentItem(with: item)
+            beginFade(at: 0)
         }
         player.playImmediately(atRate: 1.0)
         playbackState = .playing
@@ -195,6 +198,8 @@ class RadioPlayer: ObservableObject {
     }
 
     func stop() {
+        // Play after a stop always begins a new fade, so this one needn't keep checking.
+        fadeTimer?.invalidate()
         player?.pause()
         player?.replaceCurrentItem(with: nil)
         playbackState = .stopped
@@ -224,6 +229,7 @@ class RadioPlayer: ObservableObject {
         playerItem?.preferredForwardBufferDuration = RadioPlayer.forwardBufferDuration
 
         player = AVPlayer(playerItem: playerItem!)
+        beginFade(at: 0)
         player?.allowsExternalPlayback = false
         // Do NOT set automaticallyWaitsToMinimizeStalling — playImmediately(atRate:) keeps the
         // rate locked at 1.0 and prevents pitch wobble on live streams. It only lasts until a
@@ -265,17 +271,35 @@ class RadioPlayer: ObservableObject {
             hasFailed: item.status == .failed || player.status == .failed,
             networkUp: networkUp,
             now: ProcessInfo.processInfo.systemUptime))
+        // Silent from when the stall is seen, so the fade counts from the frozen position.
+        if stallRecovery.isStalled && !isStalled { beginFade(at: position) }
         publishStall()
 
         switch action {
         case .none:
             break
         case .resume:
+            if !startFade.isActive { beginFade(at: position) }
             player.playImmediately(atRate: 1.0)
         case .rebuild:
             radioURLDidChange(radioURL)
             play()
         }
+    }
+
+    // MARK: - Fade
+
+    private func beginFade(at position: Double) {
+        startFade.begin(at: position)
+        player?.volume = 0
+        fadeTimer?.invalidate()
+        let timer = Timer(timeInterval: 0.02, repeats: true) { [weak self] timer in
+            guard let self, let player = self.player else { return timer.invalidate() }
+            player.volume = self.startFade.volume(at: player.currentTime().seconds)
+            if !self.startFade.isActive { timer.invalidate() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        fadeTimer = timer
     }
 
     private func publishStall() {

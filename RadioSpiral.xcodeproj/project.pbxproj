@@ -30,6 +30,7 @@
 		7196786B2D27AAA500DCD7CE /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 7196786A2D27AAA500DCD7CE /* Kingfisher */; };
 		71A0B0022ED0000000000001 /* RadioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71A0B0012ED0000000000001 /* RadioPlayer.swift */; };
 		A1C0DE0100000000000000E1 /* StallRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E0 /* StallRecovery.swift */; };
+		A1C0DE0100000000000000E5 /* StartFade.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E4 /* StartFade.swift */; };
 		71B3D01F2E2989C5001E8F5A /* StationMetadataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71B3D01E2E2989C5001E8F5A /* StationMetadataManager.swift */; };
 		71CA8E882EC57A5000F7F157 /* ConfigClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71CA8E852EC57A5000F7F157 /* ConfigClient.swift */; };
 		71CA8E892EC57A5000F7F157 /* ConfigClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71CA8E852EC57A5000F7F157 /* ConfigClient.swift */; };
@@ -42,6 +43,7 @@
 		A1C0DE0100000000000000A9 /* StationAndMetadataRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000AA /* StationAndMetadataRulesTests.swift */; };
 		A1C0DE0100000000000000D1 /* SocketClientIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000D2 /* SocketClientIntegrationTests.swift */; };
 		A1C0DE0100000000000000DF /* StallRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000DE /* StallRecoveryTests.swift */; };
+		A1C0DE0100000000000000E3 /* StartFadeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E2 /* StartFadeTests.swift */; };
 		A1C0DE0100000000000000D3 /* StubURLProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000D4 /* StubURLProtocol.swift */; };
 		A1C0DE0100000000000000D5 /* ConfigClientHTTPIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */; };
 		A1C0DE0100000000000000D7 /* StationsManagerIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000D8 /* StationsManagerIntegrationTests.swift */; };
@@ -126,6 +128,7 @@
 		719678582D27A72000DCD7CE /* ParseWebSocketData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseWebSocketData.swift; sourceTree = "<group>"; };
 		71A0B0012ED0000000000001 /* RadioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioPlayer.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000E0 /* StallRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StallRecovery.swift; sourceTree = "<group>"; };
+		A1C0DE0100000000000000E4 /* StartFade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartFade.swift; sourceTree = "<group>"; };
 		71B3D01E2E2989C5001E8F5A /* StationMetadataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationMetadataManager.swift; sourceTree = "<group>"; };
 		71CA8E7A2EC579C300F7F157 /* ConfigClientTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ConfigClientTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		71CA8E852EC57A5000F7F157 /* ConfigClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigClient.swift; sourceTree = "<group>"; };
@@ -137,6 +140,7 @@
 		A1C0DE0100000000000000AA /* StationAndMetadataRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationAndMetadataRulesTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000D2 /* SocketClientIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketClientIntegrationTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000DE /* StallRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StallRecoveryTests.swift; sourceTree = "<group>"; };
+		A1C0DE0100000000000000E2 /* StartFadeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartFadeTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000D4 /* StubURLProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StubURLProtocol.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigClientHTTPIntegrationTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000D8 /* StationsManagerIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationsManagerIntegrationTests.swift; sourceTree = "<group>"; };
@@ -248,6 +252,7 @@
 			children = (
 				71A0B0012ED0000000000001 /* RadioPlayer.swift */,
 				A1C0DE0100000000000000E0 /* StallRecovery.swift */,
+				A1C0DE0100000000000000E4 /* StartFade.swift */,
 			);
 			path = Player;
 			sourceTree = "<group>";
@@ -273,6 +278,7 @@
 				A1C0DE0100000000000000AC /* MetadataManagerIntegrationTests.swift */,
 				A1C0DE0100000000000000D2 /* SocketClientIntegrationTests.swift */,
 				A1C0DE0100000000000000DE /* StallRecoveryTests.swift */,
+				A1C0DE0100000000000000E2 /* StartFadeTests.swift */,
 				A1C0DE0100000000000000D4 /* StubURLProtocol.swift */,
 				A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */,
 				A1C0DE0100000000000000D8 /* StationsManagerIntegrationTests.swift */,
@@ -630,6 +636,7 @@
 				A1C0DE0100000000000000AB /* MetadataManagerIntegrationTests.swift in Sources */,
 				A1C0DE0100000000000000D1 /* SocketClientIntegrationTests.swift in Sources */,
 				A1C0DE0100000000000000DF /* StallRecoveryTests.swift in Sources */,
+				A1C0DE0100000000000000E3 /* StartFadeTests.swift in Sources */,
 				A1C0DE0100000000000000D3 /* StubURLProtocol.swift in Sources */,
 				A1C0DE0100000000000000D5 /* ConfigClientHTTPIntegrationTests.swift in Sources */,
 				A1C0DE0100000000000000D7 /* StationsManagerIntegrationTests.swift in Sources */,
@@ -686,6 +693,7 @@
 				719678642D27A72000DCD7CE /* ACWebSocketClient.swift in Sources */,
 				71A0B0022ED0000000000001 /* RadioPlayer.swift in Sources */,
 				A1C0DE0100000000000000E1 /* StallRecovery.swift in Sources */,
+				A1C0DE0100000000000000E5 /* StartFade.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
