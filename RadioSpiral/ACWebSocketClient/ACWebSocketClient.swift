@@ -35,8 +35,9 @@ protocol LivenessTimer {
 
 extension Timer: LivenessTimer {}
 
-/// The client's two kinds of delay, so tests can run them without waiting.
+/// The client's delays and the time, so tests can control them.
 protocol SocketClock {
+    var now: Date { get }
     /// Runs `action` after `delay`. Can't be cancelled.
     func runAfter(_ delay: TimeInterval, _ action: @escaping () -> Void)
     /// Starts a one-shot timer on the current run loop.
@@ -45,6 +46,8 @@ protocol SocketClock {
 
 /// The clock used outside tests.
 struct LiveSocketClock: SocketClock {
+    var now: Date { Date() }
+
     func runAfter(_ delay: TimeInterval, _ action: @escaping () -> Void) {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: action)
     }
@@ -114,6 +117,12 @@ public class ACWebSocketClient: ObservableObject {
     // either one can tell it's out of date when it finishes.
     private var reconnectGeneration: Int = 0
     private var lastKnownPingInterval: TimeInterval = 25.0
+    // When the current connection got its first message. Nil unless it's connected.
+    private var connectedAt: Date?
+
+    // How long a connection must stay up before its earlier failures stop counting.
+    // A first message isn't enough: a struggling server can reply and then close.
+    private static let stablePeriod: TimeInterval = 60
 
     /// Centralized debug logging with ISO timestamps and component tags.
     private func debugLog(_ tag: String, _ message: String, _ flag: Int = ACConnectivityChecks) {
@@ -220,6 +229,8 @@ public class ACWebSocketClient: ObservableObject {
         self.serverName = station.serverName
         self.shortCode = station.shortCode
         self.defaultDJ = station.defaultDJ
+        // The failures so far were the previous server's.
+        consecutiveFailures = 0
         // The status still describes the previous station. Left in place, it would be
         // republished as the new station's metadata until the first message arrives.
         self.status = ACStreamStatus()
@@ -271,11 +282,16 @@ public class ACWebSocketClient: ObservableObject {
         notifySubscribers(with: status)
     }
     
-    // Stops the timer and closes the socket, so nothing more from it counts.
+    // Stops the timer and closes the socket, so nothing more from it counts. A connection
+    // that stayed up long enough clears the failures that came before it.
     private func endConnection() {
         stillAliveTimer = nil
         webSocketTask?.cancel(with: .goingAway, reason: nil)
         webSocketTask = nil
+        if let connectedAt, clock.now.timeIntervalSince(connectedAt) >= Self.stablePeriod {
+            consecutiveFailures = 0
+        }
+        connectedAt = nil
     }
 
     // Called if the liveness timer goes off.
@@ -417,7 +433,7 @@ public class ACWebSocketClient: ObservableObject {
         // First successful message confirms connection
         if status.connection == .connecting {
             status.connection = .connected
-            consecutiveFailures = 0
+            connectedAt = clock.now
             debugLog("[HandleMessage]", "First message received, state set to connected", ACActivityTrace)
             // Notify subscribers immediately so downstream consumers
             // (StationMetadataManager) learn about reconnection even if

@@ -86,6 +86,8 @@ final class FakeClock: SocketClock {
 
     private(set) var delayed: [(delay: TimeInterval, action: () -> Void)] = []
     private(set) var timers: [FakeTimer] = []
+    /// Moves only when a test moves it.
+    var now = Date(timeIntervalSinceReferenceDate: 0)
 
     func runAfter(_ delay: TimeInterval, _ action: @escaping () -> Void) {
         delayed.append((delay, action))
@@ -250,15 +252,99 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertEqual(client.status.connection, .connecting)
     }
 
-    func testAMessageRestartsTheWaitsAtFiveSeconds() throws {
+    /// Two failed connections, leaving socket 2 opening and the next wait at 20 seconds.
+    private func failTwice() throws {
         client.connect()
         try socket(0).drop()
         clock.fireNextDelayed()
         try socket(1).drop()
         clock.fireNextDelayed()
+    }
+
+    func testAMessageThenACloseDoesNotRestartTheWaits() throws {
+        try failTwice()
 
         try socket(2).deliver(try connectMessage())
         try socket(2).drop()
+
+        XCTAssertEqual(clock.delayed.last?.delay, 20)
+    }
+
+    func testAServerThatAlwaysAcceptsThenClosesStillGrowsTheWaits() throws {
+        client.connect()
+
+        var waits: [TimeInterval] = []
+        for _ in 0..<6 {
+            sockets.last?.deliver(try connectMessage())
+            sockets.last?.drop()
+            waits.append(try XCTUnwrap(clock.delayed.first?.delay))
+            clock.fireNextDelayed()
+        }
+
+        XCTAssertEqual(waits, [5, 10, 20, 40, 60, 60])
+    }
+
+    func testAConnectionUpForAMinuteRestartsTheWaits() throws {
+        try failTwice()
+
+        try socket(2).deliver(try connectMessage())
+        clock.now += 60
+        try socket(2).drop()
+
+        XCTAssertEqual(clock.delayed.last?.delay, 5)
+    }
+
+    func testAConnectionUpForJustUnderAMinuteDoesNotRestartTheWaits() throws {
+        try failTwice()
+
+        try socket(2).deliver(try connectMessage())
+        clock.now += 59
+        try socket(2).drop()
+
+        XCTAssertEqual(clock.delayed.last?.delay, 20)
+    }
+
+    func testTimeSpentOpeningDoesNotCountAsStable() throws {
+        try failTwice()
+
+        clock.now += 60
+        try socket(2).deliver(try connectMessage())
+        try socket(2).drop()
+
+        XCTAssertEqual(clock.delayed.last?.delay, 20)
+    }
+
+    func testWaitsGrowAgainAfterARestart() throws {
+        try failTwice()
+        try socket(2).deliver(try connectMessage())
+        clock.now += 60
+        try socket(2).drop()
+        clock.fireNextDelayed()
+
+        try socket(3).drop()
+
+        XCTAssertEqual(clock.delayed.last?.delay, 10)
+    }
+
+    /// Stopping a connection that had been fine shouldn't leave its old failures behind.
+    func testDisconnectingAStableConnectionRestartsTheWaits() throws {
+        try failTwice()
+        try socket(2).deliver(try connectMessage())
+        clock.now += 60
+        client.disconnect()
+
+        client.connect()
+        try socket(3).drop()
+
+        XCTAssertEqual(clock.delayed.last?.delay, 5)
+    }
+
+    /// One server's trouble says nothing about the next station's.
+    func testSwitchingStationRestartsTheWaits() throws {
+        try failTwice()
+
+        client.switchToStation(station())
+        try XCTUnwrap(sockets.last).drop()
 
         XCTAssertEqual(clock.delayed.last?.delay, 5)
     }
@@ -317,6 +403,21 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertEqual(sockets.count, 2)
         XCTAssertEqual(try socket(1).resumeCount, 1)
         XCTAssertEqual(client.status.connection, .connecting)
+    }
+
+    func testRepeatedTimeoutsGrowTheWaits() throws {
+        client.connect()
+
+        var waits: [TimeInterval] = []
+        for _ in 0..<3 {
+            sockets.last?.deliver(try connectMessage(ping: 20))
+            drainMainQueue()
+            try XCTUnwrap(clock.liveTimers.first).action()
+            waits.append(try XCTUnwrap(clock.delayed.first?.delay))
+            clock.fireNextDelayed()
+        }
+
+        XCTAssertEqual(waits, [5, 10, 20])
     }
 
     func testTimedOutSocketsLateFailureStartsNoSecondWait() throws {
