@@ -1,5 +1,6 @@
 import AVFoundation
 import Combine
+import Network
 
 /// Direct AVPlayer wrapper for internet radio streaming.
 /// No internal reachability — network-aware restart is the caller's responsibility.
@@ -13,6 +14,10 @@ class RadioPlayer: ObservableObject {
     @Published private(set) var state: State = .idle
     @Published private(set) var playbackState: PlaybackState = .stopped
 
+    /// Playback should be running but the audio has stopped moving.
+    @Published private(set) var isStalled = false
+
+    /// What the listener asked for. Stays true through a stall: see `isStalled`.
     var isPlaying: Bool { playbackState == .playing }
 
     var radioURL: URL? {
@@ -55,9 +60,10 @@ class RadioPlayer: ObservableObject {
     /// and calling them on main while the session is active triggers UI-unresponsiveness warnings.
     private let sessionQueue = DispatchQueue(label: "RadioPlayer.audioSession", qos: .userInitiated)
 
-    /// Forward buffer for every mode. A short (2s) buffer let the stream go audibly
-    /// slow and out of tune on poor connections; 30s absorbs the jitter. Playback still
-    /// starts immediately (playImmediately(atRate:)), so the larger target doesn't delay it.
+    /// Forward buffer target for every mode. A short (2s) buffer let the stream go audibly
+    /// slow and out of tune on poor connections. Playback still starts immediately
+    /// (playImmediately(atRate:)), so the larger target doesn't delay it. This live stream
+    /// arrives in real time, so on a phone only about 5s was ever held, not the full target.
     static let forwardBufferDuration: TimeInterval = 30.0
 
     /// Mode last applied, so a UserDefaults change only reconfigures the session when it matters.
@@ -135,10 +141,15 @@ class RadioPlayer: ObservableObject {
     private var statusObservation: NSKeyValueObservation?
     private var bufferObservation: NSKeyValueObservation?
     private var timeControlObservation: NSKeyValueObservation?
+    private var stallRecovery = StallRecovery()
+    private var stallTimer: Timer?
+    private let networkMonitor = NWPathMonitor()
+    private var networkUp = true  // main thread only
 
     // MARK: - Init
 
     private init() {
+        startWatchingForStalls()
         sessionQueue.async {
             try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
             let hasHearingAids = RadioPlayer.routeHasHearingAids()
@@ -194,6 +205,7 @@ class RadioPlayer: ObservableObject {
     private func radioURLDidChange(_ url: URL?) {
         tearDownObservations()
         stop()
+        stallRecovery.playerWasReplaced()
         playerItem = nil
         player = nil
 
@@ -213,11 +225,61 @@ class RadioPlayer: ObservableObject {
 
         player = AVPlayer(playerItem: playerItem!)
         player?.allowsExternalPlayback = false
-        // Do NOT set automaticallyWaitsToMinimizeStalling — playImmediately(atRate:) disables it,
-        // which keeps the rate locked at 1.0 and prevents pitch wobble on live streams.
+        // Do NOT set automaticallyWaitsToMinimizeStalling — playImmediately(atRate:) keeps the
+        // rate locked at 1.0 and prevents pitch wobble on live streams. It only lasts until a
+        // stall, though: the player then waits again, which is why StallRecovery asks again.
 
         setupObservations()
         applyInterruptionMode(currentModeForRoute())
+    }
+
+    // MARK: - Stall recovery
+
+    private func startWatchingForStalls() {
+        networkMonitor.pathUpdateHandler = { [weak self] path in
+            let up = path.status == .satisfied
+            DispatchQueue.main.async { self?.networkUp = up }
+        }
+        networkMonitor.start(queue: DispatchQueue(label: "RadioPlayer.network", qos: .utility))
+
+        let timer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in self?.checkForStall() }
+        RunLoop.main.add(timer, forMode: .common)
+        stallTimer = timer
+    }
+
+    private func checkForStall() {
+        guard playbackState == .playing, let player, let item = playerItem else {
+            stallRecovery.playbackStopped()
+            publishStall()
+            return
+        }
+
+        let time = player.currentTime().seconds
+        let position = time.isFinite ? time : 0
+        let bufferedEnd = item.loadedTimeRanges.last?.timeRangeValue.end.seconds ?? position
+        let action = stallRecovery.next(.init(
+            position: position,
+            buffered: bufferedEnd.isFinite ? bufferedEnd - position : 0,
+            isWaitingOnStall: player.timeControlStatus == .waitingToPlayAtSpecifiedRate
+                && player.reasonForWaitingToPlay == .toMinimizeStalls,
+            hasFailed: item.status == .failed || player.status == .failed,
+            networkUp: networkUp,
+            now: ProcessInfo.processInfo.systemUptime))
+        publishStall()
+
+        switch action {
+        case .none:
+            break
+        case .resume:
+            player.playImmediately(atRate: 1.0)
+        case .rebuild:
+            radioURLDidChange(radioURL)
+            play()
+        }
+    }
+
+    private func publishStall() {
+        if isStalled != stallRecovery.isStalled { isStalled = stallRecovery.isStalled }
     }
 
     // MARK: - KVO
