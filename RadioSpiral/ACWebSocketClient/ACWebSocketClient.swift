@@ -123,6 +123,8 @@ public class ACWebSocketClient: ObservableObject {
     // How long a connection must stay up before its earlier failures stop counting.
     // A first message isn't enough: a struggling server can reply and then close.
     private static let stablePeriod: TimeInterval = 60
+    // How long a new socket has to deliver its first message.
+    private static let openingTimeout: TimeInterval = 30
 
     /// Centralized debug logging with ISO timestamps and component tags.
     private func debugLog(_ tag: String, _ message: String, _ flag: Int = ACConnectivityChecks) {
@@ -253,12 +255,16 @@ public class ACWebSocketClient: ObservableObject {
             debugLog("[Connect]", "Already connected, disconnecting first", ACActivityTrace | ACConnectivityChecks)
             disconnect()
         }
+        // A socket still opening is replaced below. Left alone, it would stay open.
+        webSocketTask?.cancel(with: .goingAway, reason: nil)
         if let _ = self.webSocketURL {
             debugLog("[Connect]", "Starting websocket task to \(self.webSocketURL!)", ACActivityTrace | ACConnectivityChecks)
             webSocketTask = makeSocket(self.webSocketURL!)
             webSocketTask?.resume()
             status.connection = .connecting
             debugLog("[Connect]", "State set to connecting", ACActivityTrace | ACConnectivityChecks)
+            // A connection can open and then say nothing. The first message replaces this timer.
+            stillAliveTimer = clock.startTimer(interval: Self.openingTimeout) { self.fellOver() }
             sendSubscriptionMessage()
             listenForMessages()
         } else {
@@ -294,7 +300,7 @@ public class ACWebSocketClient: ObservableObject {
         connectedAt = nil
     }
 
-    // Called if the liveness timer goes off.
+    // Called if the liveness timer goes off, or if a new socket never sends a first message.
     func fellOver() {
         debugLog("[FellOver]", "Timer expired, last ping \(lastKnownPingInterval) seconds, state: \(status.connection)")
         connectionFailed()

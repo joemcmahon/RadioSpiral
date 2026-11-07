@@ -452,10 +452,79 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertTrue(clock.liveTimers.isEmpty)
     }
 
-    func testNoTimerRunsBeforeTheFirstMessage() throws {
+    // MARK: A connection that opens and stays silent
+
+    func testConnectStartsAThirtySecondTimer() throws {
         client.connect()
 
+        XCTAssertEqual(clock.liveTimers.map(\.interval), [30])
+    }
+
+    func testFirstMessageReplacesTheOpeningTimer() throws {
+        client.connect()
+        let opening = try XCTUnwrap(clock.liveTimers.first)
+
+        try socket(0).deliver(try connectMessage(ping: 20))
+        drainMainQueue()
+
+        XCTAssertTrue(opening.isInvalidated)
+        XCTAssertEqual(clock.liveTimers.map(\.interval), [30], "1.5 times the 20 second ping")
+    }
+
+    func testASilentConnectionTimesOutAndRetriesAfterAWait() throws {
+        client.connect()
+        notified = []
+
+        try XCTUnwrap(clock.liveTimers.first).action()
+
+        XCTAssertEqual(try socket(0).cancelCount, 1)
+        XCTAssertEqual(client.status.connection, .disconnected)
+        XCTAssertEqual(notified, [.disconnected])
+        XCTAssertEqual(clock.delayed.map(\.delay), [5])
+
+        clock.fireNextDelayed()
+
+        XCTAssertEqual(sockets.count, 2)
+        XCTAssertEqual(client.status.connection, .connecting)
+    }
+
+    func testRepeatedSilentConnectionsGrowTheWaits() throws {
+        client.connect()
+
+        var waits: [TimeInterval] = []
+        for _ in 0..<3 {
+            try XCTUnwrap(clock.liveTimers.first).action()
+            waits.append(try XCTUnwrap(clock.delayed.first?.delay))
+            clock.fireNextDelayed()
+        }
+
+        XCTAssertEqual(waits, [5, 10, 20])
+    }
+
+    func testDisconnectStopsTheOpeningTimer() throws {
+        client.connect()
+
+        client.disconnect()
+
+        XCTAssertTrue(clock.liveTimers.isEmpty)
+    }
+
+    func testNoAddressStartsNoOpeningTimer() throws {
+        let empty = ACWebSocketClient(serverName: nil, shortCode: nil, defaultDJ: "",
+                                      clock: clock) { _ in FakeSocket() }
+
+        empty.connect()
+
         XCTAssertTrue(clock.timers.isEmpty)
+    }
+
+    func testConnectingAgainWhileOpeningClosesTheOldSocket() throws {
+        client.connect()
+
+        client.connect()
+
+        XCTAssertEqual(try socket(0).cancelCount, 1)
+        XCTAssertEqual(sockets.count, 2)
     }
 
     func testAPingOfZeroKeepsThePreviousInterval() throws {
@@ -471,10 +540,12 @@ final class SocketClientIntegrationTests: XCTestCase {
         client.connect()
         try socket(0).deliver(try connectMessage(ping: 20))
         drainMainQueue()
+        let running = try XCTUnwrap(clock.liveTimers.first)
 
         client.connect()
 
-        XCTAssertTrue(clock.liveTimers.isEmpty)
+        XCTAssertTrue(running.isInvalidated)
+        XCTAssertEqual(clock.liveTimers.count, 1, "only the new connection's timer")
     }
 
     // MARK: Other messages
