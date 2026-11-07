@@ -111,6 +111,15 @@ class NowPlayingViewController: UIViewController {
     var mpVolumeSlider: UISlider?
     private var metadataCallback: MetadataChangeCallback?
     private var lastStatusMessage: String?
+    /// With one station there's nowhere for next and previous to go.
+    static func showsStationButtons(stationCount: Int) -> Bool { stationCount > 1 }
+
+    private func updateStationButtons() {
+        let hidden = !Self.showsStationButtons(stationCount: manager.stations.count)
+        previousButton.isHidden = hidden
+        nextButton.isHidden = hidden
+    }
+
     private var cancellables = Set<AnyCancellable>()
     private var connectionBanner: UILabel!
     private var timeBubble: UILabel!
@@ -220,9 +229,7 @@ class NowPlayingViewController: UIViewController {
         // Setup AirPlayButton
         setupAirPlayButton()
         
-        // Hide / Show Next/Previous buttons
-        previousButton.isHidden = Config.hideNextPreviousButtons
-        nextButton.isHidden = Config.hideNextPreviousButtons
+        updateStationButtons()
         
         // Subscribe to unified metadata changes
         metadataCallback = { [weak self] metadata in
@@ -984,5 +991,9 @@ class NowPlayingViewController: UIViewController {
 extension NowPlayingViewController: StationsManagerObserver {
     func stationsManager(_ manager: StationsManager, stationDidChange station: RadioStation?) {
         stationDidChange()
+    }
+
+    func stationsManager(_ manager: StationsManager, stationsDidUpdate stations: [RadioStation]) {
+        updateStationButtons()
     }
 }

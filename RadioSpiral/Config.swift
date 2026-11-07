@@ -21,9 +21,6 @@ struct Config {
     // Set this to "true" to enable the search bar
     static let searchable = false
 
-    // Set this to "false" to show the next/previous player buttons
-    static let hideNextPreviousButtons = true
-
     // Contact info
     static let website = "https://radiospiral.net"
     static let email = "radio@pemungkah.com"

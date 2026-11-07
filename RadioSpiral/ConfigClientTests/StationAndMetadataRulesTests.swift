@@ -372,3 +372,13 @@ final class TrackTimeFormatTests: XCTestCase {
 }
 
 /// What Now Playing does with audio when the metadata socket connects.
+
+final class StationButtonsTests: XCTestCase {
+    func testNextAndPreviousShowOnlyWithSomewhereToGo() {
+        let cases: [(stations: Int, shown: Bool)] = [(0, false), (1, false), (2, true), (4, true)]
+        for (stations, shown) in cases {
+            XCTAssertEqual(NowPlayingViewController.showsStationButtons(stationCount: stations), shown,
+                           "\(stations) stations")
+        }
+    }
+}
