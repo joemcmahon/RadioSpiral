@@ -43,6 +43,7 @@
 		A1C0DE0100000000000000A9 /* StationAndMetadataRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000AA /* StationAndMetadataRulesTests.swift */; };
 		A1C0DE0100000000000000D1 /* SocketClientIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000D2 /* SocketClientIntegrationTests.swift */; };
 		A1C0DE0100000000000000DF /* StallRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000DE /* StallRecoveryTests.swift */; };
+		A1C0DE0100000000000000E7 /* SecureURLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E6 /* SecureURLTests.swift */; };
 		A1C0DE0100000000000000E3 /* StartFadeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E2 /* StartFadeTests.swift */; };
 		A1C0DE0100000000000000D3 /* StubURLProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000D4 /* StubURLProtocol.swift */; };
 		A1C0DE0100000000000000D5 /* ConfigClientHTTPIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */; };
@@ -84,6 +85,7 @@
 		CE9EE8E1293C048A00F62041 /* LoaderController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE9EE8E0293C048A00F62041 /* LoaderController.swift */; };
 		CED6353B293081ED002B216F /* Handoffable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED6353A293081ED002B216F /* Handoffable.swift */; };
 		CEDABBED29121BBA00C0367F /* UIImage+Cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEDABBEC29121BBA00C0367F /* UIImage+Cache.swift */; };
+		A1C0DE0100000000000000E9 /* SecureURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E8 /* SecureURL.swift */; };
 		CF72ACE721F7155200461EED /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CF72ACE621F714D000461EED /* Main.storyboard */; };
 /* End PBXBuildFile section */
 
@@ -140,6 +142,7 @@
 		A1C0DE0100000000000000AA /* StationAndMetadataRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationAndMetadataRulesTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000D2 /* SocketClientIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketClientIntegrationTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000DE /* StallRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StallRecoveryTests.swift; sourceTree = "<group>"; };
+		A1C0DE0100000000000000E6 /* SecureURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureURLTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000E2 /* StartFadeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartFadeTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000D4 /* StubURLProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StubURLProtocol.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigClientHTTPIntegrationTests.swift; sourceTree = "<group>"; };
@@ -180,6 +183,7 @@
 		CEA82F492921F260009E9FA0 /* Info-CarPlay.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-CarPlay.plist"; sourceTree = "<group>"; };
 		CED6353A293081ED002B216F /* Handoffable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Handoffable.swift; sourceTree = "<group>"; };
 		CEDABBEC29121BBA00C0367F /* UIImage+Cache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Cache.swift"; sourceTree = "<group>"; };
+		A1C0DE0100000000000000E8 /* SecureURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SecureURL.swift"; sourceTree = "<group>"; };
 		CF72ACE621F714D000461EED /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		FEB1F0A11DE24DA9A9641A24 /* InterruptionPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterruptionPreference.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -278,6 +282,7 @@
 				A1C0DE0100000000000000AC /* MetadataManagerIntegrationTests.swift */,
 				A1C0DE0100000000000000D2 /* SocketClientIntegrationTests.swift */,
 				A1C0DE0100000000000000DE /* StallRecoveryTests.swift */,
+				A1C0DE0100000000000000E6 /* SecureURLTests.swift */,
 				A1C0DE0100000000000000E2 /* StartFadeTests.swift */,
 				A1C0DE0100000000000000D4 /* StubURLProtocol.swift */,
 				A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */,
@@ -423,6 +428,7 @@
 			children = (
 				CE6ECCFF292F215F008B3C16 /* Storyboard.swift */,
 				CEDABBEC29121BBA00C0367F /* UIImage+Cache.swift */,
+				A1C0DE0100000000000000E8 /* SecureURL.swift */,
 				CE6ECD02292F358C008B3C16 /* UIViewController+Email.swift */,
 				94D260951B45E3FA00DE671C /* AnimationFrames.swift */,
 				94E9761B1B1A8F3200F52B1E /* UIImage+DropShadow.swift */,
@@ -636,6 +642,7 @@
 				A1C0DE0100000000000000AB /* MetadataManagerIntegrationTests.swift in Sources */,
 				A1C0DE0100000000000000D1 /* SocketClientIntegrationTests.swift in Sources */,
 				A1C0DE0100000000000000DF /* StallRecoveryTests.swift in Sources */,
+				A1C0DE0100000000000000E7 /* SecureURLTests.swift in Sources */,
 				A1C0DE0100000000000000E3 /* StartFadeTests.swift in Sources */,
 				A1C0DE0100000000000000D3 /* StubURLProtocol.swift in Sources */,
 				A1C0DE0100000000000000D5 /* ConfigClientHTTPIntegrationTests.swift in Sources */,
@@ -680,6 +687,7 @@
 				711BB18C2F45A71200B9D8DF /* Credits.swift in Sources */,
 				B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */,
 				CEDABBED29121BBA00C0367F /* UIImage+Cache.swift in Sources */,
+				A1C0DE0100000000000000E9 /* SecureURL.swift in Sources */,
 				CE6036252A48F68D00E15E15 /* NowPlayingView.swift in Sources */,
 				27D776512BD747B293E5A498 /* InterruptionPreference.swift in Sources */,
 				A1C0DE0100000000000000D9 /* BuildInfo.swift in Sources */,

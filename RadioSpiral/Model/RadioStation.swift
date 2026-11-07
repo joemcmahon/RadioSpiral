@@ -78,7 +78,7 @@ extension RadioStation {
             return
         }
 
-        if imageURL.range(of: "http") != nil, let url = URL(string: imageURL) {
+        if let url = SecureURL.https(imageURL) {
             UIImage.image(from: url) { image in
                 let finalImage = image ?? #imageLiteral(resourceName: "albumArt")   // TODO: pick a better default image?
                 imageCache[imageURL] = finalImage

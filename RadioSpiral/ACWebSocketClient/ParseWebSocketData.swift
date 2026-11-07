@@ -141,7 +141,7 @@ public class ParseWebSocketData {
                 status = descramble(status: status)
                 
                 // Convert artwork URL string to URL.
-                status.artwork = URL(string: artURLString)
+                status.artwork = SecureURL.https(artURLString)
                 
                 // We parsed the data, so this struct has changed.
                 status.changed = true
@@ -189,7 +189,7 @@ public class ParseWebSocketData {
                 status = descramble(status: status)
                 
                 // Make the artwork URL string a real URL.
-                status.artwork = URL(string: artURLString)
+                status.artwork = SecureURL.https(artURLString)
                 
                 // Mark as changed.
                 status.changed = true

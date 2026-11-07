@@ -214,7 +214,7 @@ class RadioPlayer: ObservableObject {
         playerItem = nil
         player = nil
 
-        guard let url = url else {
+        guard let url = url.flatMap(SecureURL.https) else {
             state = .idle
             return
         }
