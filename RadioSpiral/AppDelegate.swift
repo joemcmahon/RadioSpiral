@@ -8,6 +8,7 @@
 
 import UIKit
 import MediaPlayer
+import Kingfisher
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -16,6 +17,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private var lastStationSkip = Date.distantPast
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+
+        ImageCacheLimit.apply()
 
         // AzuraCast WebSocket debug - disable by default
         ACWebSocketClient.shared.debug(to: 0)
@@ -119,3 +122,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 }
 
+/// Kingfisher's disk cache has no size limit by default, so artwork would only ever expire by age.
+enum ImageCacheLimit {
+    private static let bytes: UInt = 50 * 1024 * 1024
+
+    static func apply() {
+        ImageCache.default.diskStorage.config.sizeLimit = bytes
+    }
+
+    static var applied: UInt { ImageCache.default.diskStorage.config.sizeLimit }
+}

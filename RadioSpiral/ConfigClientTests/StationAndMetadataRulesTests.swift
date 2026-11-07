@@ -439,3 +439,10 @@ final class ShareTemporaryFilesTests: XCTestCase {
         XCTAssertTrue(ShareActivity.shareIsFinished(activityType: nil, completed: false), "sheet closed")
     }
 }
+
+final class ImageCacheLimitTests: XCTestCase {
+    /// The tests run inside the app, so launch has already happened. Kingfisher's default is no limit.
+    func testLaunchLimitsTheArtworkDiskCache() {
+        XCTAssertGreaterThan(ImageCacheLimit.applied, 0)
+    }
+}
