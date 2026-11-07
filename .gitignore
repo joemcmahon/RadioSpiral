@@ -21,3 +21,18 @@ docs/HANDOFF.md
 
 # PAAD review reports stay local
 paad/
+
+# Signing files and credentials
+*.mobileprovision
+*.p12
+*.p8
+*.pem
+*.cer
+.env
+fastlane/.env*
+.bundle/
+
+# Build products
+*.ipa
+*.dSYM
+*.dSYM.zip
