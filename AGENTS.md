@@ -24,10 +24,10 @@ Real-device testing uses an iPhone 13 Pro; CarPlay is tested in the CarPlay Simu
 
 ## Architecture notes
 
-- **Station list loading** uses one source, chosen by flags in `DataManager.getStation`:
-  `Config.useConfigClient`, then `useLocalStations` (bundled `stations.json`), then HTTP
-  `stations.json`. These are not a runtime fallback: with the current flags only `ConfigClient`
-  runs, and its failure goes to the error and retry screen in `LoaderController`.
+- **Station list loading** uses one source, chosen by a flag in `DataManager.getStation`:
+  `Config.useConfigClient`, otherwise HTTP `stations.json`. It isn't a runtime fallback: with the
+  current flag only `ConfigClient` runs, and its failure goes to the error and retry screen in
+  `LoaderController`.
 - **`ConfigClient`** loads the remote `config.json` from the `radiospiral-config` repo. TestFlight
   and Xcode builds can select `config-test.json` on the About screen (`StationServer`). It tries
   the listed sources in order (AzuraCast public API, then admin API; or a static list), then its

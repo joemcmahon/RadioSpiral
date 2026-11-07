@@ -19,7 +19,6 @@
 		711BB18C2F45A71200B9D8DF /* Credits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711BB18A2F45A71200B9D8DF /* Credits.swift */; };
 		715C87A62B23E141003FC57A /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 715C87A52B23E141003FC57A /* SnapshotHelper.swift */; };
 		7165121C2B35519B00473770 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CF72ACE621F714D000461EED /* Main.storyboard */; };
-		717686F22F457E3800D70E3D /* File.txt in Resources */ = {isa = PBXBuildFile; fileRef = 717686F12F457E3800D70E3D /* File.txt */; };
 		717B8C612EC449D30080EFE8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 717B8C5F2EC449D30080EFE8 /* SceneDelegate.swift */; };
 		717B8C662EC44DDD0080EFE8 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 717B8C632EC44DDD0080EFE8 /* CarPlaySceneDelegate.swift */; };
 		719678612D27A72000DCD7CE /* ACStreamStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 719678552D27A72000DCD7CE /* ACStreamStatus.swift */; };
@@ -57,7 +56,6 @@
 		9409E1261ABF6FEA00312E2B /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9409E1251ABF6FEA00312E2B /* Images.xcassets */; };
 		9409E1401ABF78B000312E2B /* NowPlayingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9409E13F1ABF78B000312E2B /* NowPlayingViewController.swift */; };
 		94452E551AD7086800BFE7A5 /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94452E541AD7086800BFE7A5 /* AboutViewController.swift */; };
-		945DB3C21AD58E3A00495EBB /* stations.json in Resources */ = {isa = PBXBuildFile; fileRef = 945DB3C11AD58E3A00495EBB /* stations.json */; };
 		949BBB401ACC9DEE005B7C26 /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949BBB3F1ACC9DEE005B7C26 /* DataManager.swift */; };
 		94AC70AE1AD05C6200652982 /* RadioStation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AC70AD1AD05C6200652982 /* RadioStation.swift */; };
 		94D260911B45D20000DE671C /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D260901B45D20000DE671C /* Config.swift */; };
@@ -118,7 +116,6 @@
 		6F4444B16407430F8A42EFDD /* test-config-with-real-server.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-config-with-real-server.json"; sourceTree = "<group>"; };
 		711BB18A2F45A71200B9D8DF /* Credits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Credits.swift; sourceTree = "<group>"; };
 		715C87A52B23E141003FC57A /* SnapshotHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SnapshotHelper.swift; path = fastlane/SnapshotHelper.swift; sourceTree = SOURCE_ROOT; };
-		717686F12F457E3800D70E3D /* File.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = File.txt; sourceTree = "<group>"; };
 		717B8C562EC433E10080EFE8 /* RadioSpiral.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RadioSpiral.entitlements; sourceTree = "<group>"; };
 		717B8C5F2EC449D30080EFE8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		717B8C632EC44DDD0080EFE8 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
@@ -158,7 +155,6 @@
 		9409E1251ABF6FEA00312E2B /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		9409E13F1ABF78B000312E2B /* NowPlayingViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NowPlayingViewController.swift; sourceTree = "<group>"; };
 		94452E541AD7086800BFE7A5 /* AboutViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
-		945DB3C11AD58E3A00495EBB /* stations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = stations.json; sourceTree = "<group>"; };
 		949BBB3F1ACC9DEE005B7C26 /* DataManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
 		94AC70AD1AD05C6200652982 /* RadioStation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RadioStation.swift; sourceTree = "<group>"; };
 		94D260901B45D20000DE671C /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
@@ -334,7 +330,6 @@
 				CE60361B2A48C43D00E15E15 /* Views */,
 				CE8062F6291EF5B3008BD097 /* ViewControllers */,
 				CE8062F5291EF598008BD097 /* Model */,
-				CE8062F4291EF57D008BD097 /* Data */,
 				CE8062F3291EF566008BD097 /* Networking */,
 				CE8062F2291EF545008BD097 /* Cells */,
 				94D260901B45D20000DE671C /* Config.swift */,
@@ -343,7 +338,6 @@
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* Settings.bundle */,
 				9409E11A1ABF6FEA00312E2B /* Info.plist */,
 				CEA82F492921F260009E9FA0 /* Info-CarPlay.plist */,
-				717686F12F457E3800D70E3D /* File.txt */,
 			);
 			path = RadioSpiral;
 			sourceTree = "<group>";
@@ -388,14 +382,6 @@
 				949BBB3F1ACC9DEE005B7C26 /* DataManager.swift */,
 			);
 			path = Networking;
-			sourceTree = "<group>";
-		};
-		CE8062F4291EF57D008BD097 /* Data */ = {
-			isa = PBXGroup;
-			children = (
-				945DB3C11AD58E3A00495EBB /* stations.json */,
-			);
-			path = Data;
 			sourceTree = "<group>";
 		};
 		CE8062F5291EF598008BD097 /* Model */ = {
@@ -585,13 +571,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				945DB3C21AD58E3A00495EBB /* stations.json in Resources */,
 				6258DCDA22D93A5400166C65 /* LogoShareView.xib in Resources */,
 				CF72ACE721F7155200461EED /* Main.storyboard in Resources */,
 				5FDEE0221F72FF980064333C /* LaunchScreen.storyboard in Resources */,
 				A1B2C3D4E5F6A7B8C9D0E1F3 /* Settings.bundle in Resources */,
 				9409E1261ABF6FEA00312E2B /* Images.xcassets in Resources */,
-				717686F22F457E3800D70E3D /* File.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

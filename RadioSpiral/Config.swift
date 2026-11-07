@@ -13,9 +13,8 @@ struct Config {
     static let debugLog = true
 
     // Station loading configuration
-    // Priority: useConfigClient → useLocalStations → stationsURL
+    // Priority: useConfigClient → stationsURL
     static let useConfigClient = true  // Use dynamic ConfigClient for stations
-    static let useLocalStations = false  // Fall back to local JSON if enabled
     static let stationsURL = "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/stations.json"
 
     // Set this to "true" to enable the search bar

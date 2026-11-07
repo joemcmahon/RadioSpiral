@@ -24,14 +24,10 @@ struct DataManager {
 
         DispatchQueue.global(qos: .userInitiated).async {
 
-            // Priority order: ConfigClient → Local → HTTP
+            // Priority order: ConfigClient → HTTP
             if Config.useConfigClient {
                 loadConfigClient { result in
                     handleStations(result, completion)
-                }
-            } else if Config.useLocalStations {
-                loadLocal() { dataResult in
-                    handle(dataResult, completion)
                 }
             } else {
                 loadHttp { dataResult in
@@ -51,7 +47,7 @@ struct DataManager {
         }
     }
 
-    // Handler for DataResult (from Local/HTTP)
+    // Handler for DataResult (from HTTP)
     private static func handle(_ dataResult: DataResult, _ completion: @escaping StationsCompletion) {
         DispatchQueue.main.async {
             switch dataResult {
@@ -110,23 +106,6 @@ struct DataManager {
         }
     }
 
-    // Load local JSON Data
-    
-    private static func loadLocal(_ completion: DataCompletion) {
-        guard let filePathURL = Bundle.main.url(forResource: "stations", withExtension: "json") else {
-            if Config.debugLog { print("The local JSON file could not be found") }
-            completion(.failure(DataError.fileNotFound))
-            return
-        }
-        
-        do {
-            let data = try Data(contentsOf: filePathURL, options: .uncached)
-            completion(.success(data))
-        } catch let error {
-            completion(.failure(error))
-        }
-    }
-        
     // Load http JSON Data
     private static func loadHttp(_ completion: @escaping DataCompletion) {
         guard let url = URL(string: Config.stationsURL) else {
