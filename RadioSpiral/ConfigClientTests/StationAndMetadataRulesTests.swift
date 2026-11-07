@@ -400,3 +400,42 @@ final class InstallEnvironmentTests: XCTestCase {
         XCTAssertEqual(InstallEnvironment.from(AppStore.Environment(rawValue: "somethingNew")), .appStore)
     }
 }
+
+final class ShareTemporaryFilesTests: XCTestCase {
+    private var folder: URL!
+
+    override func setUpWithError() throws {
+        folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    }
+
+    override func tearDownWithError() throws {
+        try FileManager.default.removeItem(at: folder)
+    }
+
+    private func create(_ name: String) throws -> URL {
+        let url = folder.appendingPathComponent(name)
+        try Data([1]).write(to: url)
+        return url
+    }
+
+    func testTheSharedImagesAreRemovedAndNothingElse() throws {
+        let image = try create("RadioSpiral.jpg")
+        let cover = try create("RadioSpiral-cover.jpg")
+        let other = try create("other.jpg")
+
+        ShareActivity.removeTemporaryFiles(in: folder)
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: image.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: cover.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: other.path))
+    }
+
+    /// Backing out of one share target returns to the sheet, which still needs the files.
+    func testTheFilesStayUntilTheShareSheetIsDone() {
+        let mail = UIActivity.ActivityType.mail
+        XCTAssertFalse(ShareActivity.shareIsFinished(activityType: mail, completed: false), "backed out of mail")
+        XCTAssertTrue(ShareActivity.shareIsFinished(activityType: mail, completed: true), "sent")
+        XCTAssertTrue(ShareActivity.shareIsFinished(activityType: nil, completed: false), "sheet closed")
+    }
+}

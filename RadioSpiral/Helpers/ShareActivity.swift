@@ -23,8 +23,8 @@ struct ShareActivity {
             activityViewController.popoverPresentationController?.permittedArrowDirections = UIPopoverArrowDirection(rawValue: 0)
             
             activityViewController.completionWithItemsHandler = {(activityType: UIActivity.ActivityType?, completed: Bool, returnedItems:[Any]?, error: Error?) in
-                if completed {
-                    // do something on completion if you want
+                if shareIsFinished(activityType: activityType, completed: completed) {
+                    removeTemporaryFiles()
                 }
             }
             
@@ -56,6 +56,23 @@ struct ShareActivity {
     }
 }
 
+extension ShareActivity {
+    fileprivate static let imageName = "RadioSpiral.jpg"
+    fileprivate static let coverName = "RadioSpiral-cover.jpg"
+
+    /// Backing out of one share target returns to the sheet, which still needs the files.
+    static func shareIsFinished(activityType: UIActivity.ActivityType?, completed: Bool) -> Bool {
+        completed || activityType == nil
+    }
+
+    /// The images hold the last art shared, so they don't stay after the sheet is done.
+    static func removeTemporaryFiles(in folder: URL = FileManager.default.temporaryDirectory) {
+        for name in [imageName, coverName] {
+            try? FileManager.default.removeItem(at: folder.appendingPathComponent(name))
+        }
+    }
+}
+
 /// The composed share image, plus metadata so the share sheet header shows the plain
 /// cover as a thumbnail with the shoutout as the title. Both are written as temporary JPEG
 /// files: the header draws a thumbnail reliably from a file, not from an in-memory UIImage.
@@ -67,13 +84,13 @@ private final class ShareItem: NSObject, UIActivityItemSource {
 
     init(image: UIImage, preview: UIImage, title: String) {
         metadata.title = title
-        let shareURL = ShareItem.writeJPEG(image, name: "RadioSpiral.jpg")
+        let shareURL = ShareItem.writeJPEG(image, name: ShareActivity.imageName)
         payload = shareURL ?? image
         if let shareURL {
             metadata.originalURL = shareURL
             metadata.url = shareURL
         }
-        if let previewURL = ShareItem.writeJPEG(preview, name: "RadioSpiral-cover.jpg") {
+        if let previewURL = ShareItem.writeJPEG(preview, name: ShareActivity.coverName) {
             metadata.imageProvider = NSItemProvider(contentsOf: previewURL)
             metadata.iconProvider = NSItemProvider(contentsOf: previewURL)
         } else {
