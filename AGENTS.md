@@ -30,7 +30,7 @@ Real-device testing uses an iPhone 13 Pro; CarPlay is tested in the CarPlay Simu
   `LoaderController`.
 - **`ConfigClient`** loads the remote `config.json` from the `radiospiral-config` repo. TestFlight
   and Xcode builds can select `config-test.json` on the About screen (`StationServer`). It tries
-  the listed sources in order (AzuraCast public API, then admin API; or a static list), then its
+  the listed sources in order (AzuraCast public API, or a static list), then its
   stations cached in memory. AzuraCast sources have an exclude list (e.g. `rstest`).
 - **Now-playing metadata** comes from the AzuraCast WebSocket, then falls back to station info
   (`ConfigClient`, then `RadioStation`; the DJ name checks `RadioStation` first). See

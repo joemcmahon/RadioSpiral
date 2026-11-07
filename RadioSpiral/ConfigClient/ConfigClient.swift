@@ -26,15 +26,13 @@ public class ConfigClient {
     public var configURL: String {
         didSet { if configURL != oldValue { cachedStations = [] } }
     }
-    private let apiKey: String?
     private var cachedStations: [StationConfig] = []
 
     /// Every request goes through this session. Tests replace it to supply canned responses.
     var session = makeConfigSession()
 
-    public init(configURL: String = "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config.json", apiKey: String? = nil) {
+    public init(configURL: String = "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config.json") {
         self.configURL = configURL
-        self.apiKey = apiKey
     }
 
     /// Fetch stations from configured sources in order
@@ -165,17 +163,11 @@ public class ConfigClient {
             return
         }
 
-        // Try public API first (no authentication required)
-        tryPublicAzuracastAPI(server: server, exclude: config.exclude ?? []) { [weak self] result in
-            switch result {
-            case .success(let stations):
+        tryPublicAzuracastAPI(server: server, exclude: config.exclude ?? []) { result in
+            if case .success(let stations) = result {
                 if ConfigClientDebug.debugLog { print("ConfigClient: Fetched \(stations.count) stations from public Azuracast API") }
-                completion(.success(stations))
-            case .failure:
-                // Fall back to admin API if public API fails
-                if ConfigClientDebug.debugLog { print("ConfigClient: Public API failed, trying admin API...") }
-                self?.tryAdminAzuracastAPI(server: server, exclude: config.exclude ?? [], completion: completion)
             }
+            completion(result)
         }
     }
 
@@ -235,70 +227,6 @@ public class ConfigClient {
         task.resume()
     }
 
-    private func tryAdminAzuracastAPI(
-        server: String,
-        exclude: [String],
-        completion: @escaping (Result<[StationConfig], Error>) -> Void
-    ) {
-        let urlString = "https://\(server)/api/admin/stations"
-
-        guard let url = URL(string: urlString) else {
-            completion(.failure(ConfigClientError.urlNotValid))
-            return
-        }
-
-        var request = URLRequest(url: url)
-        request.timeoutInterval = 10
-
-        // Add API key authentication if provided
-        if let apiKey = apiKey {
-            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        }
-
-        let task = session.dataTask(with: request) { data, response, error in
-            if let error = error {
-                if ConfigClientDebug.debugLog { print("ConfigClient: Admin API request failed: \(error)") }
-                completion(.failure(error))
-                return
-            }
-
-            guard let httpResponse = response as? HTTPURLResponse, 200...299 ~= httpResponse.statusCode else {
-                if ConfigClientDebug.debugLog {
-                    if let httpResponse = response as? HTTPURLResponse {
-                        print("ConfigClient: HTTP \(httpResponse.statusCode) from admin API")
-                    }
-                }
-                completion(.failure(ConfigClientError.httpResponseNotValid))
-                return
-            }
-
-            guard let data = data else {
-                completion(.failure(ConfigClientError.dataNotFound))
-                return
-            }
-
-            do {
-                let azuracastStations = try JSONDecoder().decode([AzuracastStation].self, from: data)
-                let filtered = azuracastStations.filter { !exclude.contains($0.id) }
-
-                // If all stations are excluded, treat as failure to try next config
-                guard !filtered.isEmpty else {
-                    if ConfigClientDebug.debugLog { print("ConfigClient: All stations excluded from admin API") }
-                    completion(.failure(ConfigClientError.dataNotFound))
-                    return
-                }
-
-                let stationConfigs = filtered.map { self.convertToStationConfig($0, serverDomain: server) }
-                completion(.success(stationConfigs))
-            } catch {
-                if ConfigClientDebug.debugLog { print("ConfigClient: Failed to decode admin API response: \(error)") }
-                completion(.failure(error))
-            }
-        }
-
-        task.resume()
-    }
-
     private func tryStaticConfig(
         _ config: ConfigSource,
         completion: @escaping (Result<[StationConfig], Error>) -> Void
@@ -311,19 +239,6 @@ public class ConfigClient {
 
         if ConfigClientDebug.debugLog { print("ConfigClient: Loaded \(stations.count) stations from static config") }
         completion(.success(stations))
-    }
-
-    private func convertToStationConfig(_ azStation: AzuracastStation, serverDomain: String) -> StationConfig {
-        return StationConfig(
-            name: azStation.name,
-            streamURL: "https://\(serverDomain)/radio/\(azStation.shortCode)/live",
-            imageURL: "https://\(serverDomain)/static/uploads/\(azStation.shortCode)/album_art.png",
-            desc: azStation.description ?? "",
-            longDesc: azStation.description ?? "",
-            serverName: serverDomain,
-            shortCode: azStation.shortCode,
-            defaultDJ: ""
-        )
     }
 
     private func convertFromPublicAzuracastStation(_ station: PublicAzuracastStation, serverDomain: String) -> StationConfig {
@@ -407,23 +322,6 @@ struct ConfigSource: Codable {
     /// Check if this is a valid static config
     var isValidStatic: Bool {
         format == .static && !safeStations.isEmpty
-    }
-}
-
-/// Station data from Azuracast Admin API
-struct AzuracastStation: Codable {
-    let id: String
-    let name: String
-    let shortCode: String
-    let description: String?
-    let isEnabled: Bool
-
-    enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case shortCode = "short_code"
-        case description
-        case isEnabled = "is_enabled"
     }
 }
 

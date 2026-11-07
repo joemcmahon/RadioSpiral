@@ -13,9 +13,7 @@ final class ConfigClientHTTPIntegrationTests: XCTestCase {
 
     private let configURL = "https://config.invalid/config.json"
     private let onePublic = "https://one.invalid/api/stations"
-    private let oneAdmin = "https://one.invalid/api/admin/stations"
     private let twoPublic = "https://two.invalid/api/stations"
-    private let twoAdmin = "https://two.invalid/api/admin/stations"
 
     override func setUp() {
         super.setUp()
@@ -63,17 +61,8 @@ final class ConfigClientHTTPIntegrationTests: XCTestCase {
         return .http(status: 200, body: try json(stations))
     }
 
-    private func adminStations(_ codes: String...) throws -> StubURLProtocol.Reply {
-        let stations: [[String: Any]] = codes.map { code in
-            ["id": "\(code)-id", "name": "\(code) name", "short_code": code,
-             "description": "\(code) desc", "is_enabled": true]
-        }
-        return .http(status: 200, body: try json(stations))
-    }
-
-    private func stationsBody(public isPublic: Bool) throws -> Data {
-        let reply = isPublic ? try publicStations("ignored") : try adminStations("ignored")
-        guard case .http(_, let body) = reply else { throw URLError(.badServerResponse) }
+    private func stationsBody() throws -> Data {
+        guard case .http(_, let body) = try publicStations("ignored") else { throw URLError(.badServerResponse) }
         return body
     }
 
@@ -105,40 +94,37 @@ final class ConfigClientHTTPIntegrationTests: XCTestCase {
         XCTAssertEqual(StubURLProtocol.requestedURLs, [configURL, onePublic])
     }
 
-    func testAdminAPIIsTriedAfterThePublicOneFailsOnTheSameServer() throws {
-        try serveConfig([azuracast("one.invalid"), azuracast("two.invalid")])
+    /// There's no admin login in the app, so a request there couldn't help.
+    func testNoAdminRequestIsMadeWhenThePublicAPIFails() throws {
+        try serveConfig([azuracast("one.invalid"), staticSource("backup")])
         StubURLProtocol.reply(to: onePublic, with: .http(status: 404))
-        StubURLProtocol.reply(to: oneAdmin, with: try adminStations("fromadmin"))
 
         let outcome = fetch(makeClient())
 
-        XCTAssertEqual(try codes(outcome), ["fromadmin"])
-        XCTAssertEqual(StubURLProtocol.requestedURLs, [configURL, onePublic, oneAdmin])
+        XCTAssertEqual(try codes(outcome), ["backup"])
+        XCTAssertEqual(StubURLProtocol.requestedURLs, [configURL, onePublic])
     }
 
-    func testNextServerIsTriedOnlyAfterBothAPIsOfTheFirstFail() throws {
+    func testNextServerIsTriedWhenTheFirstFails() throws {
         try serveConfig([azuracast("one.invalid"), azuracast("two.invalid")])
         StubURLProtocol.reply(to: onePublic, with: .http(status: 500))
-        StubURLProtocol.reply(to: oneAdmin, with: .http(status: 403))
         StubURLProtocol.reply(to: twoPublic, with: try publicStations("second"))
 
         let outcome = fetch(makeClient())
 
         XCTAssertEqual(try codes(outcome), ["second"])
-        XCTAssertEqual(StubURLProtocol.requestedURLs, [configURL, onePublic, oneAdmin, twoPublic])
+        XCTAssertEqual(StubURLProtocol.requestedURLs, [configURL, onePublic, twoPublic])
     }
 
     func testStaticListIsUsedOnceEveryServerHasFailed() throws {
         try serveConfig([azuracast("one.invalid"), azuracast("two.invalid"), staticSource("backup")])
         StubURLProtocol.reply(to: onePublic, with: .failure(.timedOut))
-        StubURLProtocol.reply(to: oneAdmin, with: .failure(.timedOut))
         StubURLProtocol.reply(to: twoPublic, with: .failure(.notConnectedToInternet))
-        StubURLProtocol.reply(to: twoAdmin, with: .http(status: 200, body: Data("not json".utf8)))
 
         let outcome = fetch(makeClient())
 
         XCTAssertEqual(try codes(outcome), ["backup"])
-        XCTAssertEqual(StubURLProtocol.requestedURLs, [configURL, onePublic, oneAdmin, twoPublic, twoAdmin])
+        XCTAssertEqual(StubURLProtocol.requestedURLs, [configURL, onePublic, twoPublic])
     }
 
     func testStaticSourceListedFirstMakesNoServerRequests() throws {
@@ -162,21 +148,19 @@ final class ConfigClientHTTPIntegrationTests: XCTestCase {
     func testServerWithOnlyExcludedStationsFallsThroughToTheStaticList() throws {
         try serveConfig([azuracast("one.invalid", exclude: ["hidden"]), staticSource("backup")])
         StubURLProtocol.reply(to: onePublic, with: try publicStations("hidden"))
-        StubURLProtocol.reply(to: oneAdmin, with: .http(status: 403))
 
         let outcome = fetch(makeClient())
 
         XCTAssertEqual(try codes(outcome), ["backup"])
-        XCTAssertEqual(StubURLProtocol.requestedURLs, [configURL, onePublic, oneAdmin])
+        XCTAssertEqual(StubURLProtocol.requestedURLs, [configURL, onePublic])
     }
 
     // MARK: Failures and the cache
 
     func testEverySourceFailingWithNothingCachedIsAFailure() throws {
         try serveConfig([azuracast("one.invalid")])
-        // Usable bodies, so only the status code can make these count as failures.
-        StubURLProtocol.reply(to: onePublic, with: .http(status: 500, body: try stationsBody(public: true)))
-        StubURLProtocol.reply(to: oneAdmin, with: .http(status: 500, body: try stationsBody(public: false)))
+        // A usable body, so only the status code can make this count as a failure.
+        StubURLProtocol.reply(to: onePublic, with: .http(status: 500, body: try stationsBody()))
 
         let outcome = try XCTUnwrap(fetch(makeClient()))
 
@@ -212,7 +196,6 @@ final class ConfigClientHTTPIntegrationTests: XCTestCase {
         XCTAssertEqual(try codes(fetch(client)), ["first"])
 
         StubURLProtocol.reply(to: onePublic, with: .http(status: 500))
-        StubURLProtocol.reply(to: oneAdmin, with: .http(status: 500))
 
         XCTAssertEqual(try codes(fetch(client)), ["first"])
     }
