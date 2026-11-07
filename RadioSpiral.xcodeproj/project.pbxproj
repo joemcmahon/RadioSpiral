@@ -1053,8 +1053,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/fethica/Spring.git";
 			requirement = {
-				branch = master;
-				kind = branch;
+				kind = revision;
+				revision = 63d6b2b4339606181617caddea3a988aa65bcadd;
 			};
 		};
 		CE60361F2A48C51A00E15E15 /* XCRemoteSwiftPackageReference "NVActivityIndicatorView" */ = {

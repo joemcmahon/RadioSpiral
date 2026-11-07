@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - name: Select Xcode 27.1
         run: sudo xcode-select -s /Applications/Xcode_27.1.app
       - name: Build
@@ -32,6 +32,7 @@ jobs:
           xcodebuild build-for-testing \
             -project RadioSpiral.xcodeproj \
             -scheme RadioSpiral \
+            -onlyUsePackageVersionsFromResolvedFile \
             -destination 'platform=iOS Simulator,name=iPhone 17'
       - name: Test
         run: |
