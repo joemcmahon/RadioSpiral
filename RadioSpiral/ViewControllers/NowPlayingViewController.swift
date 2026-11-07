@@ -111,14 +111,6 @@ class NowPlayingViewController: UIViewController {
     var mpVolumeSlider: UISlider?
     private var metadataCallback: MetadataChangeCallback?
     private var lastStatusMessage: String?
-    private var wasPlaying = false
-
-    /// Restart only audio that has stopped. Play from the lock screen or CarPlay starts audio before
-    /// the socket connects, and rebuilding the player then would interrupt it. A network drop stops
-    /// the player first, so recovery still restarts.
-    static func shouldRestartAudioOnConnect(wasPlaying: Bool, isPlaying: Bool) -> Bool {
-        wasPlaying && !isPlaying
-    }
     private var cancellables = Set<AnyCancellable>()
     private var connectionBanner: UILabel!
     private var timeBubble: UILabel!
@@ -238,34 +230,16 @@ class NowPlayingViewController: UIViewController {
         }
         metadataManager.subscribeToMetadataChanges(metadataCallback!)
 
-        // Observe connection state for audio restart after WiFi recovery.
-        // Use removeDuplicates + scan to detect transitions TO .connected
-        // from a non-connected state. Only restart the audio player -
-        // do NOT call reloadCurrent() as that triggers connectToStation()
-        // via currentStation didSet, creating a feedback loop.
-        metadataManager.$connectionState
+        // The banner follows the audio. If only metadata is lost, the music is still playing,
+        // so there's nothing to report.
+        player.$isStalled
             .removeDuplicates()
-            .scan((MetadataConnectionState.disconnected, MetadataConnectionState.disconnected)) { previous, current in
-                (previous.1, current)
-            }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] (previous, current) in
-                guard let self = self else { return }
-                if current == .connected && previous != .connected {
-                    self.hideConnectionBanner()
-                    if Self.shouldRestartAudioOnConnect(wasPlaying: self.wasPlaying, isPlaying: self.player.isPlaying) {
-                        self.player.radioURL = URL(string: self.manager.currentStation?.streamURL ?? "")
-                        self.player.play()
-                    }
-                } else if current == .disconnected && previous == .connected {
-                    self.showConnectionBanner("Connection lost — reconnecting…")
-                    if self.wasPlaying {
-                        // Stop AVPlayer to prevent aggressive internal retries while offline.
-                        // wasPlaying stays true so audio restarts on recovery.
-                        self.player.stop()
-                    }
-                } else if current == .connecting {
-                    self.showConnectionBanner("Reconnecting…")
+            .sink { [weak self] isStalled in
+                if isStalled {
+                    self?.showConnectionBanner("Connection lost — reconnecting…")
+                } else {
+                    self?.hideConnectionBanner()
                 }
             }
             .store(in: &cancellables)
@@ -277,11 +251,6 @@ class NowPlayingViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] playbackState in
                 guard let self = self else { return }
-                if playbackState == .playing {
-                    // Mirror external play starts (e.g. CarPlay) so reconnect-on-recovery works.
-                    self.wasPlaying = true
-                    self.hideConnectionBanner()
-                }
                 self.playbackStateDidChange(playbackState, animate: true)
             }
             .store(in: &cancellables)
@@ -513,10 +482,8 @@ class NowPlayingViewController: UIViewController {
         
     @IBAction func playingPressed(_ sender: Any) {
         if player.isPlaying {
-            wasPlaying = false
             player.stop()
         } else {
-            wasPlaying = true
             manager.reloadCurrent()  // Reconnect to stream
             player.play()
             updateLabels()

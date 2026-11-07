@@ -372,18 +372,3 @@ final class TrackTimeFormatTests: XCTestCase {
 }
 
 /// What Now Playing does with audio when the metadata socket connects.
-final class RestartOnConnectTests: XCTestCase {
-    /// A network drop stops the player, so this is recovery.
-    func testAudioRestartsIfItWasPlayingAndHasStopped() {
-        XCTAssertTrue(NowPlayingViewController.shouldRestartAudioOnConnect(wasPlaying: true, isPlaying: false))
-    }
-
-    /// Play from the lock screen starts audio and then the socket. Rebuilding would interrupt it.
-    func testAudioAlreadyPlayingIsLeftAlone() {
-        XCTAssertFalse(NowPlayingViewController.shouldRestartAudioOnConnect(wasPlaying: true, isPlaying: true))
-    }
-
-    func testAudioTheListenerStoppedStaysStopped() {
-        XCTAssertFalse(NowPlayingViewController.shouldRestartAudioOnConnect(wasPlaying: false, isPlaying: false))
-    }
-}
