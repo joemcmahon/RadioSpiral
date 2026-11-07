@@ -8,6 +8,15 @@ enum InstallEnvironment: Equatable {
 
     var allowsTestServer: Bool { self != .appStore }
 
+    /// Nil means the transaction couldn't be verified.
+    static func from(_ environment: AppStore.Environment?) -> InstallEnvironment {
+        switch environment {
+        case .sandbox?: return .testFlight
+        case .xcode?: return .xcode
+        default: return .appStore
+        }
+    }
+
     /// Nil until `resolve(_:)` finishes; treated as App Store until then. Main thread only.
     private(set) static var current: InstallEnvironment?
 
@@ -21,14 +30,11 @@ enum InstallEnvironment: Equatable {
             completion(.xcode)
             #else
             Task {
-                var environment = InstallEnvironment.appStore
+                var verified: AppStore.Environment?
                 if case .verified(let transaction)? = try? await AppTransaction.shared {
-                    switch transaction.environment {
-                    case .sandbox: environment = .testFlight
-                    case .xcode: environment = .xcode
-                    default: environment = .appStore
-                    }
+                    verified = transaction.environment
                 }
+                let environment = from(verified)
                 await MainActor.run {
                     current = environment
                     completion(environment)

@@ -20,6 +20,7 @@
 //
 
 import XCTest
+import StoreKit
 import UIKit
 @testable import RadioSpiral
 
@@ -380,5 +381,22 @@ final class StationButtonsTests: XCTestCase {
             XCTAssertEqual(NowPlayingViewController.showsStationButtons(stationCount: stations), shown,
                            "\(stations) stations")
         }
+    }
+}
+
+final class InstallEnvironmentTests: XCTestCase {
+    /// Only App Store builds keep the test server locked, so anything unverified has to land there.
+    func testStoreKitEnvironmentsMapToInstallEnvironments() {
+        XCTAssertEqual(InstallEnvironment.from(.sandbox), .testFlight)
+        XCTAssertEqual(InstallEnvironment.from(.xcode), .xcode)
+        XCTAssertEqual(InstallEnvironment.from(.production), .appStore)
+    }
+
+    func testAnUnverifiedTransactionCountsAsTheAppStore() {
+        XCTAssertEqual(InstallEnvironment.from(nil), .appStore)
+    }
+
+    func testAnUnknownEnvironmentCountsAsTheAppStore() {
+        XCTAssertEqual(InstallEnvironment.from(AppStore.Environment(rawValue: "somethingNew")), .appStore)
     }
 }
