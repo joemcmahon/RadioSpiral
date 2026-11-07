@@ -125,6 +125,8 @@ public class ACWebSocketClient: ObservableObject {
     private static let stablePeriod: TimeInterval = 60
     // How long a new socket has to deliver its first message.
     private static let openingTimeout: TimeInterval = 30
+    // The ping comes from the server, so it only gets to move the liveness timer this far.
+    private static let pingRange: ClosedRange<TimeInterval> = 10...120
 
     /// Centralized debug logging with ISO timestamps and component tags.
     private func debugLog(_ tag: String, _ message: String, _ flag: Int = ACConnectivityChecks) {
@@ -482,7 +484,7 @@ public class ACWebSocketClient: ObservableObject {
 
             // Update stored pingInterval from successful parse
             if let ping = result.pingInterval, ping > 0 {
-                lastKnownPingInterval = Double(ping)
+                lastKnownPingInterval = min(max(Double(ping), Self.pingRange.lowerBound), Self.pingRange.upperBound)
             }
 
             DispatchQueue.main.async {

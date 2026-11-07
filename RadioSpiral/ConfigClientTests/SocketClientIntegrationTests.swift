@@ -452,6 +452,23 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertTrue(clock.liveTimers.isEmpty)
     }
 
+    // MARK: Server-supplied ping
+
+    func testPingsOutsideTheSaneRangeAreHeldToIt() throws {
+        let cases: [(ping: Int, timer: TimeInterval)] = [
+            (1, 15), (9, 15), (10, 15), (120, 180), (121, 180), (86_400, 180), (Int.max, 180)
+        ]
+        for (ping, timer) in cases {
+            setUp()
+            client.connect()
+
+            try socket(0).deliver(try connectMessage(ping: ping))
+            drainMainQueue()
+
+            XCTAssertEqual(clock.liveTimers.map(\.interval), [timer], "ping \(ping)")
+        }
+    }
+
     // MARK: A connection that opens and stays silent
 
     func testConnectStartsAThirtySecondTimer() throws {
