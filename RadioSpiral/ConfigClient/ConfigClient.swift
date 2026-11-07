@@ -348,5 +348,9 @@ enum ConfigClientError: Error {
 
 /// Debug configuration
 struct ConfigClientDebug {
+    #if DEBUG
     static let debugLog = true
+    #else
+    static let debugLog = false
+    #endif
 }

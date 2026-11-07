@@ -10,7 +10,11 @@ import UIKit
 
 struct Config {
 
+    #if DEBUG
     static let debugLog = true
+    #else
+    static let debugLog = false
+    #endif
 
     // Station loading configuration
     // Priority: useConfigClient → stationsURL

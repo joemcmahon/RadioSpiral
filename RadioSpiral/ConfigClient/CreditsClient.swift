@@ -96,5 +96,9 @@ public class CreditsClient {
 
 /// Debug configuration (matches ConfigClientDebug pattern)
 struct CreditsClientDebug {
+    #if DEBUG
     static let debugLog = true
+    #else
+    static let debugLog = false
+    #endif
 }
