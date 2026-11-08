@@ -37,8 +37,11 @@ final class ConfigClientHTTPIntegrationTests: XCTestCase {
         try JSONSerialization.data(withJSONObject: object)
     }
 
-    private func azuracast(_ server: String, exclude: [String] = []) -> [String: Any] {
-        ["format": "azuracast", "server": server, "exclude": exclude]
+    private func azuracast(_ server: String, exclude: [String] = [],
+                           defaultDJs: [String: String]? = nil) -> [String: Any] {
+        var source: [String: Any] = ["format": "azuracast", "server": server, "exclude": exclude]
+        if let defaultDJs { source["defaultDJs"] = defaultDJs }
+        return source
     }
 
     private func staticSource(_ code: String) -> [String: Any] {
@@ -134,6 +137,49 @@ final class ConfigClientHTTPIntegrationTests: XCTestCase {
 
         XCTAssertEqual(try codes(outcome), ["backup"])
         XCTAssertEqual(StubURLProtocol.requestedURLs, [configURL])
+    }
+
+    // MARK: Default DJ names (task-46)
+
+    func testAzuracastStationGetsItsDefaultDJFromTheSourceMap() throws {
+        try serveConfig([azuracast("one.invalid", defaultDJs: ["alpha": "Spud", "beta": "Roshi"])])
+        StubURLProtocol.reply(to: onePublic, with: try publicStations("alpha", "beta"))
+
+        let stations = try XCTUnwrap(fetch(makeClient())).get()
+
+        XCTAssertEqual(stations.map(\.defaultDJ), ["Spud", "Roshi"])
+    }
+
+    func testAzuracastStationMissingFromTheMapHasNoDefaultDJ() throws {
+        try serveConfig([azuracast("one.invalid", defaultDJs: ["alpha": "Spud"])])
+        StubURLProtocol.reply(to: onePublic, with: try publicStations("alpha", "gamma"))
+
+        let stations = try XCTUnwrap(fetch(makeClient())).get()
+
+        XCTAssertEqual(stations.map(\.defaultDJ), ["Spud", ""])
+    }
+
+    /// Existing configs have no map; they must keep working as they do now.
+    func testSourceWithoutAMapLeavesDefaultDJsEmpty() throws {
+        try serveConfig([azuracast("one.invalid")])
+        StubURLProtocol.reply(to: onePublic, with: try publicStations("alpha"))
+
+        let stations = try XCTUnwrap(fetch(makeClient())).get()
+
+        XCTAssertEqual(stations.map(\.defaultDJ), [""])
+    }
+
+    /// The map comes from a remote file; a bad one must cost the names, never the station list.
+    func testMalformedMapStillLoadsTheStations() throws {
+        var source = azuracast("one.invalid")
+        source["defaultDJs"] = ["alpha": 42]
+        try serveConfig([source])
+        StubURLProtocol.reply(to: onePublic, with: try publicStations("alpha"))
+
+        let stations = try XCTUnwrap(fetch(makeClient())).get()
+
+        XCTAssertEqual(stations.map(\.shortCode), ["alpha"])
+        XCTAssertEqual(stations.map(\.defaultDJ), [""])
     }
 
     // MARK: Excluded stations
