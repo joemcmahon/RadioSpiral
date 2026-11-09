@@ -163,7 +163,7 @@ public class ConfigClient {
             return
         }
 
-        tryPublicAzuracastAPI(server: server, exclude: config.exclude ?? []) { result in
+        tryPublicAzuracastAPI(server: server, exclude: config.exclude ?? [], defaultDJs: config.safeDefaultDJs) { result in
             if case .success(let stations) = result {
                 if ConfigClientDebug.debugLog { print("ConfigClient: Fetched \(stations.count) stations from public Azuracast API") }
             }
@@ -174,6 +174,7 @@ public class ConfigClient {
     private func tryPublicAzuracastAPI(
         server: String,
         exclude: [String],
+        defaultDJs: [String: String] = [:],
         completion: @escaping (Result<[StationConfig], Error>) -> Void
     ) {
         let urlString = "https://\(server)/api/stations"
@@ -216,7 +217,7 @@ public class ConfigClient {
                     return
                 }
 
-                let stationConfigs = filtered.map { self.convertFromPublicAzuracastStation($0, serverDomain: server) }
+                let stationConfigs = filtered.map { self.convertFromPublicAzuracastStation($0, serverDomain: server, defaultDJs: defaultDJs) }
                 completion(.success(stationConfigs))
             } catch {
                 if ConfigClientDebug.debugLog { print("ConfigClient: Failed to decode public API response: \(error)") }
@@ -241,7 +242,8 @@ public class ConfigClient {
         completion(.success(stations))
     }
 
-    private func convertFromPublicAzuracastStation(_ station: PublicAzuracastStation, serverDomain: String) -> StationConfig {
+    private func convertFromPublicAzuracastStation(_ station: PublicAzuracastStation, serverDomain: String,
+                                                   defaultDJs: [String: String] = [:]) -> StationConfig {
         return StationConfig(
             name: station.name,
             streamURL: station.listen_url,
@@ -250,7 +252,7 @@ public class ConfigClient {
             longDesc: station.description,
             serverName: serverDomain,
             shortCode: station.shortcode,
-            defaultDJ: ""
+            defaultDJ: defaultDJs[station.shortcode] ?? ""
         )
     }
 }
@@ -275,6 +277,22 @@ struct ConfigSource: Codable {
     let server: String?
     let exclude: [String]?
     let stations: [[String: String]]?
+    /// Azuracast sources only: default DJ name by station shortcode, shown when nobody is live.
+    let defaultDJs: [String: String]?
+
+    private enum CodingKeys: String, CodingKey {
+        case format, server, exclude, stations, defaultDJs
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        format = try c.decode(ConfigFormat.self, forKey: .format)
+        server = try c.decodeIfPresent(String.self, forKey: .server)
+        exclude = try c.decodeIfPresent([String].self, forKey: .exclude)
+        stations = try c.decodeIfPresent([[String: String]].self, forKey: .stations)
+        // Names are optional extras from a remote file: a bad map loses the names, not the list.
+        defaultDJs = try? c.decodeIfPresent([String: String].self, forKey: .defaultDJs)
+    }
 
     /// Safe accessor for server (default: empty string)
     var safeServer: String {
@@ -284,6 +302,11 @@ struct ConfigSource: Codable {
     /// Safe accessor for exclude list (default: empty array)
     var safeExclude: [String] {
         exclude ?? []
+    }
+
+    /// Safe accessor for the default DJ map (default: empty)
+    var safeDefaultDJs: [String: String] {
+        defaultDJs ?? [:]
     }
 
     /// Safe accessor for stations - converts raw data to StationConfig objects
