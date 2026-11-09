@@ -859,7 +859,9 @@ class NowPlayingViewController: UIViewController {
             // Duo inner display fully open and upright: same layout, much more room for text.
             scale = isFoldInnerDisplay(size) ? 1.35 : 1.0
         case .landscape:
-            scale = 1.0
+            // A two-line title takes more height than the shortest phones have (iPhone 17e:
+            // 390 pt); without a smaller size the album line is squeezed out of the panel.
+            scale = (traitCollection.userInterfaceIdiom == .phone && size.height < 400) ? 0.85 : 1.0
         }
         for (label, font) in baseLabelFonts {
             label.font = font.withSize(font.pointSize * scale)
@@ -922,9 +924,9 @@ class NowPlayingViewController: UIViewController {
             }
         }
         applyLabelScale(for: newLayout, size: size)
-        // foldWide has vertical room to spare: let long track names wrap to a second line
-        // (fixed column width, tail-truncated after two lines) instead of truncating at one.
-        songLabel.numberOfLines = (newLayout == .foldWide || newLayout == .foldLaptop) ? 2 : 1
+        // Long track names wrap to a second line (tail-truncated after two lines) instead of
+        // truncating at one: the fold layouts and phone landscape have room for it.
+        songLabel.numberOfLines = (newLayout == .foldWide || newLayout == .foldLaptop || newLayout == .landscape) ? 2 : 1
         // Reparenting stack views puts them above timeBubble in Z-order;
         // restore timeBubble to front so it stays visible.
         if let bubble = timeBubble { view.bringSubviewToFront(bubble) }
