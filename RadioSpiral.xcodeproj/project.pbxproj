@@ -52,6 +52,7 @@
 		A1C0DE0100000000000000A9 /* StationAndMetadataRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000AA /* StationAndMetadataRulesTests.swift */; };
 		A1C0DE0100000000000000AB /* MetadataManagerIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000AC /* MetadataManagerIntegrationTests.swift */; };
 		A1C0DE0100000000000000AD /* StationListE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000AE /* StationListE2ETests.swift */; };
+		A1C0DE0100000000000000ED /* NowPlayingLayoutUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EC /* NowPlayingLayoutUITests.swift */; };
 		A1C0DE0100000000000000D1 /* SocketClientIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000D2 /* SocketClientIntegrationTests.swift */; };
 		A1C0DE0100000000000000D3 /* StubURLProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000D4 /* StubURLProtocol.swift */; };
 		A1C0DE0100000000000000D5 /* ConfigClientHTTPIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */; };
@@ -152,6 +153,7 @@
 		A1C0DE0100000000000000AA /* StationAndMetadataRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationAndMetadataRulesTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000AC /* MetadataManagerIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataManagerIntegrationTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000AE /* StationListE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationListE2ETests.swift; sourceTree = "<group>"; };
+		A1C0DE0100000000000000EC /* NowPlayingLayoutUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingLayoutUITests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000D2 /* SocketClientIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketClientIntegrationTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000D4 /* StubURLProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StubURLProtocol.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigClientHTTPIntegrationTests.swift; sourceTree = "<group>"; };
@@ -222,6 +224,7 @@
 				715C87A52B23E141003FC57A /* SnapshotHelper.swift */,
 				2C5545BC1C1124DE00728469 /* SwiftRadioUITests.swift */,
 				A1C0DE0100000000000000AE /* StationListE2ETests.swift */,
+				A1C0DE0100000000000000EC /* NowPlayingLayoutUITests.swift */,
 				2C5545BE1C1124DE00728469 /* Info.plist */,
 			);
 			path = RadioSpiralUITests;
@@ -614,6 +617,7 @@
 			files = (
 				2C5545BD1C1124DE00728469 /* SwiftRadioUITests.swift in Sources */,
 				A1C0DE0100000000000000AD /* StationListE2ETests.swift in Sources */,
+				A1C0DE0100000000000000ED /* NowPlayingLayoutUITests.swift in Sources */,
 				715C87A62B23E141003FC57A /* SnapshotHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

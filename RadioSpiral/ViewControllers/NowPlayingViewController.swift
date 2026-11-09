@@ -304,7 +304,17 @@ class NowPlayingViewController: UIViewController {
             self.songLabel.text = metadata.trackName
             self.releaseLabel.text = metadata.albumName ?? ""
             self.djName.text = metadata.djName ?? ""
-            
+            #if DEBUG
+            // UI layout tests: `-nowPlayingDemoTitle "<title>"` replaces the labels with known
+            // text, so layouts can be checked with a very long title whatever is playing.
+            if let title = UserDefaults.standard.string(forKey: "nowPlayingDemoTitle") {
+                self.songLabel.text = title
+                self.artistLabel.text = "Demo Artist"
+                self.releaseLabel.text = "Demo Album (2006-2023)"
+                self.djName.text = "Demo DJ"
+            }
+            #endif
+
             // Update live DJ indicator
             self.liveDJIndicator.isHidden = !metadata.isLiveDJ
 
