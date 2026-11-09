@@ -613,11 +613,31 @@ class NowPlayingViewController: UIViewController {
             rightPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ]
 
-        landscapeConstraints = landscapeEdgeConstraints + [
-            // Album art: left side, fills height
-            albumImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: artWidthFraction),
-            albumImageView.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
-            albumImageView.bottomAnchor.constraint(equalTo: toolsView.topAnchor, constant: -8),
+        // The art box: phones let it fill the height (the art is aspect-fit inside it). On iPad
+        // it is a square centered in the space above the toolbar, so the time bubble (anchored
+        // to the box's bottom) sits right under the drawn art, not down at the toolbar.
+        let artArea = UILayoutGuide()
+        view.addLayoutGuide(artArea)
+        let artBoxConstraints: [NSLayoutConstraint]
+        if isPad {
+            artBoxConstraints = [
+                artArea.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
+                artArea.bottomAnchor.constraint(equalTo: toolsView.topAnchor, constant: -8),
+                albumImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: artWidthFraction),
+                albumImageView.heightAnchor.constraint(equalTo: albumImageView.widthAnchor),
+                albumImageView.centerYAnchor.constraint(equalTo: artArea.centerYAnchor),
+                albumImageView.topAnchor.constraint(greaterThanOrEqualTo: artArea.topAnchor),
+                albumImageView.bottomAnchor.constraint(lessThanOrEqualTo: artArea.bottomAnchor),
+            ]
+        } else {
+            artBoxConstraints = [
+                albumImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: artWidthFraction),
+                albumImageView.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
+                albumImageView.bottomAnchor.constraint(equalTo: toolsView.topAnchor, constant: -8),
+            ]
+        }
+
+        landscapeConstraints = landscapeEdgeConstraints + artBoxConstraints + [
 
             // Right panel: positioned between art and trailing edge
             rightPanel.leadingAnchor.constraint(equalTo: albumImageView.trailingAnchor, constant: 24),
@@ -787,7 +807,9 @@ class NowPlayingViewController: UIViewController {
     private func updateSideMargins() {
         let insets = view.safeAreaInsets
         if landscapeEdgeConstraints.count == 2 {
-            let margin = max(insets.left, insets.right) + 12
+            // iPad has room: keep the art off the screen edge.
+            let base: CGFloat = traitCollection.userInterfaceIdiom == .pad ? 40 : 12
+            let margin = max(insets.left, insets.right) + base
             landscapeEdgeConstraints[0].constant = margin
             landscapeEdgeConstraints[1].constant = -margin
         }
