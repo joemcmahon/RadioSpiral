@@ -99,6 +99,8 @@ class NowPlayingViewController: UIViewController {
     private var airPlayToolbarCenterX: NSLayoutConstraint?
     /// Label fonts as loaded (after iPad scaling), so per-layout scaling never compounds.
     private var baseLabelFonts: [(UILabel, UIFont)] = []
+    /// What the last phone-landscape fit was computed for; nil forces a new fit.
+    private var lastFitKey: String?
 
     // MARK: - Properties
     
@@ -304,7 +306,17 @@ class NowPlayingViewController: UIViewController {
             self.songLabel.text = metadata.trackName
             self.releaseLabel.text = metadata.albumName ?? ""
             self.djName.text = metadata.djName ?? ""
-            
+            #if DEBUG
+            // UI layout tests: `-nowPlayingDemoTitle "<title>"` replaces the labels with known
+            // text, so layouts can be checked with a very long title whatever is playing.
+            if let title = UserDefaults.standard.string(forKey: "nowPlayingDemoTitle") {
+                self.songLabel.text = title
+                self.artistLabel.text = "Demo Artist"
+                self.releaseLabel.text = "Demo Album (2006-2023)"
+                self.djName.text = "Demo DJ"
+            }
+            #endif
+
             // Update live DJ indicator
             self.liveDJIndicator.isHidden = !metadata.isLiveDJ
 
@@ -613,11 +625,31 @@ class NowPlayingViewController: UIViewController {
             rightPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ]
 
-        landscapeConstraints = landscapeEdgeConstraints + [
-            // Album art: left side, fills height
-            albumImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: artWidthFraction),
-            albumImageView.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
-            albumImageView.bottomAnchor.constraint(equalTo: toolsView.topAnchor, constant: -8),
+        // The art box: phones let it fill the height (the art is aspect-fit inside it). On iPad
+        // it is a square centered in the space above the toolbar, so the time bubble (anchored
+        // to the box's bottom) sits right under the drawn art, not down at the toolbar.
+        let artArea = UILayoutGuide()
+        view.addLayoutGuide(artArea)
+        let artBoxConstraints: [NSLayoutConstraint]
+        if isPad {
+            artBoxConstraints = [
+                artArea.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
+                artArea.bottomAnchor.constraint(equalTo: toolsView.topAnchor, constant: -8),
+                albumImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: artWidthFraction),
+                albumImageView.heightAnchor.constraint(equalTo: albumImageView.widthAnchor),
+                albumImageView.centerYAnchor.constraint(equalTo: artArea.centerYAnchor),
+                albumImageView.topAnchor.constraint(greaterThanOrEqualTo: artArea.topAnchor),
+                albumImageView.bottomAnchor.constraint(lessThanOrEqualTo: artArea.bottomAnchor),
+            ]
+        } else {
+            artBoxConstraints = [
+                albumImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: artWidthFraction),
+                albumImageView.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
+                albumImageView.bottomAnchor.constraint(equalTo: toolsView.topAnchor, constant: -8),
+            ]
+        }
+
+        landscapeConstraints = landscapeEdgeConstraints + artBoxConstraints + [
 
             // Right panel: positioned between art and trailing edge
             rightPanel.leadingAnchor.constraint(equalTo: albumImageView.trailingAnchor, constant: 24),
@@ -787,7 +819,9 @@ class NowPlayingViewController: UIViewController {
     private func updateSideMargins() {
         let insets = view.safeAreaInsets
         if landscapeEdgeConstraints.count == 2 {
-            let margin = max(insets.left, insets.right) + 12
+            // iPad has room: keep the art off the screen edge.
+            let base: CGFloat = traitCollection.userInterfaceIdiom == .pad ? 40 : 12
+            let margin = max(insets.left, insets.right) + base
             landscapeEdgeConstraints[0].constant = margin
             landscapeEdgeConstraints[1].constant = -margin
         }
@@ -802,10 +836,19 @@ class NowPlayingViewController: UIViewController {
         updateSideMargins()
     }
 
-    /// iPhone Duo inner display: a phone whose long side is far beyond any slab iPhone.
+    /// iPhone Duo inner display: a phone-idiom screen at least 850 pt long and under 1.7:1.
     /// (UIHinge reports open/closed but not the fold's position, so the screen size identifies it.)
+    /// A long side alone isn't enough: the iPhone 17 (874 pt), Air (912) and 17 Pro Max (956)
+    /// are as long as the Duo's inner display (669 x 951 pt), but they are about 2.2:1 and the
+    /// Duo's inner display is about 1.4:1. The Duo's outer display (466 x 678 pt) is too short.
+    static func isFoldInnerDisplay(_ size: CGSize, isPhone: Bool) -> Bool {
+        let long = max(size.width, size.height)
+        let short = min(size.width, size.height)
+        return isPhone && long >= 850 && short > 0 && long / short < 1.7
+    }
+
     private func isFoldInnerDisplay(_ size: CGSize) -> Bool {
-        traitCollection.userInterfaceIdiom == .phone && max(size.width, size.height) >= 850
+        Self.isFoldInnerDisplay(size, isPhone: traitCollection.userInterfaceIdiom == .phone)
     }
 
     private func layout(for size: CGSize) -> NowPlayingLayout {
@@ -828,10 +871,59 @@ class NowPlayingViewController: UIViewController {
             // Duo inner display fully open and upright: same layout, much more room for text.
             scale = isFoldInnerDisplay(size) ? 1.35 : 1.0
         case .landscape:
-            scale = 1.0
+            scale = 1.0   // phones: fitLabelsToPanel() shrinks per title, only when needed
         }
         for (label, font) in baseLabelFonts {
             label.font = font.withSize(font.pointSize * scale)
+        }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        fitLabelsToPanel()
+    }
+
+    /// Phone landscape only. Shrinks the labels just enough that the title fits in two lines
+    /// without an ellipsis and the labels fit above the volume slider, never below 11 pt (the
+    /// iOS minimum in the Human Interface Guidelines). Runs from layout, but only when the text,
+    /// the column width or the toolbar position changed since the last fit.
+    private func fitLabelsToPanel() {
+        guard currentLayout == .landscape, traitCollection.userInterfaceIdiom == .phone,
+              baseLabelFonts.count == 3, landscapeRightPanel?.superview != nil else { return }
+        let width = labelsStackView.bounds.width
+        guard width > 0 else { return }
+        let key = [songLabel.text, artistLabel.text, releaseLabel.text].map { $0 ?? "" }
+            .joined(separator: "|") + "|\(width)|\(toolsView.frame.minY)"
+        guard key != lastFitKey else { return }
+        lastFitKey = key
+
+        // Space for the labels: from the top of the panel down to the toolbar, less the
+        // volume slider and the controls and their minimum gaps (see panelContentConstraints).
+        let room = toolsView.frame.minY - 4 - (view.safeAreaInsets.top + 8)
+            - volumeStackView.bounds.height - controlsStackView.bounds.height - 6
+
+        func apply(title: CGFloat, others: CGFloat) {
+            for (index, entry) in baseLabelFonts.enumerated() {
+                let scale = index == 0 ? title : others
+                entry.0.font = entry.1.withSize(max(11, entry.1.pointSize * scale))
+            }
+        }
+        func needed() -> CGFloat {
+            labelsStackView.systemLayoutSizeFitting(
+                CGSize(width: width, height: UIView.layoutFittingCompressedSize.height),
+                withHorizontalFittingPriority: .required,
+                verticalFittingPriority: .fittingSizeLevel).height
+        }
+
+        // The title first, to its two lines; then, if the column is still too tall, everything
+        // together by one factor so the sizes keep their order (no label goes under 11 pt).
+        let title = TitleFit.scale(for: songLabel.text ?? "", font: baseLabelFonts[0].1,
+                                   width: width, maxLines: 2)
+        var factor: CGFloat = 1
+        apply(title: title, others: 1)
+        while needed() > room, factor > 0.4 {
+            factor -= 0.05
+            apply(title: title * factor, others: factor)
         }
     }
 
@@ -891,9 +983,10 @@ class NowPlayingViewController: UIViewController {
             }
         }
         applyLabelScale(for: newLayout, size: size)
-        // foldWide has vertical room to spare: let long track names wrap to a second line
-        // (fixed column width, tail-truncated after two lines) instead of truncating at one.
-        songLabel.numberOfLines = (newLayout == .foldWide || newLayout == .foldLaptop) ? 2 : 1
+        lastFitKey = nil   // fonts were reset: fit again at the next layout
+        // Long track names wrap to a second line (tail-truncated after two lines) instead of
+        // truncating at one: the fold layouts and phone landscape have room for it.
+        songLabel.numberOfLines = (newLayout == .foldWide || newLayout == .foldLaptop || newLayout == .landscape) ? 2 : 1
         // Reparenting stack views puts them above timeBubble in Z-order;
         // restore timeBubble to front so it stays visible.
         if let bubble = timeBubble { view.bringSubviewToFront(bubble) }
