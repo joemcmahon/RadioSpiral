@@ -64,6 +64,7 @@
 		A1C0DE0100000000000000E5 /* StartFade.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E4 /* StartFade.swift */; };
 		A1C0DE0100000000000000E7 /* SecureURLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E6 /* SecureURLTests.swift */; };
 		A1C0DE0100000000000000E9 /* SecureURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E8 /* SecureURL.swift */; };
+		A1C0DE0100000000000000EB /* FoldInnerDisplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */; };
 		A1C0DE0200000000000000A1 /* StationChangeMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0200000000000000A2 /* StationChangeMetadataTests.swift */; };
 		B6B0CEB08FFF4CC6A8931B5F /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
 		B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
@@ -163,6 +164,7 @@
 		A1C0DE0100000000000000E4 /* StartFade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartFade.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000E6 /* SecureURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureURLTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000E8 /* SecureURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureURL.swift; sourceTree = "<group>"; };
+		A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoldInnerDisplayTests.swift; sourceTree = "<group>"; };
 		A1C0DE0200000000000000A2 /* StationChangeMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationChangeMetadataTests.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsClient.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B61 /* test-credits.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-credits.json"; sourceTree = "<group>"; };
@@ -279,6 +281,7 @@
 				A1C0DE0100000000000000D2 /* SocketClientIntegrationTests.swift */,
 				A1C0DE0100000000000000DE /* StallRecoveryTests.swift */,
 				A1C0DE0100000000000000E6 /* SecureURLTests.swift */,
+				A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */,
 				A1C0DE0100000000000000E2 /* StartFadeTests.swift */,
 				A1C0DE0100000000000000D4 /* StubURLProtocol.swift */,
 				A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */,
@@ -627,6 +630,7 @@
 				A1C0DE0100000000000000D1 /* SocketClientIntegrationTests.swift in Sources */,
 				A1C0DE0100000000000000DF /* StallRecoveryTests.swift in Sources */,
 				A1C0DE0100000000000000E7 /* SecureURLTests.swift in Sources */,
+				A1C0DE0100000000000000EB /* FoldInnerDisplayTests.swift in Sources */,
 				A1C0DE0100000000000000E3 /* StartFadeTests.swift in Sources */,
 				A1C0DE0100000000000000D3 /* StubURLProtocol.swift in Sources */,
 				A1C0DE0100000000000000D5 /* ConfigClientHTTPIntegrationTests.swift in Sources */,

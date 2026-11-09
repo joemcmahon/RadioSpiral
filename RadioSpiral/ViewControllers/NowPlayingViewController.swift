@@ -802,10 +802,19 @@ class NowPlayingViewController: UIViewController {
         updateSideMargins()
     }
 
-    /// iPhone Duo inner display: a phone whose long side is far beyond any slab iPhone.
+    /// iPhone Duo inner display: a phone-idiom screen at least 850 pt long and under 1.7:1.
     /// (UIHinge reports open/closed but not the fold's position, so the screen size identifies it.)
+    /// A long side alone isn't enough: the iPhone 17 (874 pt), Air (912) and 17 Pro Max (956)
+    /// are as long as the Duo's inner display (669 x 951 pt), but they are about 2.2:1 and the
+    /// Duo's inner display is about 1.4:1. The Duo's outer display (466 x 678 pt) is too short.
+    static func isFoldInnerDisplay(_ size: CGSize, isPhone: Bool) -> Bool {
+        let long = max(size.width, size.height)
+        let short = min(size.width, size.height)
+        return isPhone && long >= 850 && short > 0 && long / short < 1.7
+    }
+
     private func isFoldInnerDisplay(_ size: CGSize) -> Bool {
-        traitCollection.userInterfaceIdiom == .phone && max(size.width, size.height) >= 850
+        Self.isFoldInnerDisplay(size, isPhone: traitCollection.userInterfaceIdiom == .phone)
     }
 
     private func layout(for size: CGSize) -> NowPlayingLayout {
