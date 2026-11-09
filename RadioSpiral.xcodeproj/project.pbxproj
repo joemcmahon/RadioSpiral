@@ -66,6 +66,8 @@
 		A1C0DE0100000000000000E7 /* SecureURLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E6 /* SecureURLTests.swift */; };
 		A1C0DE0100000000000000E9 /* SecureURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E8 /* SecureURL.swift */; };
 		A1C0DE0100000000000000EB /* FoldInnerDisplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */; };
+		A1C0DE0100000000000000EF /* TitleFit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EE /* TitleFit.swift */; };
+		A1C0DE0100000000000000F1 /* TitleFitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F0 /* TitleFitTests.swift */; };
 		A1C0DE0200000000000000A1 /* StationChangeMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0200000000000000A2 /* StationChangeMetadataTests.swift */; };
 		B6B0CEB08FFF4CC6A8931B5F /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
 		B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
@@ -167,6 +169,8 @@
 		A1C0DE0100000000000000E6 /* SecureURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureURLTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000E8 /* SecureURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureURL.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoldInnerDisplayTests.swift; sourceTree = "<group>"; };
+		A1C0DE0100000000000000EE /* TitleFit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleFit.swift; sourceTree = "<group>"; };
+		A1C0DE0100000000000000F0 /* TitleFitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleFitTests.swift; sourceTree = "<group>"; };
 		A1C0DE0200000000000000A2 /* StationChangeMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationChangeMetadataTests.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsClient.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B61 /* test-credits.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-credits.json"; sourceTree = "<group>"; };
@@ -285,6 +289,7 @@
 				A1C0DE0100000000000000DE /* StallRecoveryTests.swift */,
 				A1C0DE0100000000000000E6 /* SecureURLTests.swift */,
 				A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */,
+				A1C0DE0100000000000000F0 /* TitleFitTests.swift */,
 				A1C0DE0100000000000000E2 /* StartFadeTests.swift */,
 				A1C0DE0100000000000000D4 /* StubURLProtocol.swift */,
 				A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */,
@@ -421,6 +426,7 @@
 				CE6ECCFF292F215F008B3C16 /* Storyboard.swift */,
 				CEDABBEC29121BBA00C0367F /* UIImage+Cache.swift */,
 				A1C0DE0100000000000000E8 /* SecureURL.swift */,
+				A1C0DE0100000000000000EE /* TitleFit.swift */,
 				CE6ECD02292F358C008B3C16 /* UIViewController+Email.swift */,
 				94D260951B45E3FA00DE671C /* AnimationFrames.swift */,
 				94E9761B1B1A8F3200F52B1E /* UIImage+DropShadow.swift */,
@@ -635,6 +641,7 @@
 				A1C0DE0100000000000000DF /* StallRecoveryTests.swift in Sources */,
 				A1C0DE0100000000000000E7 /* SecureURLTests.swift in Sources */,
 				A1C0DE0100000000000000EB /* FoldInnerDisplayTests.swift in Sources */,
+				A1C0DE0100000000000000F1 /* TitleFitTests.swift in Sources */,
 				A1C0DE0100000000000000E3 /* StartFadeTests.swift in Sources */,
 				A1C0DE0100000000000000D3 /* StubURLProtocol.swift in Sources */,
 				A1C0DE0100000000000000D5 /* ConfigClientHTTPIntegrationTests.swift in Sources */,
@@ -680,6 +687,7 @@
 				B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */,
 				CEDABBED29121BBA00C0367F /* UIImage+Cache.swift in Sources */,
 				A1C0DE0100000000000000E9 /* SecureURL.swift in Sources */,
+				A1C0DE0100000000000000EF /* TitleFit.swift in Sources */,
 				CE6036252A48F68D00E15E15 /* NowPlayingView.swift in Sources */,
 				27D776512BD747B293E5A498 /* InterruptionPreference.swift in Sources */,
 				A1C0DE0100000000000000D9 /* BuildInfo.swift in Sources */,

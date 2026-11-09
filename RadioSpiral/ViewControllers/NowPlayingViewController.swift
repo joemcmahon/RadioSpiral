@@ -99,6 +99,8 @@ class NowPlayingViewController: UIViewController {
     private var airPlayToolbarCenterX: NSLayoutConstraint?
     /// Label fonts as loaded (after iPad scaling), so per-layout scaling never compounds.
     private var baseLabelFonts: [(UILabel, UIFont)] = []
+    /// What the last phone-landscape fit was computed for; nil forces a new fit.
+    private var lastFitKey: String?
 
     // MARK: - Properties
     
@@ -869,12 +871,59 @@ class NowPlayingViewController: UIViewController {
             // Duo inner display fully open and upright: same layout, much more room for text.
             scale = isFoldInnerDisplay(size) ? 1.35 : 1.0
         case .landscape:
-            // A two-line title takes more height than the shortest phones have (iPhone 17e:
-            // 390 pt); without a smaller size the album line is squeezed out of the panel.
-            scale = (traitCollection.userInterfaceIdiom == .phone && size.height < 400) ? 0.85 : 1.0
+            scale = 1.0   // phones: fitLabelsToPanel() shrinks per title, only when needed
         }
         for (label, font) in baseLabelFonts {
             label.font = font.withSize(font.pointSize * scale)
+        }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        fitLabelsToPanel()
+    }
+
+    /// Phone landscape only. Shrinks the labels just enough that the title fits in two lines
+    /// without an ellipsis and the labels fit above the volume slider, never below 11 pt (the
+    /// iOS minimum in the Human Interface Guidelines). Runs from layout, but only when the text,
+    /// the column width or the toolbar position changed since the last fit.
+    private func fitLabelsToPanel() {
+        guard currentLayout == .landscape, traitCollection.userInterfaceIdiom == .phone,
+              baseLabelFonts.count == 3, landscapeRightPanel?.superview != nil else { return }
+        let width = labelsStackView.bounds.width
+        guard width > 0 else { return }
+        let key = [songLabel.text, artistLabel.text, releaseLabel.text].map { $0 ?? "" }
+            .joined(separator: "|") + "|\(width)|\(toolsView.frame.minY)"
+        guard key != lastFitKey else { return }
+        lastFitKey = key
+
+        // Space for the labels: from the top of the panel down to the toolbar, less the
+        // volume slider and the controls and their minimum gaps (see panelContentConstraints).
+        let room = toolsView.frame.minY - 4 - (view.safeAreaInsets.top + 8)
+            - volumeStackView.bounds.height - controlsStackView.bounds.height - 6
+
+        func apply(title: CGFloat, others: CGFloat) {
+            for (index, entry) in baseLabelFonts.enumerated() {
+                let scale = index == 0 ? title : others
+                entry.0.font = entry.1.withSize(max(11, entry.1.pointSize * scale))
+            }
+        }
+        func needed() -> CGFloat {
+            labelsStackView.systemLayoutSizeFitting(
+                CGSize(width: width, height: UIView.layoutFittingCompressedSize.height),
+                withHorizontalFittingPriority: .required,
+                verticalFittingPriority: .fittingSizeLevel).height
+        }
+
+        // The title first, to its two lines; then, if the column is still too tall, everything
+        // together by one factor so the sizes keep their order (no label goes under 11 pt).
+        let title = TitleFit.scale(for: songLabel.text ?? "", font: baseLabelFonts[0].1,
+                                   width: width, maxLines: 2)
+        var factor: CGFloat = 1
+        apply(title: title, others: 1)
+        while needed() > room, factor > 0.4 {
+            factor -= 0.05
+            apply(title: title * factor, others: factor)
         }
     }
 
@@ -934,6 +983,7 @@ class NowPlayingViewController: UIViewController {
             }
         }
         applyLabelScale(for: newLayout, size: size)
+        lastFitKey = nil   // fonts were reset: fit again at the next layout
         // Long track names wrap to a second line (tail-truncated after two lines) instead of
         // truncating at one: the fold layouts and phone landscape have room for it.
         songLabel.numberOfLines = (newLayout == .foldWide || newLayout == .foldLaptop || newLayout == .landscape) ? 2 : 1
