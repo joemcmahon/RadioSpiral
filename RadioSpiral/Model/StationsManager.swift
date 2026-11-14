@@ -223,17 +223,8 @@ extension StationsManager {
         let nowPLayingInfoCenter = MPNowPlayingInfoCenter.default()
         var nowPlayingInfo = nowPLayingInfoCenter.nowPlayingInfo ?? [String : Any]()
         if let metadata = metadata {
-            nowPlayingInfo[MPMediaItemPropertyArtist] = artistLine(for: metadata.artistName)
-            nowPlayingInfo[MPMediaItemPropertyTitle] = metadata.trackName
-            nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = metadata.albumName
-            if let duration = metadata.duration {
-                nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = duration
-            }
-            let elapsed = metadata.elapsed ?? 0.0
-            nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = elapsed
-            // Always set rate to 1.0 when receiving metadata — we're actively streaming.
-            // Play/pause state changes update the rate separately via setupPlaybackStateObserver.
-            nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = 1.0
+            nowPlayingInfo = Self.trackInfo(from: nowPlayingInfo, metadata: metadata,
+                                            artistLine: artistLine(for: metadata.artistName))
             if let artworkURL = metadata.artworkURL {
                 URLSession.shared.dataTask(with: artworkURL) { [weak self] data, response, error in
                     if let data = data, let image = UIImage(data: data) {
@@ -244,22 +235,52 @@ extension StationsManager {
                             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
                         }
                     } else {
-                        if let station = self?.currentStation {
-                            station.getImage { fallbackImage in
-                                DispatchQueue.main.async {
-                                    nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: fallbackImage.size, requestHandler: { _ in
-                                        return fallbackImage
-                                    })
-                                    MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-                                }
-                            }
-                        }
+                        self?.publishWithStationArtwork(nowPlayingInfo)
                     }
                 }.resume()
                 return // Only set nowPlayingInfo after artwork is ready
             }
+            // No artwork for this track: show the station's.
+            publishWithStationArtwork(nowPlayingInfo)
+            return
         }
-        // If no artworkURL, set nowPlayingInfo immediately
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+    }
+
+    /// Publishes `info` with the current station's art, or without any art if there is no station.
+    private func publishWithStationArtwork(_ info: [String: Any]) {
+        guard let station = currentStation else {
+            DispatchQueue.main.async { MPNowPlayingInfoCenter.default().nowPlayingInfo = info }
+            return
+        }
+        station.getImage { image in
+            DispatchQueue.main.async {
+                var info = info
+                info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size, requestHandler: { _ in image })
+                MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+            }
+        }
+    }
+}
+
+extension StationsManager {
+
+    /// The lock screen's info for a new track, built on top of what's there now.
+    static func trackInfo(from existing: [String: Any], metadata: UnifiedMetadata, artistLine: String) -> [String: Any] {
+        var info = existing
+        // The previous track's art never carries over; the caller sets this track's art
+        // (or the station's) when it has it.
+        info[MPMediaItemPropertyArtwork] = nil
+        info[MPMediaItemPropertyArtist] = artistLine
+        info[MPMediaItemPropertyTitle] = metadata.trackName
+        info[MPMediaItemPropertyAlbumTitle] = metadata.albumName
+        if let duration = metadata.duration {
+            info[MPMediaItemPropertyPlaybackDuration] = duration
+        }
+        info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = metadata.elapsed ?? 0.0
+        // Always set rate to 1.0 when receiving metadata — we're actively streaming.
+        // Play/pause state changes update the rate separately via setupPlaybackStateObserver.
+        info[MPNowPlayingInfoPropertyPlaybackRate] = 1.0
+        return info
     }
 }
