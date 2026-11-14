@@ -998,16 +998,20 @@ class NowPlayingViewController: UIViewController {
     func updateLabels(with statusMessage: String? = nil, animate: Bool = true) {
         guard let statusMessage = statusMessage else {
             // Radio is (hopefully) streaming properly - use unified metadata
+            var titleChanged = false
             if let metadata = metadataManager.getCurrentMetadata() {
                 self.liveDJIndicator.isHidden = !metadata.isLiveDJ
                 if !metadata.trackName.isEmpty {
+                    // Only a different title animates: Play reaches here three
+                    // times (task-55) and the text is the same each time.
+                    titleChanged = songLabel.text != metadata.trackName
                     songLabel.text = metadata.trackName
                     artistLabel.text = metadata.artistName
                     releaseLabel.text = metadata.albumName ?? ""
                 }
             }
             
-            shouldAnimateSongLabel(animate)
+            if titleChanged { shouldAnimateSongLabel(animate) }
             return
         }
         
