@@ -68,6 +68,7 @@
 		A1C0DE0100000000000000ED /* NowPlayingLayoutUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EC /* NowPlayingLayoutUITests.swift */; };
 		A1C0DE0100000000000000EF /* TitleFit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EE /* TitleFit.swift */; };
 		A1C0DE0100000000000000F1 /* TitleFitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F0 /* TitleFitTests.swift */; };
+		A1C0DE0100000000000000F3 /* LockScreenArtworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F2 /* LockScreenArtworkTests.swift */; };
 		A1C0DE0200000000000000A1 /* StationChangeMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0200000000000000A2 /* StationChangeMetadataTests.swift */; };
 		B6B0CEB08FFF4CC6A8931B5F /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
 		B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
@@ -171,6 +172,7 @@
 		A1C0DE0100000000000000EC /* NowPlayingLayoutUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingLayoutUITests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000EE /* TitleFit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleFit.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000F0 /* TitleFitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleFitTests.swift; sourceTree = "<group>"; };
+		A1C0DE0100000000000000F2 /* LockScreenArtworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenArtworkTests.swift; sourceTree = "<group>"; };
 		A1C0DE0200000000000000A2 /* StationChangeMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationChangeMetadataTests.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsClient.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B61 /* test-credits.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-credits.json"; sourceTree = "<group>"; };
@@ -290,6 +292,7 @@
 				A1C0DE0100000000000000E6 /* SecureURLTests.swift */,
 				A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */,
 				A1C0DE0100000000000000F0 /* TitleFitTests.swift */,
+				A1C0DE0100000000000000F2 /* LockScreenArtworkTests.swift */,
 				A1C0DE0100000000000000E2 /* StartFadeTests.swift */,
 				A1C0DE0100000000000000D4 /* StubURLProtocol.swift */,
 				A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */,
@@ -642,6 +645,7 @@
 				A1C0DE0100000000000000E7 /* SecureURLTests.swift in Sources */,
 				A1C0DE0100000000000000EB /* FoldInnerDisplayTests.swift in Sources */,
 				A1C0DE0100000000000000F1 /* TitleFitTests.swift in Sources */,
+				A1C0DE0100000000000000F3 /* LockScreenArtworkTests.swift in Sources */,
 				A1C0DE0100000000000000E3 /* StartFadeTests.swift in Sources */,
 				A1C0DE0100000000000000D3 /* StubURLProtocol.swift in Sources */,
 				A1C0DE0100000000000000D5 /* ConfigClientHTTPIntegrationTests.swift in Sources */,
