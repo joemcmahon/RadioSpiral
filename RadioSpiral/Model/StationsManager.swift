@@ -235,23 +235,31 @@ extension StationsManager {
                             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
                         }
                     } else {
-                        if let station = self?.currentStation {
-                            station.getImage { fallbackImage in
-                                DispatchQueue.main.async {
-                                    nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: fallbackImage.size, requestHandler: { _ in
-                                        return fallbackImage
-                                    })
-                                    MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-                                }
-                            }
-                        }
+                        self?.publishWithStationArtwork(nowPlayingInfo)
                     }
                 }.resume()
                 return // Only set nowPlayingInfo after artwork is ready
             }
+            // No artwork for this track: show the station's.
+            publishWithStationArtwork(nowPlayingInfo)
+            return
         }
-        // If no artworkURL, set nowPlayingInfo immediately
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+    }
+
+    /// Publishes `info` with the current station's art, or without any art if there is no station.
+    private func publishWithStationArtwork(_ info: [String: Any]) {
+        guard let station = currentStation else {
+            DispatchQueue.main.async { MPNowPlayingInfoCenter.default().nowPlayingInfo = info }
+            return
+        }
+        station.getImage { image in
+            DispatchQueue.main.async {
+                var info = info
+                info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size, requestHandler: { _ in image })
+                MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+            }
+        }
     }
 }
 
