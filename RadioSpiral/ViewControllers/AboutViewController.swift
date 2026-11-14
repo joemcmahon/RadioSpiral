@@ -464,9 +464,9 @@ class AboutViewController: UIViewController {
         label.textColor = .white
         label.textAlignment = .center
 
-        let control = UISegmentedControl(items: ["Production", "Test"])
+        let control = UISegmentedControl(items: StationServer.allCases.map { $0.title })
         control.overrideUserInterfaceStyle = .dark
-        control.selectedSegmentIndex = StationServer.selected == .test ? 1 : 0
+        control.selectedSegmentIndex = StationServer.allCases.firstIndex(of: StationServer.selected) ?? 0
         control.accessibilityLabel = "Station server"
         control.addTarget(self, action: #selector(serverChanged(_:)), for: .valueChanged)
 
@@ -477,7 +477,7 @@ class AboutViewController: UIViewController {
     }
 
     @objc private func serverChanged(_ control: UISegmentedControl) {
-        StationServer.selected = control.selectedSegmentIndex == 1 ? .test : .production
+        StationServer.selected = StationServer.allCases[control.selectedSegmentIndex]
         delegate?.didChangeStationServer(self)
     }
 

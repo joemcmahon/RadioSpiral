@@ -196,7 +196,7 @@ class StationsViewController: BaseController, Handoffable {
         super.viewWillAppear(false)
         title = "RadioSpiral streams"
         // A large title can't wrap, so the test-server label goes on its own line above it
-        navigationItem.prompt = StationServer.current == .test ? "TEST SERVER" : nil
+        navigationItem.prompt = StationServer.current.bannerLabel
         showNowPlayingIfOnlyStation()
     }
 

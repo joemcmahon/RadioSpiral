@@ -227,9 +227,30 @@ class ConfigClientTests: XCTestCase {
         UserDefaults.standard.removeObject(forKey: StationServer.key)
     }
 
+    func testPreviewIsGatedLikeTest() {
+        XCTAssertEqual(StationServer.effective(selected: .preview, environment: .appStore), .production)
+        XCTAssertEqual(StationServer.effective(selected: .preview, environment: nil), .production)
+        for environment in [InstallEnvironment.testFlight, .xcode] {
+            XCTAssertEqual(StationServer.effective(selected: .preview, environment: environment), .preview)
+        }
+    }
+
+    func testPreviewSelectionIsSaved() {
+        StationServer.selected = .preview
+        XCTAssertEqual(StationServer.selected, .preview)
+        UserDefaults.standard.removeObject(forKey: StationServer.key)
+    }
+
+    func testServerBannerLabels() {
+        XCTAssertNil(StationServer.production.bannerLabel)
+        XCTAssertEqual(StationServer.preview.bannerLabel, "PREVIEW")
+        XCTAssertEqual(StationServer.test.bannerLabel, "TEST SERVER")
+    }
+
     func testServerConfigURLs() {
         XCTAssertTrue(StationServer.production.configURL.hasSuffix("/config.json"))
         XCTAssertTrue(StationServer.test.configURL.hasSuffix("/config-test.json"))
+        XCTAssertTrue(StationServer.preview.configURL.hasSuffix("/config-preview.json"))
         // The production URL must stay the one ConfigClient has always used.
         XCTAssertEqual(StationServer.production.configURL,
                        "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config.json")

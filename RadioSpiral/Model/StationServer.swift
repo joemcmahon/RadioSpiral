@@ -46,15 +46,28 @@ enum InstallEnvironment: Equatable {
 }
 
 /// Which station config the app loads. Testers pick it on the About screen.
-enum StationServer: String {
-    case production, test
+/// `preview` is production plus stations not yet public, for testers only.
+enum StationServer: String, CaseIterable {
+    case production, preview, test
 
     static let key = "stationServer"
 
     var configURL: String {
         switch self {
         case .production: return "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config.json"
+        case .preview: return "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config-preview.json"
         case .test: return "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config-test.json"
+        }
+    }
+
+    var title: String { rawValue.capitalized }
+
+    /// Shown on the stations screen and CarPlay when a tester is off production.
+    var bannerLabel: String? {
+        switch self {
+        case .production: return nil
+        case .preview: return "PREVIEW"
+        case .test: return "TEST SERVER"
         }
     }
 
