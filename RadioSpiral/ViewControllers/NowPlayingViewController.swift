@@ -111,7 +111,7 @@ class NowPlayingViewController: UIViewController {
     var nowPlayingImageView: UIImageView!
     
     var mpVolumeSlider: UISlider?
-    private var metadataCallback: MetadataChangeCallback?
+    private var metadataSubscription: MetadataSubscription?
     private var lastStatusMessage: String?
     /// With one station there's nowhere for next and previous to go.
     static func showsStationButtons(stationCount: Int) -> Bool { stationCount > 1 }
@@ -234,10 +234,9 @@ class NowPlayingViewController: UIViewController {
         updateStationButtons()
         
         // Subscribe to unified metadata changes
-        metadataCallback = { [weak self] metadata in
+        metadataSubscription = metadataManager.subscribeToMetadataChanges { [weak self] metadata in
             self?.handleMetadataUpdate(metadata)
         }
-        metadataManager.subscribeToMetadataChanges(metadataCallback!)
 
         // The banner follows the audio. If only metadata is lost, the music is still playing,
         // so there's nothing to report.
@@ -488,13 +487,12 @@ class NowPlayingViewController: UIViewController {
         updateLabels()
         player.stop()
         // Remove only the previous UI metadata subscriber, not all subscribers
-        if let callback = metadataCallback {
-            metadataManager.unsubscribeFromMetadataChanges(callback)
+        if let subscription = metadataSubscription {
+            metadataManager.unsubscribeFromMetadataChanges(subscription)
         }
-        metadataCallback = { [weak self] metadata in
+        metadataSubscription = metadataManager.subscribeToMetadataChanges { [weak self] metadata in
             self?.handleMetadataUpdate(metadata)
         }
-        metadataManager.subscribeToMetadataChanges(metadataCallback!)
     }
     
     // MARK: - Player Controls (Play/Pause/Volume)

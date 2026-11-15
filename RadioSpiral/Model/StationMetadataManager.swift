@@ -61,6 +61,12 @@ public enum MetadataConnectionState {
 /// Protocol for metadata change callbacks
 public typealias MetadataChangeCallback = (UnifiedMetadata?) -> Void
 
+/// What subscribing returns, and what unsubscribing takes. A closure can't be compared with another
+/// closure, so the callback is identified by this token instead.
+public struct MetadataSubscription: Hashable {
+    fileprivate let id = UUID()
+}
+
 /// Manages unified metadata from Azuracast with ConfigClient fallback
 public class StationMetadataManager: ObservableObject {
     
@@ -74,7 +80,7 @@ public class StationMetadataManager: ObservableObject {
     // MARK: - Private Properties
     private let azuracastClient = ACWebSocketClient.shared
     private let configClient = ConfigClient.shared
-    private var subscribers: [MetadataChangeCallback] = []
+    private var subscribers: [(subscription: MetadataSubscription, callback: MetadataChangeCallback)] = []
     private var currentStation: RadioStation?
     private var cancellables = Set<AnyCancellable>()
     private static var activeSubscribers = 0
@@ -127,20 +133,22 @@ public class StationMetadataManager: ObservableObject {
         azuracastClient.connect()
     }
 
-    /// Subscribe to metadata changes
-    public func subscribeToMetadataChanges(_ callback: @escaping MetadataChangeCallback) {
-        subscribers.append(callback)
+    /// Subscribe to metadata changes. Keep the returned subscription to unsubscribe later.
+    @discardableResult
+    public func subscribeToMetadataChanges(_ callback: @escaping MetadataChangeCallback) -> MetadataSubscription {
+        let subscription = MetadataSubscription()
+        subscribers.append((subscription, callback))
         StationMetadataManager.activeSubscribers += 1
         // Immediately call with current metadata
         callback(currentMetadata)
+        return subscription
     }
     
-    /// Unsubscribe from metadata changes
-    public func unsubscribeFromMetadataChanges(_ callback: @escaping MetadataChangeCallback) {
+    /// Unsubscribe from metadata changes. Does nothing if the subscription is already gone.
+    public func unsubscribeFromMetadataChanges(_ subscription: MetadataSubscription) {
         let before = subscribers.count
-        subscribers.removeAll { $0 as AnyObject === callback as AnyObject }
-        let after = subscribers.count
-        let removed = before - after
+        subscribers.removeAll { $0.subscription == subscription }
+        let removed = before - subscribers.count
         StationMetadataManager.activeSubscribers -= removed
     }
 
@@ -248,8 +256,8 @@ public class StationMetadataManager: ObservableObject {
     }
     
     private func notifySubscribers(with metadata: UnifiedMetadata?) {
-        for callback in subscribers {
-            callback(metadata)
+        for subscriber in subscribers {
+            subscriber.callback(metadata)
         }
     }
 }
