@@ -115,7 +115,6 @@ public class ACWebSocketClient: ObservableObject {
     /// - 4: print the full set of JSON received from the stream before parsing`
     public var debugLevel: Int = 0
     
-    private var lastResult: ACStreamStatus?
     private var consecutiveFailures: Int = 0
     // Moves on with every connect() and disconnect(), so a reconnect wait started before
     // either one can tell it's out of date when it finishes.
@@ -245,7 +244,6 @@ public class ACWebSocketClient: ObservableObject {
         self.disconnect()
         self.constructWebSocketURL(serverName: station.serverName)
         self.connect()
-        self.lastResult = ACStreamStatus()
     }
     
     /// Connects to the websocket API and sends the subscription message. Can be used to connect a
@@ -472,13 +470,6 @@ public class ACWebSocketClient: ObservableObject {
             return
         }
 
-        // Save last result.
-        lastResult?.album = status.album
-        lastResult?.artist = status.artist
-        lastResult?.track = status.track
-        lastResult?.artwork = status.artwork
-        lastResult?.dj = status.dj
-
         do {
             // Attempt to parse the data. Parser will throw if it fails to work.
             let parser = ParseWebSocketData(data: data, defaultDJ: defaultDJ)
@@ -495,27 +486,25 @@ public class ACWebSocketClient: ObservableObject {
 
             DispatchQueue.main.async {
                 guard socket === self.webSocketTask else { return }
-                if result != self.lastResult && result.changed {
-                    // Status changed from old values. (Note that the initial
-                    // connect message and one or more subsequent channel
-                    // messages may contain the same data; if they do, we'll
-                    // skip this.) Record the new status and call all the
-                    // callbacks.
-                    // The connection state is managed separately from parsed data, and the parser
-                    // creates a new ACStreamStatus with connection = .disconnected by default,
-                    // which would overwrite the real state. So only what the parser reported about
-                    // the station itself is taken from it: online, offline, or a failed subscription
-                    // (F3, task-44). Anything else keeps the state from before the message.
-                    let currentConnection = self.status.connection
-                    self.status = result
-                    switch result.connection {
-                    case .connected, .stationOffline, .failedSubscribe:
-                        break
-                    case .connecting, .disconnected, .stationNotFound:
-                        self.status.connection = currentConnection
-                    }
-                    self.notifySubscribers(with: self.status)
+                guard result.changed else { return }
+                // The connection state is managed separately from parsed data, and the parser
+                // creates a new ACStreamStatus with connection = .disconnected by default,
+                // which would overwrite the real state. So only what the parser reported about
+                // the station itself is taken from it: online, offline, or a failed subscription
+                // (F3, task-44). Anything else keeps the state from before the message.
+                switch result.connection {
+                case .connected, .stationOffline, .failedSubscribe:
+                    break
+                case .connecting, .disconnected, .stationNotFound:
+                    result.connection = self.status.connection
                 }
+                // The initial connect message and the channel messages after it often carry the
+                // same data. A message that changes nothing subscribers are told about is skipped,
+                // which means one that differs only in how far into the song it is (F1, task-45).
+                if result == self.status { return }
+                // Record the new status and call all the callbacks.
+                self.status = result
+                self.notifySubscribers(with: self.status)
             }
         } catch {
             // Parse should NEVER fail — the parser has been thoroughly tested.

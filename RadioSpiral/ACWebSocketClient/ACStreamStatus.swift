@@ -16,13 +16,15 @@ public class ACStreamStatus: Equatable, ObservableObject {
     ///   - rhs: a second `AcStreamStatus` instance
     /// - Returns: `true` if they match, `false` if they don't.
     public static func == (lhs: ACStreamStatus, rhs: ACStreamStatus) -> Bool {
+        // What counts as a change for the client's subscribers (F1, task-45). The elapsed time and
+        // duration are left out: a repeat of the same message moments later is not a new status.
         lhs.connection == rhs.connection
         && lhs.isLiveDJ == rhs.isLiveDJ
         && lhs.track == rhs.track
         && lhs.artist == rhs.artist
         && lhs.album == rhs.album
         && lhs.dj == rhs.dj
-        && lhs.elapsed == rhs.elapsed
+        && lhs.artwork == rhs.artwork
     }
     
     ///   `init()` creates an empty `AcStreamStatus` instance

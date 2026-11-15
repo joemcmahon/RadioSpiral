@@ -242,7 +242,8 @@ final class StationAndMetadataRulesTests: XCTestCase {
             ("track", { $0.track = "Other" }),
             ("artist", { $0.artist = "Other" }),
             ("album", { $0.album = "Other" }),
-            ("dj", { $0.dj = "Other" })
+            ("dj", { $0.dj = "Other" }),
+            ("artwork", { $0.artwork = URL(string: "https://example.test/other.png") })
         ]
 
         for (label, change) in changes {
@@ -252,21 +253,21 @@ final class StationAndMetadataRulesTests: XCTestCase {
         }
     }
 
-    func testStatusesDifferWhenOnlyElapsedDiffers() {
-        // Current behaviour, finding F1: elapsed is compared, so the same song
-        // moments later counts as a new status. The comment in handleMessage says
-        // messages with the same data are skipped.
+    // Finding F1 (task-45): the socket client skips a message that repeats the last one, and a repeat
+    // differs only in how far into the song it is.
+    func testStatusesAreEqualWhenOnlyTheElapsedTimeOrDurationDiffers() {
         let changed = makeStatus()
         changed.elapsed = 11
+        changed.duration = 999
 
-        XCTAssertNotEqual(changed, makeStatus())
+        XCTAssertEqual(changed, makeStatus())
     }
 
     func testStatusesStayEqualWhenAnIgnoredFieldDiffers() {
         let changes: [(String, (ACStreamStatus) -> Void)] = [
             ("changed", { $0.changed = false }),
             ("duration", { $0.duration = 999 }),
-            ("artwork", { $0.artwork = URL(string: "https://example.test/other.png") }),
+            ("elapsed", { $0.elapsed = 99 }),
             ("broadcastStart", { $0.broadcastStart = Date(timeIntervalSince1970: 2_000) }),
             ("recordType", { $0.recordType = .channel }),
             ("pingInterval", { $0.pingInterval = 25 })
