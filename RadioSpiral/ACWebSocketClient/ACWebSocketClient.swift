@@ -501,13 +501,19 @@ public class ACWebSocketClient: ObservableObject {
                     // messages may contain the same data; if they do, we'll
                     // skip this.) Record the new status and call all the
                     // callbacks.
-                    // Preserve connection and network state - these are managed
-                    // separately from parsed data. The parser creates a new
-                    // ACStreamStatus with connection = .disconnected by default,
-                    // which would overwrite the actual connection state.
+                    // The connection state is managed separately from parsed data, and the parser
+                    // creates a new ACStreamStatus with connection = .disconnected by default,
+                    // which would overwrite the real state. So only what the parser reported about
+                    // the station itself is taken from it: online, offline, or a failed subscription
+                    // (F3, task-44). Anything else keeps the state from before the message.
                     let currentConnection = self.status.connection
                     self.status = result
-                    self.status.connection = currentConnection
+                    switch result.connection {
+                    case .connected, .stationOffline, .failedSubscribe:
+                        break
+                    case .connecting, .disconnected, .stationNotFound:
+                        self.status.connection = currentConnection
+                    }
                     self.notifySubscribers(with: self.status)
                 }
             }

@@ -942,28 +942,56 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertEqual(client.status.track, expected)
     }
 
-    // Known-wrong (F3): the parser reports a failed subscription, and this replaces it.
-    func testUnknownShortCodeSendsBlankMetadataAndKeepsTheConnectedState() throws {
+    // F3 (task-44): what the parser reports about the station reaches subscribers, instead of
+    // being replaced by the connection state from before the message.
+    func testUnknownShortCodeReachesSubscribersAsFailedSubscribe() throws {
         client.switchToStation(station(shortCode: "no-such-station"))
 
         try socket(0).deliver(try connectMessage())
         drainMainQueue()
 
-        XCTAssertEqual(notifiedTracks.last, "")
-        XCTAssertEqual(notified.last, .connected)
-        XCTAssertFalse(notified.contains(.failedSubscribe))
-        XCTAssertEqual(client.status.connection, .connected)
+        XCTAssertEqual(notified.last, .failedSubscribe)
+        XCTAssertEqual(client.status.connection, .failedSubscribe)
     }
 
-    // Known-wrong (F3): the parser reports the station as offline, and this replaces it.
-    func testOfflineStationKeepsTheConnectedState() throws {
+    func testOfflineStationReachesSubscribersAsOffline() throws {
         client.connect()
-        let data = try ConnectMessageFixture.data { $0["is_online"] = false }
 
-        try socket(0).deliver(try XCTUnwrap(String(data: data, encoding: .utf8)))
+        try socket(0).deliver(try offlineMessage())
+        drainMainQueue()
+
+        XCTAssertEqual(notified.last, .stationOffline)
+        XCTAssertEqual(client.status.connection, .stationOffline)
+    }
+
+    func testAStationComingBackOnlineIsReportedAsConnectedAgain() throws {
+        client.connect()
+        try socket(0).deliver(try offlineMessage())
+        drainMainQueue()
+        XCTAssertEqual(notified.last, .stationOffline)
+
+        try socket(0).deliver(try connectMessage())
         drainMainQueue()
 
         XCTAssertEqual(notified.last, .connected)
         XCTAssertEqual(client.status.connection, .connected)
+    }
+
+    /// A message that says nothing about the station being online parses with the parser's default
+    /// state, "disconnected". That must not overwrite the real connection state.
+    func testAMessageThatSaysNothingAboutBeingOnlineLeavesTheConnectionStateAlone() throws {
+        client.connect()
+        let data = try ConnectMessageFixture.data { $0.removeValue(forKey: "is_online") }
+
+        try socket(0).deliver(try XCTUnwrap(String(data: data, encoding: .utf8)))
+        drainMainQueue()
+
+        XCTAssertEqual(client.status.connection, .connected)
+        XCTAssertNotEqual(notified.last, .disconnected)
+    }
+
+    private func offlineMessage() throws -> String {
+        let data = try ConnectMessageFixture.data { $0["is_online"] = false }
+        return try XCTUnwrap(String(data: data, encoding: .utf8))
     }
 }

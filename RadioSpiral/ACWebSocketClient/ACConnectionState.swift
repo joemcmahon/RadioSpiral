@@ -12,12 +12,14 @@ import Foundation
 ///   - `disconnected`: client is not connected at all
 ///   - `stationNotFound`: the supplied shortcode  doesn't correspond to a station on this server
 ///   - `failedSubscribe`: we could connect to the server, but could not enable streaming
+///   - `stationOffline`: connected to the server, which says the station itself is offline
 public enum ACConnectionState {
     case connected
     case connecting
     case disconnected
     case stationNotFound
     case failedSubscribe
+    case stationOffline
 }
 
 public enum ACRecordType {

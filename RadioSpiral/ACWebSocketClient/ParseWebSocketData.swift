@@ -100,7 +100,7 @@ public class ParseWebSocketData {
 
                 // Set connection state based on is_online
                 if let isOnline = np["is_online"] as? Bool {
-                    status.connection = isOnline ? .connected : .disconnected
+                    status.connection = isOnline ? .connected : .stationOffline
                 }
 
                 // Live segment. Contains info about the streamer.
@@ -165,7 +165,7 @@ public class ParseWebSocketData {
 
                 // Set connection state based on is_online
                 if let isOnline = np["is_online"] as? Bool {
-                    status.connection = isOnline ? .connected : .disconnected
+                    status.connection = isOnline ? .connected : .stationOffline
                 }
 
                 // live block. Extract DJ info.

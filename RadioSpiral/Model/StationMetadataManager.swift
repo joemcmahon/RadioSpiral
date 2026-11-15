@@ -56,6 +56,8 @@ public enum MetadataConnectionState {
     case connected
     case failed
     case reconnecting
+    /// Connected, and the server says the channel itself is offline.
+    case offline
 }
 
 /// Protocol for metadata change callbacks
@@ -177,20 +179,20 @@ public class StationMetadataManager: ObservableObject {
         }
     }
     
+    /// How the socket's connection state is shown to the rest of the app.
+    static func connectionState(for connection: ACConnectionState) -> MetadataConnectionState {
+        switch connection {
+        case .connected: return .connected
+        case .connecting: return .connecting
+        case .disconnected: return .disconnected
+        case .failedSubscribe, .stationNotFound: return .failed
+        case .stationOffline: return .offline
+        }
+    }
+
     private func handleAzuracastMetadataUpdate(_ status: ACStreamStatus) {
         // Update connection state based on Azuracast status
-        switch status.connection {
-        case .connected:
-            connectionState = .connected
-        case .connecting:
-            connectionState = .connecting
-        case .disconnected:
-            connectionState = .disconnected
-        case .failedSubscribe:
-            connectionState = .failed
-        case .stationNotFound:
-            connectionState = .failed
-        }
+        connectionState = Self.connectionState(for: status.connection)
         // Update metadata
         updateMetadata()
     }

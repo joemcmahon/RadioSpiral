@@ -431,6 +431,18 @@ final class MetadataManagerIntegrationTests: XCTestCase {
         XCTAssertEqual(currentTrack, status.track)
     }
 
+    // MARK: - Connection state (task-44)
+
+    func testEveryConnectionStateOfTheSocketMapsToAStateTheAppCanShow() {
+        XCTAssertEqual(StationMetadataManager.connectionState(for: .connected), .connected)
+        XCTAssertEqual(StationMetadataManager.connectionState(for: .connecting), .connecting)
+        XCTAssertEqual(StationMetadataManager.connectionState(for: .disconnected), .disconnected)
+        XCTAssertEqual(StationMetadataManager.connectionState(for: .failedSubscribe), .failed)
+        XCTAssertEqual(StationMetadataManager.connectionState(for: .stationNotFound), .failed)
+        XCTAssertEqual(StationMetadataManager.connectionState(for: .stationOffline), .offline,
+                       "An offline channel looked like an ordinary disconnection")
+    }
+
     // F6 in the findings log (task-43): unsubscribing must remove the callback. A subscription is
     // identified by the token that subscribing returns, since one closure can't be compared with another.
     // A recorder stays in the shared manager for the rest of the run only if its subscription is left in
