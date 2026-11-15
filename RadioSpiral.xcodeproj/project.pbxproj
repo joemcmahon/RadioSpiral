@@ -70,6 +70,8 @@
 		A1C0DE0100000000000000F1 /* TitleFitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F0 /* TitleFitTests.swift */; };
 		A1C0DE0100000000000000F3 /* LockScreenArtworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F2 /* LockScreenArtworkTests.swift */; };
 		A1C0DE0100000000000000F5 /* LockScreenLiveShowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F4 /* LockScreenLiveShowTests.swift */; };
+		A1C0DE010000000000000105 /* NowPlayingClock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000104 /* NowPlayingClock.swift */; };
+		A1C0DE010000000000000107 /* NowPlayingClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000106 /* NowPlayingClockTests.swift */; };
 		A1C0DE0100000000000000F7 /* ConfigClientBundledFallbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F6 /* ConfigClientBundledFallbackTests.swift */; };
 		A1C0DE0100000000000000F9 /* fallback-stations.json in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F8 /* fallback-stations.json */; };
 		A1C0DE0100000000000000FB /* fallback-stations-before-launch.json in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000FA /* fallback-stations-before-launch.json */; };
@@ -182,6 +184,8 @@
 		A1C0DE0100000000000000F0 /* TitleFitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleFitTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000F2 /* LockScreenArtworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenArtworkTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000F4 /* LockScreenLiveShowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenLiveShowTests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000104 /* NowPlayingClock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingClock.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000106 /* NowPlayingClockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingClockTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000F6 /* ConfigClientBundledFallbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigClientBundledFallbackTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000F8 /* fallback-stations.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "fallback-stations.json"; sourceTree = "<group>"; };
 		A1C0DE0100000000000000FA /* fallback-stations-before-launch.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "fallback-stations-before-launch.json"; sourceTree = "<group>"; };
@@ -316,6 +320,7 @@
 				A1C0DE0100000000000000FE /* ChannelStatusMessagesTests.swift */,
 				A1C0DE010000000000000100 /* MetadataLogTests.swift */,
 				A1C0DE0100000000000000F4 /* LockScreenLiveShowTests.swift */,
+				A1C0DE010000000000000106 /* NowPlayingClockTests.swift */,
 				A1C0DE0100000000000000E2 /* StartFadeTests.swift */,
 				A1C0DE0100000000000000D4 /* StubURLProtocol.swift */,
 				A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */,
@@ -429,6 +434,7 @@
 				A1B2C3D4E5F6A7B8C9D0E1F4 /* StationServer.swift */,
 				71B3D01E2E2989C5001E8F5A /* StationMetadataManager.swift */,
 				A1C0DE0100000000000000FC /* ChannelStatusMessages.swift */,
+				A1C0DE010000000000000104 /* NowPlayingClock.swift */,
 				94AC70AD1AD05C6200652982 /* RadioStation.swift */,
 				CE963ECB29135A6F004F299E /* StationsManager.swift */,
 			);
@@ -676,6 +682,7 @@
 				A1C0DE0100000000000000FF /* ChannelStatusMessagesTests.swift in Sources */,
 				A1C0DE010000000000000101 /* MetadataLogTests.swift in Sources */,
 				A1C0DE0100000000000000F5 /* LockScreenLiveShowTests.swift in Sources */,
+				A1C0DE010000000000000107 /* NowPlayingClockTests.swift in Sources */,
 				A1C0DE0100000000000000E3 /* StartFadeTests.swift in Sources */,
 				A1C0DE0100000000000000D3 /* StubURLProtocol.swift in Sources */,
 				A1C0DE0100000000000000D5 /* ConfigClientHTTPIntegrationTests.swift in Sources */,
@@ -701,6 +708,7 @@
 				53113F39230C720900462C0E /* ShareActivity.swift in Sources */,
 				71B3D01F2E2989C5001E8F5A /* StationMetadataManager.swift in Sources */,
 				A1C0DE0100000000000000FD /* ChannelStatusMessages.swift in Sources */,
+				A1C0DE010000000000000105 /* NowPlayingClock.swift in Sources */,
 				A1C0DE010000000000000103 /* MetadataLog.swift in Sources */,
 				71CA8E892EC57A5000F7F157 /* ConfigClient.swift in Sources */,
 				71CA8E8A2EC57A5200F7F157 /* StationConfig.swift in Sources */,
