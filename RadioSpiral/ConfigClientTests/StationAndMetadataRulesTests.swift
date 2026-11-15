@@ -195,37 +195,43 @@ final class StationAndMetadataRulesTests: XCTestCase {
         XCTAssertEqual(makeMetadata(albumName: nil), makeMetadata(albumName: "  \n"))
     }
 
-    func testMetadataStaysEqualWhenAnythingButTrackOrAlbumDiffers() {
-        // Current behaviour, finding F5: updateMetadata uses this rule to decide
-        // whether metadata "has actually changed", so a new artist, artwork or DJ
-        // on the same track and album sends subscribers no update.
+    // Finding F5 (task-45): updateMetadata uses this rule to decide whether metadata "has actually
+    // changed". A new artist, artwork, DJ or live-DJ flag on the same song is a change; elapsed time,
+    // duration and broadcast start are not, since they move without the song changing.
+
+    private func variant(artist: String = "Artist", artwork: URL? = nil, duration: TimeInterval = 300,
+                         elapsed: TimeInterval = 10, broadcastStart: Date? = nil,
+                         dj: String = "DJ", isLiveDJ: Bool = false) -> UnifiedMetadata {
+        let base = makeMetadata()
+        return UnifiedMetadata(trackName: "Track", artistName: artist, albumName: "Album",
+                               artworkURL: artwork ?? base.artworkURL, duration: duration, elapsed: elapsed,
+                               broadcastStart: broadcastStart ?? base.broadcastStart, djName: dj, isLiveDJ: isLiveDJ)
+    }
+
+    func testMetadataDiffersWhenTheArtistArtworkDJOrLiveFlagDiffers() {
         let base = makeMetadata()
         let variants: [(String, UnifiedMetadata)] = [
-            ("artistName", UnifiedMetadata(trackName: "Track", artistName: "Other Artist", albumName: "Album",
-                                           artworkURL: base.artworkURL, duration: 300, elapsed: 10,
-                                           broadcastStart: base.broadcastStart, djName: "DJ", isLiveDJ: false)),
-            ("artworkURL", UnifiedMetadata(trackName: "Track", artistName: "Artist", albumName: "Album",
-                                           artworkURL: URL(string: "https://example.test/other.png"), duration: 300, elapsed: 10,
-                                           broadcastStart: base.broadcastStart, djName: "DJ", isLiveDJ: false)),
-            ("duration", UnifiedMetadata(trackName: "Track", artistName: "Artist", albumName: "Album",
-                                         artworkURL: base.artworkURL, duration: 999, elapsed: 10,
-                                         broadcastStart: base.broadcastStart, djName: "DJ", isLiveDJ: false)),
-            ("elapsed", UnifiedMetadata(trackName: "Track", artistName: "Artist", albumName: "Album",
-                                        artworkURL: base.artworkURL, duration: 300, elapsed: 99,
-                                        broadcastStart: base.broadcastStart, djName: "DJ", isLiveDJ: false)),
-            ("broadcastStart", UnifiedMetadata(trackName: "Track", artistName: "Artist", albumName: "Album",
-                                               artworkURL: base.artworkURL, duration: 300, elapsed: 10,
-                                               broadcastStart: Date(timeIntervalSince1970: 2_000), djName: "DJ", isLiveDJ: false)),
-            ("djName", UnifiedMetadata(trackName: "Track", artistName: "Artist", albumName: "Album",
-                                       artworkURL: base.artworkURL, duration: 300, elapsed: 10,
-                                       broadcastStart: base.broadcastStart, djName: "Other DJ", isLiveDJ: false)),
-            ("isLiveDJ", UnifiedMetadata(trackName: "Track", artistName: "Artist", albumName: "Album",
-                                         artworkURL: base.artworkURL, duration: 300, elapsed: 10,
-                                         broadcastStart: base.broadcastStart, djName: "DJ", isLiveDJ: true))
+            ("artistName", variant(artist: "Other Artist")),
+            ("artworkURL", variant(artwork: URL(string: "https://example.test/other.png"))),
+            ("djName", variant(dj: "Other DJ")),
+            ("isLiveDJ", variant(isLiveDJ: true))
         ]
 
-        for (label, variant) in variants {
-            XCTAssertEqual(variant, base, "\(label) should not make metadata differ")
+        for (label, changed) in variants {
+            XCTAssertNotEqual(changed, base, "\(label) should make metadata differ")
+        }
+    }
+
+    func testMetadataStaysEqualWhenOnlyTheElapsedTimeDurationOrBroadcastStartDiffer() {
+        let base = makeMetadata()
+        let variants: [(String, UnifiedMetadata)] = [
+            ("duration", variant(duration: 999)),
+            ("elapsed", variant(elapsed: 99)),
+            ("broadcastStart", variant(broadcastStart: Date(timeIntervalSince1970: 2_000)))
+        ]
+
+        for (label, same) in variants {
+            XCTAssertEqual(same, base, "\(label) alone should not make metadata differ")
         }
     }
 
