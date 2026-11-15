@@ -65,7 +65,7 @@ public class ParseWebSocketData {
                 
                 // chain down to the now-playing data
                 guard let connect = nowPlayingData["connect"] as? Dictionary<String, Any> else {
-                    return ignoredStatus()
+                    return ignoredStatus("connect message: the connect field is not an object")
                 }
                 // Not metadata: without one, the client keeps its previous interval.
                 if let ping = connect["ping"] as? Int {
@@ -95,7 +95,7 @@ public class ParseWebSocketData {
                       let artist = current_song["artist"] as? String,
                       let title = current_song["title"] as? String,
                       let artURLString = current_song["art"] as? String else {
-                    return ignoredStatus()
+                    return ignoredStatus("connect message: required now-playing fields are missing")
                 }
 
                 // Set connection state based on is_online
@@ -160,7 +160,7 @@ public class ParseWebSocketData {
                       let artist = song["artist"] as? String,
                       let title = song["title"] as? String,
                       let artURLString = song["art"] as? String else {
-                    return ignoredStatus()
+                    return ignoredStatus("channel message: required now-playing fields are missing")
                 }
 
                 // Set connection state based on is_online
@@ -198,6 +198,8 @@ public class ParseWebSocketData {
                 status.recordType = .empty
                 // Message type we can't parse. Mark statuss
                 status.changed = false
+                // The empty heartbeat is normal and would fill the log; anything else is worth a record.
+                if !nowPlayingData.isEmpty { MetadataLog.ignored("message of an unrecognized kind") }
             }
             if debugLevel & ACExtractedData != 0 && status.changed {
                 print("album: \(status.album)")
@@ -212,6 +214,7 @@ public class ParseWebSocketData {
             // Valid JSON that isn't an object: ignored, like a type we don't recognize.
             status.recordType = .empty
             status.changed = false
+            MetadataLog.ignored("JSON that is not an object")
         }
         // Return the status of the parse. Anyone monitoring it via `@publishef
         return status
@@ -219,7 +222,8 @@ public class ParseWebSocketData {
     
     // A message we recognize but can't fully read. Marked unchanged so that the client
     // keeps the current metadata, and returned before any song fields are set.
-    private func ignoredStatus() -> ACStreamStatus {
+    private func ignoredStatus(_ reason: String) -> ACStreamStatus {
+        MetadataLog.ignored(reason)
         status.changed = false
         return status
     }

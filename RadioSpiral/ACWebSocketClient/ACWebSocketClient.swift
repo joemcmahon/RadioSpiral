@@ -469,6 +469,7 @@ public class ACWebSocketClient: ObservableObject {
         // Decode into data for parseWebSocketData.
         guard let data = message.data(using: .utf8) else {
             print("Failed to decode message to data")
+            MetadataLog.failure("message could not be read as text")
             return
         }
 
@@ -520,6 +521,9 @@ public class ACWebSocketClient: ObservableObject {
         } catch {
             // Parse should NEVER fail — the parser has been thoroughly tested.
             // If this fires, something fundamentally unexpected happened.
+            // Recorded in release builds too. Only the kind of error, never the message.
+            let nsError = error as NSError
+            MetadataLog.failure("parser threw \(nsError.domain) \(nsError.code), message of \(message.count) characters")
             debugLog("[HandleMessage]", "PARSE FAILURE — THIS SHOULD NEVER HAPPEN: \(error)")
             debugLog("[HandleMessage]", "Raw message (\(message.count) chars): \(String(message.prefix(500)))")
         }

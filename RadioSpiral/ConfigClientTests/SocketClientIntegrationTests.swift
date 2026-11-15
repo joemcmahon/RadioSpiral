@@ -990,6 +990,22 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertNotEqual(notified.last, .disconnected)
     }
 
+    // Task-44: a message that can't be parsed at all leaves a record, and doesn't disturb the connection.
+    func testAMessageThatCantBeParsedIsRecordedAsAFailure() throws {
+        var records: [MetadataLog.Record] = []
+        MetadataLog.sink = { records.append($0) }
+        addTeardownBlock { MetadataLog.sink = MetadataLog.defaultSink }
+        client.connect()
+        try socket(0).deliver(try connectMessage())
+        drainMainQueue()
+
+        try socket(0).deliver("this is not json")
+        drainMainQueue()
+
+        XCTAssertEqual(records.filter { $0.kind == .failure }.count, 1)
+        XCTAssertEqual(client.status.connection, .connected)
+    }
+
     private func offlineMessage() throws -> String {
         let data = try ConnectMessageFixture.data { $0["is_online"] = false }
         return try XCTUnwrap(String(data: data, encoding: .utf8))
