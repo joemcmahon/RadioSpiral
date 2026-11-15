@@ -247,6 +247,27 @@ class ConfigClientTests: XCTestCase {
         XCTAssertEqual(StationServer.test.bannerLabel, "TEST SERVER")
     }
 
+    func testTheBannerSaysForcedFallbackWhileTheBundledStationsAreInUse() {
+        for server in StationServer.allCases {
+            XCTAssertEqual(StationServer.bannerLabel(for: server, usingFallback: true, environment: .testFlight),
+                           "FORCED FALLBACK", "\(server)")
+            XCTAssertEqual(StationServer.bannerLabel(for: server, usingFallback: true, environment: .xcode),
+                           "FORCED FALLBACK", "\(server)")
+        }
+    }
+
+    func testTheBannerIsUnchangedWhenTheFallbackIsNotInUse() {
+        XCTAssertNil(StationServer.bannerLabel(for: .production, usingFallback: false, environment: .testFlight))
+        XCTAssertEqual(StationServer.bannerLabel(for: .preview, usingFallback: false, environment: .testFlight), "PREVIEW")
+        XCTAssertEqual(StationServer.bannerLabel(for: .test, usingFallback: false, environment: .xcode), "TEST SERVER")
+    }
+
+    /// Listeners never see tester wording, even when their app is on the fallback.
+    func testAnAppStoreInstallNeverShowsTheFallbackLabel() {
+        XCTAssertNil(StationServer.bannerLabel(for: .production, usingFallback: true, environment: .appStore))
+        XCTAssertNil(StationServer.bannerLabel(for: .production, usingFallback: true, environment: nil))
+    }
+
     func testServerConfigURLs() {
         XCTAssertTrue(StationServer.production.configURL.hasSuffix("/config.json"))
         XCTAssertTrue(StationServer.test.configURL.hasSuffix("/config-test.json"))
@@ -394,6 +415,9 @@ final class ConfigOfflineTests: XCTestCase {
                                   _ message: String = "",
                                   file: StaticString = #filePath,
                                   line: UInt = #line) {
+        // This checks the failure itself. The bundled fallback that would hide it has its own tests
+        // (ConfigClientBundledFallbackTests).
+        client.bundledFallback = { [] }
         switch fetch(client) {
         case .failure(let error):
             XCTAssertEqual(error as? ConfigClientError, .dataNotFound, message, file: file, line: line)

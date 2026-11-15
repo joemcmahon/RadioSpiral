@@ -22,16 +22,32 @@ func makeConfigSession() -> URLSession {
 public class ConfigClient {
     public static let shared = ConfigClient()
 
+    /// The production config.
+    public static let productionConfigURL = "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config.json"
+
     /// Changing it (e.g. switching station servers) drops stations cached from the old config.
     public var configURL: String {
-        didSet { if configURL != oldValue { cachedStations = [] } }
+        didSet {
+            if configURL != oldValue {
+                cachedStations = []
+                isUsingBundledFallback = false
+            }
+        }
     }
     private var cachedStations: [StationConfig] = []
+
+    /// True while the stations in use are the bundled ones, because no config could be had.
+    /// Testers see it as the "FORCED FALLBACK" banner. A config that loads clears it.
+    public private(set) var isUsingBundledFallback = false
 
     /// Every request goes through this session. Tests replace it to supply canned responses.
     var session = makeConfigSession()
 
-    public init(configURL: String = "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config.json") {
+    /// The stations bundled in the app, shown when the production config can't be had at all and
+    /// nothing is cached (task-27). Tests replace it.
+    var bundledFallback: () -> [StationConfig] = { ConfigClient.bundledStations(in: .main, now: Date()) }
+
+    public init(configURL: String = ConfigClient.productionConfigURL) {
         self.configURL = configURL
     }
 
@@ -44,9 +60,9 @@ public class ConfigClient {
             case .success(let configs):
                 self?.tryConfigsInOrder(configs, index: 0, completion: completion)
             case .failure:
-                // If we can't fetch config, try cached stations
-                if let cached = self?.cachedStations, !cached.isEmpty {
-                    completion(.success(cached))
+                // If we can't fetch config, try cached stations, then the bundled ones
+                if let self {
+                    self.cachedOrBundled(completion: completion)
                 } else {
                     completion(.failure(ConfigClientError.dataNotFound))
                 }
@@ -114,14 +130,42 @@ public class ConfigClient {
         task.resume()
     }
 
+    /// The last resort, for any config (Production, Preview or Test). Stations already held win.
+    /// Otherwise the stations bundled in the app are used, and `isUsingBundledFallback` says so.
+    private func cachedOrBundled(completion: (Result<[StationConfig], Error>) -> Void) {
+        if !cachedStations.isEmpty {
+            completion(.success(cachedStations))
+            return
+        }
+        let bundled = bundledFallback()
+        if !bundled.isEmpty {
+            if ConfigClientDebug.debugLog { print("ConfigClient: using \(bundled.count) bundled stations") }
+            cachedStations = bundled
+            isUsingBundledFallback = true
+            completion(.success(bundled))
+            return
+        }
+        completion(.failure(ConfigClientError.dataNotFound))
+    }
+
+    /// The anniversary: the new stations go public at 12:00 UTC on 2026-12-19. Until then the
+    /// bundled fallback is RadioSpiral alone, so a launch in airplane mode can't reveal the others early.
+    static let launchDate = Date(timeIntervalSince1970: 1_797_681_600)  // 2026-12-19T12:00:00Z
+
+    /// The bundled stations for `now`, read like any static config: `fallback-stations-before-launch.json`
+    /// until the launch, `fallback-stations.json` from then on. Empty if the file is missing or unreadable.
+    static func bundledStations(in bundle: Bundle, now: Date) -> [StationConfig] {
+        let name = now < launchDate ? "fallback-stations-before-launch" : "fallback-stations"
+        guard let url = bundle.url(forResource: name, withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let wrapper = try? JSONDecoder().decode(ConfigWrapper.self, from: data) else { return [] }
+        return wrapper.configs.first { $0.format == .static }?.safeStations ?? []
+    }
+
     private func tryConfigsInOrder(_ configs: [ConfigSource], index: Int, completion: @escaping (Result<[StationConfig], Error>) -> Void) {
         guard index < configs.count else {
-            // Tried all configs, fall back to cached if available
-            if !cachedStations.isEmpty {
-                completion(.success(cachedStations))
-            } else {
-                completion(.failure(ConfigClientError.dataNotFound))
-            }
+            // Tried all configs, fall back to cached if available, then the bundled stations
+            cachedOrBundled(completion: completion)
             return
         }
 
@@ -133,6 +177,7 @@ public class ConfigClient {
                 switch result {
                 case .success(let stations):
                     self?.cachedStations = stations
+                    self?.isUsingBundledFallback = false
                     completion(.success(stations))
                 case .failure:
                     if ConfigClientDebug.debugLog { print("ConfigClient: Azuracast config \(index) failed, trying next...") }
@@ -145,6 +190,7 @@ public class ConfigClient {
                 switch result {
                 case .success(let stations):
                     self?.cachedStations = stations
+                    self?.isUsingBundledFallback = false
                     completion(.success(stations))
                 case .failure:
                     if ConfigClientDebug.debugLog { print("ConfigClient: Static config \(index) failed, trying next...") }
