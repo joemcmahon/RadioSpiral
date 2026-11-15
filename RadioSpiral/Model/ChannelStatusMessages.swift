@@ -23,6 +23,12 @@ enum ChannelStatusMessages {
         return nil
     }
 
+    /// True when there is no track to time, so the time bubble shows its placeholder instead of
+    /// counting up from zero.
+    static func showsNoTime(connection: MetadataConnectionState) -> Bool {
+        connection == .offline
+    }
+
     /// The title for the lock screen and CarPlay, or nil to leave the track's title alone.
     static func nowPlayingTitle(connection: MetadataConnectionState) -> String? {
         switch connection {

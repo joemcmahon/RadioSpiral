@@ -208,6 +208,12 @@ public class StationMetadataManager: ObservableObject {
     }
     
     private func getUnifiedMetadata() -> UnifiedMetadata? {
+        // A channel that has gone offline still gets its last song in the server's message, and the
+        // time on it would run on past its end. Show the station's own info instead (task-44).
+        if azuracastClient.status.connection == .stationOffline {
+            return getFallbackMetadata()
+        }
+
         // Priority 1: Azuracast metadata (if available and valid)
         if let azuracastMetadata = getAzuracastMetadata(), azuracastMetadata.isValid {
             return azuracastMetadata

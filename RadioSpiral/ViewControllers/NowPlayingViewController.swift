@@ -250,6 +250,7 @@ class NowPlayingViewController: UIViewController {
                 } else {
                     self?.hideConnectionBanner()
                 }
+                self?.updateTimeBubbleText()
             }
             .store(in: &cancellables)
 
@@ -416,7 +417,8 @@ class NowPlayingViewController: UIViewController {
     private func updateTimeBubbleText() {
         let leftPadding = "  "
         let rightPadding = "  "
-        guard metadataReceivedAt != nil else {
+        guard metadataReceivedAt != nil,
+              !ChannelStatusMessages.showsNoTime(connection: metadataManager.connectionState) else {
             timeBubble.text = leftPadding + "--:--" + rightPadding
             return
         }

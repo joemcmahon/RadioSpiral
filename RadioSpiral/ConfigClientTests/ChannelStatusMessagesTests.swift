@@ -51,6 +51,16 @@ final class ChannelStatusMessagesTests: XCTestCase {
         }
     }
 
+    // MARK: The time bubble
+
+    /// An offline channel has no track to time. Without this the bubble would count up from zero.
+    func testAnOfflineChannelHasNoTimeToShow() {
+        XCTAssertTrue(ChannelStatusMessages.showsNoTime(connection: .offline))
+        for connection in [MetadataConnectionState.connected, .connecting, .disconnected, .reconnecting, .failed] {
+            XCTAssertFalse(ChannelStatusMessages.showsNoTime(connection: connection), "\(connection)")
+        }
+    }
+
     // MARK: The lock screen and CarPlay title
 
     func testTheTitleSaysChannelOfflineOrUnavailable() {
