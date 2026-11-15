@@ -340,6 +340,17 @@ final class TrackTimeFormatTests: XCTestCase {
         XCTAssertEqual(controller.formatTime(3725), "1:02:05")
     }
 
+    // The bubble worked out the elapsed time from the clock alone and showed 5:05 / 4:50 when the
+    // next track's update was late. A track can't have played for longer than it lasts.
+    func testElapsedTimeIsCappedAtTheTracksDuration() {
+        XCTAssertEqual(controller.elapsedShown(base: 120, since: 200, duration: 290), 290)
+        XCTAssertEqual(controller.elapsedShown(base: 120, since: 10, duration: 290), 130, "Below the duration, unchanged")
+    }
+
+    func testElapsedTimeIsNotCappedWhenThereIsNoDuration() {
+        XCTAssertEqual(controller.elapsedShown(base: 120, since: 200, duration: 0), 320)
+    }
+
     func testFractionalElapsedTimesAreFormatted() {
         XCTAssertEqual(controller.formatTime(12.5), "0:12")
     }

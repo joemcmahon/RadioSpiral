@@ -431,6 +431,58 @@ final class MetadataManagerIntegrationTests: XCTestCase {
         XCTAssertEqual(currentTrack, status.track)
     }
 
+    // MARK: - Connection state (task-44)
+
+    /// The server keeps the last song in the message it sends for a channel that has gone offline, and
+    /// the time kept counting past the end of it. An offline channel shows its own info instead.
+    func testAnOfflineChannelShowsTheStationsOwnInfoNotTheLastTrack() {
+        addTeardownBlock { self.manager.disconnectCurrentStation() }
+        let station = RadioStation(name: "Idle Channel", streamURL: "https://example.invalid/s.mp3",
+                                   imageURL: "stationImage", desc: "Idle description",
+                                   serverName: "example.invalid", shortCode: "idle-channel", defaultDJ: "")
+        manager.connectToStation(station)
+        let status = makeStatus(track: "Last Track", artist: "Last Artist", duration: 290, elapsed: 120)
+        status.connection = .stationOffline
+        client.status = status
+
+        manager.triggerMetadataUpdate()
+
+        let metadata = manager.getCurrentMetadata()
+        XCTAssertEqual(metadata?.trackName, "Idle Channel")
+        XCTAssertEqual(metadata?.artistName, "Idle description")
+        XCTAssertNil(metadata?.duration)
+        XCTAssertNil(metadata?.elapsed)
+    }
+
+    func testTheRealTrackReturnsWhenTheChannelComesBackOnline() {
+        addTeardownBlock { self.manager.disconnectCurrentStation() }
+        let station = RadioStation(name: "Idle Channel", streamURL: "https://example.invalid/s.mp3",
+                                   imageURL: "stationImage", desc: "Idle description",
+                                   serverName: "example.invalid", shortCode: "idle-channel", defaultDJ: "")
+        manager.connectToStation(station)
+        let status = makeStatus(track: "Back Track", artist: "Back Artist")
+        status.connection = .stationOffline
+        client.status = status
+        manager.triggerMetadataUpdate()
+        XCTAssertEqual(manager.getCurrentMetadata()?.trackName, "Idle Channel")
+
+        status.connection = .connected
+        client.status = status
+        manager.triggerMetadataUpdate()
+
+        XCTAssertEqual(manager.getCurrentMetadata()?.trackName, "Back Track")
+    }
+
+    func testEveryConnectionStateOfTheSocketMapsToAStateTheAppCanShow() {
+        XCTAssertEqual(StationMetadataManager.connectionState(for: .connected), .connected)
+        XCTAssertEqual(StationMetadataManager.connectionState(for: .connecting), .connecting)
+        XCTAssertEqual(StationMetadataManager.connectionState(for: .disconnected), .disconnected)
+        XCTAssertEqual(StationMetadataManager.connectionState(for: .failedSubscribe), .failed)
+        XCTAssertEqual(StationMetadataManager.connectionState(for: .stationNotFound), .failed)
+        XCTAssertEqual(StationMetadataManager.connectionState(for: .stationOffline), .offline,
+                       "An offline channel looked like an ordinary disconnection")
+    }
+
     // F6 in the findings log (task-43): unsubscribing must remove the callback. A subscription is
     // identified by the token that subscribing returns, since one closure can't be compared with another.
     // A recorder stays in the shared manager for the rest of the run only if its subscription is left in

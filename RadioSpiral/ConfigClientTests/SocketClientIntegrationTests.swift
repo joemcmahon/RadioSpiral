@@ -667,17 +667,28 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertEqual(empty.status.connection, .disconnected)
     }
 
-    func testFailedSubscriptionSendIsRecordedButNobodyIsTold() throws {
+    // H-7 (task-44): a subscription that can't be sent is the connection dropping, not the station
+    // refusing the subscription. failedSubscribe is for the server saying so, so a normal network
+    // drop never looks like a failed station. The silent connection's timeout still brings it back.
+    func testAFailedSubscriptionSendIsADroppedConnectionNotAFailedStation() throws {
         let failing = FakeSocket()
         failing.sendError = URLError(.networkConnectionLost)
+        var opened = 0
         let client = ACWebSocketClient(serverName: "radio.example", shortCode: shortCode, defaultDJ: "",
-                                       clock: clock) { _ in failing }
+                                       clock: clock) { _ in opened += 1; return failing }
         client.addSubscriber { [unowned self] status in self.notified.append(status.connection) }
 
         client.connect()
 
-        XCTAssertEqual(client.status.connection, .failedSubscribe)
-        XCTAssertTrue(notified.isEmpty)
+        XCTAssertEqual(client.status.connection, .connecting)
+        XCTAssertFalse(notified.contains(.failedSubscribe))
+
+        // Nothing arrives, so the opening timeout takes over, waits, and tries again.
+        try XCTUnwrap(clock.liveTimers.first).action()
+        clock.fireNextDelayed()
+
+        XCTAssertEqual(opened, 2)
+        XCTAssertFalse(notified.contains(.failedSubscribe), "\(notified)")
     }
 
     // MARK: Switching station
@@ -794,13 +805,13 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertEqual(client.status.connection, .disconnected)
     }
 
-    func testCurrentSocketsLateSendFailureIsStillRecorded() throws {
+    func testCurrentSocketsLateSendFailureIsNotAFailedStationEither() throws {
         holdSendResults = true
         client.connect()
 
         try socket(0).finishHeldSend(with: URLError(.networkConnectionLost))
 
-        XCTAssertEqual(client.status.connection, .failedSubscribe)
+        XCTAssertEqual(client.status.connection, .connecting)
     }
 
     /// Runs on a background thread, as URLSession does, and returns with the main thread having
@@ -942,28 +953,72 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertEqual(client.status.track, expected)
     }
 
-    // Known-wrong (F3): the parser reports a failed subscription, and this replaces it.
-    func testUnknownShortCodeSendsBlankMetadataAndKeepsTheConnectedState() throws {
+    // F3 (task-44): what the parser reports about the station reaches subscribers, instead of
+    // being replaced by the connection state from before the message.
+    func testUnknownShortCodeReachesSubscribersAsFailedSubscribe() throws {
         client.switchToStation(station(shortCode: "no-such-station"))
 
         try socket(0).deliver(try connectMessage())
         drainMainQueue()
 
-        XCTAssertEqual(notifiedTracks.last, "")
-        XCTAssertEqual(notified.last, .connected)
-        XCTAssertFalse(notified.contains(.failedSubscribe))
-        XCTAssertEqual(client.status.connection, .connected)
+        XCTAssertEqual(notified.last, .failedSubscribe)
+        XCTAssertEqual(client.status.connection, .failedSubscribe)
     }
 
-    // Known-wrong (F3): the parser reports the station as offline, and this replaces it.
-    func testOfflineStationKeepsTheConnectedState() throws {
+    func testOfflineStationReachesSubscribersAsOffline() throws {
         client.connect()
-        let data = try ConnectMessageFixture.data { $0["is_online"] = false }
 
-        try socket(0).deliver(try XCTUnwrap(String(data: data, encoding: .utf8)))
+        try socket(0).deliver(try offlineMessage())
+        drainMainQueue()
+
+        XCTAssertEqual(notified.last, .stationOffline)
+        XCTAssertEqual(client.status.connection, .stationOffline)
+    }
+
+    func testAStationComingBackOnlineIsReportedAsConnectedAgain() throws {
+        client.connect()
+        try socket(0).deliver(try offlineMessage())
+        drainMainQueue()
+        XCTAssertEqual(notified.last, .stationOffline)
+
+        try socket(0).deliver(try connectMessage())
         drainMainQueue()
 
         XCTAssertEqual(notified.last, .connected)
         XCTAssertEqual(client.status.connection, .connected)
+    }
+
+    /// A message that says nothing about the station being online parses with the parser's default
+    /// state, "disconnected". That must not overwrite the real connection state.
+    func testAMessageThatSaysNothingAboutBeingOnlineLeavesTheConnectionStateAlone() throws {
+        client.connect()
+        let data = try ConnectMessageFixture.data { $0.removeValue(forKey: "is_online") }
+
+        try socket(0).deliver(try XCTUnwrap(String(data: data, encoding: .utf8)))
+        drainMainQueue()
+
+        XCTAssertEqual(client.status.connection, .connected)
+        XCTAssertNotEqual(notified.last, .disconnected)
+    }
+
+    // Task-44: a message that can't be parsed at all leaves a record, and doesn't disturb the connection.
+    func testAMessageThatCantBeParsedIsRecordedAsAFailure() throws {
+        var records: [MetadataLog.Record] = []
+        MetadataLog.sink = { records.append($0) }
+        addTeardownBlock { MetadataLog.sink = MetadataLog.defaultSink }
+        client.connect()
+        try socket(0).deliver(try connectMessage())
+        drainMainQueue()
+
+        try socket(0).deliver("this is not json")
+        drainMainQueue()
+
+        XCTAssertEqual(records.filter { $0.kind == .failure }.count, 1)
+        XCTAssertEqual(client.status.connection, .connected)
+    }
+
+    private func offlineMessage() throws -> String {
+        let data = try ConnectMessageFixture.data { $0["is_online"] = false }
+        return try XCTUnwrap(String(data: data, encoding: .utf8))
     }
 }

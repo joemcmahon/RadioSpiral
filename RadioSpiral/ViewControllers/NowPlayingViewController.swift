@@ -238,17 +238,19 @@ class NowPlayingViewController: UIViewController {
             self?.handleMetadataUpdate(metadata)
         }
 
-        // The banner follows the audio. If only metadata is lost, the music is still playing,
-        // so there's nothing to report.
-        player.$isStalled
-            .removeDuplicates()
+        // The banner follows the audio first: if only the metadata socket drops, the music is still
+        // playing, so there's nothing to report. An offline channel, or one whose information can't
+        // be loaded, says so (task-44); ChannelStatusMessages decides which message wins.
+        Publishers.CombineLatest(player.$isStalled.removeDuplicates(),
+                                 metadataManager.$connectionState.removeDuplicates())
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] isStalled in
-                if isStalled {
-                    self?.showConnectionBanner("Connection lost — reconnecting…")
+            .sink { [weak self] isStalled, connection in
+                if let message = ChannelStatusMessages.phoneBanner(connection: connection, isStalled: isStalled) {
+                    self?.showConnectionBanner(message)
                 } else {
                     self?.hideConnectionBanner()
                 }
+                self?.updateTimeBubbleText()
             }
             .store(in: &cancellables)
 
@@ -415,7 +417,8 @@ class NowPlayingViewController: UIViewController {
     private func updateTimeBubbleText() {
         let leftPadding = "  "
         let rightPadding = "  "
-        guard metadataReceivedAt != nil else {
+        guard metadataReceivedAt != nil,
+              !ChannelStatusMessages.showsNoTime(connection: metadataManager.connectionState) else {
             timeBubble.text = leftPadding + "--:--" + rightPadding
             return
         }
@@ -425,13 +428,22 @@ class NowPlayingViewController: UIViewController {
             timeBubble.text = leftPadding + "LIVE  \(formatTime(showElapsed))" + rightPadding
         } else if metadataDuration > 0 {
             // Pre-recorded track: show track elapsed / duration
-            let currentElapsed = metadataElapsed + Date().timeIntervalSince(metadataReceivedAt!)
+            let currentElapsed = elapsedShown(base: metadataElapsed,
+                                              since: Date().timeIntervalSince(metadataReceivedAt!),
+                                              duration: metadataDuration)
             timeBubble.text = leftPadding + "\(formatTime(currentElapsed)) / \(formatTime(metadataDuration))" + rightPadding
         } else {
             // No broadcast start, no duration — fallback
             let currentElapsed = metadataElapsed + Date().timeIntervalSince(metadataReceivedAt!)
             timeBubble.text = leftPadding + "\(formatTime(currentElapsed))" + rightPadding
         }
+    }
+
+    /// The elapsed time to show: counted on from when the metadata arrived, but never past the track's
+    /// length, which the bubble showed as 5:05 / 4:50 when the next update was late. No duration, no cap.
+    func elapsedShown(base: TimeInterval, since: TimeInterval, duration: TimeInterval) -> TimeInterval {
+        let elapsed = base + since
+        return duration > 0 ? min(elapsed, duration) : elapsed
     }
 
     /// Server times arrive unchecked, and converting one that doesn't fit in an Int would crash.

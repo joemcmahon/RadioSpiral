@@ -371,12 +371,11 @@ public class ACWebSocketClient: ObservableObject {
             webSocketTask.send(.string(jsonString)) { error in
                 if let error = error {
                     print("Failed to send subscription message: \(error)")
-                    Self.onMain {
-                        // A replaced or cancelled socket no longer speaks for this client.
-                        guard webSocketTask === self.webSocketTask else { return }
-                        self.status.connection = ACConnectionState.failedSubscribe
-                        self.status.changed = true
-                    }
+                    // A send that fails is the connection dropping, not the station refusing the
+                    // subscription (H-7, task-44). failedSubscribe is for the server saying so, so a
+                    // normal network drop never looks like a failed channel. The socket's receive
+                    // failure, or the silent-connection timeout, reconnects it.
+                    self.debugLog("[Subscribe]", "Subscription send failed: \(error)", ACActivityTrace)
                 }
             }
         } else {
@@ -469,6 +468,7 @@ public class ACWebSocketClient: ObservableObject {
         // Decode into data for parseWebSocketData.
         guard let data = message.data(using: .utf8) else {
             print("Failed to decode message to data")
+            MetadataLog.failure("message could not be read as text")
             return
         }
 
@@ -501,19 +501,28 @@ public class ACWebSocketClient: ObservableObject {
                     // messages may contain the same data; if they do, we'll
                     // skip this.) Record the new status and call all the
                     // callbacks.
-                    // Preserve connection and network state - these are managed
-                    // separately from parsed data. The parser creates a new
-                    // ACStreamStatus with connection = .disconnected by default,
-                    // which would overwrite the actual connection state.
+                    // The connection state is managed separately from parsed data, and the parser
+                    // creates a new ACStreamStatus with connection = .disconnected by default,
+                    // which would overwrite the real state. So only what the parser reported about
+                    // the station itself is taken from it: online, offline, or a failed subscription
+                    // (F3, task-44). Anything else keeps the state from before the message.
                     let currentConnection = self.status.connection
                     self.status = result
-                    self.status.connection = currentConnection
+                    switch result.connection {
+                    case .connected, .stationOffline, .failedSubscribe:
+                        break
+                    case .connecting, .disconnected, .stationNotFound:
+                        self.status.connection = currentConnection
+                    }
                     self.notifySubscribers(with: self.status)
                 }
             }
         } catch {
             // Parse should NEVER fail — the parser has been thoroughly tested.
             // If this fires, something fundamentally unexpected happened.
+            // Recorded in release builds too. Only the kind of error, never the message.
+            let nsError = error as NSError
+            MetadataLog.failure("parser threw \(nsError.domain) \(nsError.code), message of \(message.count) characters")
             debugLog("[HandleMessage]", "PARSE FAILURE — THIS SHOULD NEVER HAPPEN: \(error)")
             debugLog("[HandleMessage]", "Raw message (\(message.count) chars): \(String(message.prefix(500)))")
         }

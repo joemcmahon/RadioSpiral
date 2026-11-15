@@ -101,10 +101,10 @@ final class ParseChannelMessageTests: XCTestCase {
         XCTAssertEqual(status.connection, .connected)
     }
 
-    func testOfflineStationIsDisconnected() throws {
+    func testOfflineStationIsReportedAsOffline() throws {
         let status = try parseChannel { $0["is_online"] = false }
 
-        XCTAssertEqual(status.connection, .disconnected)
+        XCTAssertEqual(status.connection, .stationOffline)
     }
 
     func testBroadcastStartIsReadWhenPresent() throws {
