@@ -93,7 +93,12 @@ class StationsManager {
             reset()
             return
         }
-        
+
+        // The same station again (a tap on the playing station in CarPlay) must not reconnect the
+        // metadata or reset the stream URL, which restarts the audio. Equality covers the name,
+        // stream URL, image and descriptions, so a changed station still goes through.
+        guard station != currentStation else { return }
+
         currentStation = station
         player.radioURL = URL(string: station.streamURL)
     }

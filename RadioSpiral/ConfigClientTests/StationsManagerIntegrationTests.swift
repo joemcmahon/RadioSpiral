@@ -76,6 +76,29 @@ final class StationsManagerIntegrationTests: XCTestCase {
         super.tearDown()
     }
 
+    // MARK: Choosing the station that's already current (task-50)
+
+    /// Tapping the playing station in CarPlay calls set(station:) with the current one. Assigning
+    /// it again reconnects the metadata and resets the stream URL, which restarts the audio.
+    func testChoosingTheCurrentStationAgainChangesNothing() {
+        manager.set(station: one)
+        observer.reset()
+
+        manager.set(station: one)
+
+        XCTAssertTrue(observer.changedStations.isEmpty, "The current station was assigned again")
+    }
+
+    func testChoosingADifferentStationStillSwitches() {
+        manager.set(station: one)
+        observer.reset()
+
+        manager.set(station: two)
+
+        XCTAssertEqual(observer.changedStations.count, 1)
+        XCTAssertEqual(observer.changedStations.first??.shortCode, "two")
+    }
+
     // MARK: Helpers
 
     private static func station(_ code: String, desc: String? = nil, serverName: String? = nil,

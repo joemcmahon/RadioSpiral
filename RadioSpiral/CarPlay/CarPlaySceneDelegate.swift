@@ -101,9 +101,15 @@ import MediaPlayer
         _ station: RadioStation,
         completionHandler: @escaping () -> Void
     ) {
+        let isNewStation = station != StationsManager.shared.currentStation
         StationsManager.shared.set(station: station)
         RadioPlayer.shared.play()
-        updateMPNowPlayingInfo(station: station)
+        // The info below is only the station's name and art, kept until the new station's
+        // metadata arrives. Tapping the current station reconnects nothing, so nothing would
+        // refill it and the track, artist and cover would stay wiped.
+        if isNewStation {
+            updateMPNowPlayingInfo(station: station)
+        }
         completionHandler()
     }
 
