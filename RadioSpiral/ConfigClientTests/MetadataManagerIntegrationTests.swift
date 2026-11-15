@@ -431,25 +431,87 @@ final class MetadataManagerIntegrationTests: XCTestCase {
         XCTAssertEqual(currentTrack, status.track)
     }
 
-    // F6 in the findings log: this pins what unsubscribing does today, a removal that
-    // finds nothing to remove. A fix turns it red, and it then changes to assert the
-    // callback stops. The recorder is left switched off, because the callback stays
-    // in the shared manager for the rest of the run.
-    func testUnsubscribingLeavesTheCallbackSubscribed() {
+    // F6 in the findings log (task-43): unsubscribing must remove the callback. A subscription is
+    // identified by the token that subscribing returns, since one closure can't be compared with another.
+    // A recorder stays in the shared manager for the rest of the run only if its subscription is left in
+    // place, so each test removes what it adds.
+
+    func testUnsubscribingStopsTheCallback() {
         let recorder = Recorder()
-        let callback: MetadataChangeCallback = { recorder.record($0) }
         let status = makeStatus()
 
         underFakeStatus {
-            manager.subscribeToMetadataChanges(callback)
-            manager.unsubscribeFromMetadataChanges(callback)
+            let subscription = manager.subscribeToMetadataChanges { recorder.record($0) }
+            manager.unsubscribeFromMetadataChanges(subscription)
             recorder.isRecording = true
             client.status = status
             manager.triggerMetadataUpdate()
             recorder.isRecording = false
         }
 
-        XCTAssertEqual(recorder.calls.count, 1)
-        XCTAssertEqual(recorder.calls.first??.trackName, status.track)
+        XCTAssertTrue(recorder.calls.isEmpty, "The callback was called after it was unsubscribed")
+    }
+
+    func testOtherSubscribersKeepReceivingUpdates() {
+        let leaving = Recorder()
+        let staying = Recorder()
+        let status = makeStatus()
+        var stayingSubscription: MetadataSubscription?
+
+        underFakeStatus {
+            let leavingSubscription = manager.subscribeToMetadataChanges { leaving.record($0) }
+            stayingSubscription = manager.subscribeToMetadataChanges { staying.record($0) }
+            manager.unsubscribeFromMetadataChanges(leavingSubscription)
+            leaving.isRecording = true
+            staying.isRecording = true
+            client.status = status
+            manager.triggerMetadataUpdate()
+            leaving.isRecording = false
+            staying.isRecording = false
+            manager.unsubscribeFromMetadataChanges(stayingSubscription!)
+        }
+
+        XCTAssertTrue(leaving.calls.isEmpty)
+        XCTAssertEqual(staying.calls.count, 1)
+        XCTAssertEqual(staying.calls.first??.trackName, status.track)
+    }
+
+    /// What Now Playing does on every station change: drop its old subscription, add a new one.
+    /// However many times that happens, one update must reach it once.
+    func testResubscribingOnEveryStationChangeStillDeliversOneUpdateOnce() {
+        let recorder = Recorder()
+        let status = makeStatus()
+
+        underFakeStatus {
+            var subscription = manager.subscribeToMetadataChanges { recorder.record($0) }
+            for _ in 1...5 {
+                manager.unsubscribeFromMetadataChanges(subscription)
+                subscription = manager.subscribeToMetadataChanges { recorder.record($0) }
+            }
+            recorder.isRecording = true
+            client.status = status
+            manager.triggerMetadataUpdate()
+            recorder.isRecording = false
+            manager.unsubscribeFromMetadataChanges(subscription)
+        }
+
+        XCTAssertEqual(recorder.calls.count, 1, "Each station change left another callback behind")
+    }
+
+    func testUnsubscribingTwiceIsHarmless() {
+        let recorder = Recorder()
+        let status = makeStatus()
+
+        underFakeStatus {
+            let subscription = manager.subscribeToMetadataChanges { recorder.record($0) }
+            manager.unsubscribeFromMetadataChanges(subscription)
+            manager.unsubscribeFromMetadataChanges(subscription)
+            recorder.isRecording = true
+            client.status = status
+            manager.triggerMetadataUpdate()
+            recorder.isRecording = false
+        }
+
+        XCTAssertTrue(recorder.calls.isEmpty)
     }
 }
