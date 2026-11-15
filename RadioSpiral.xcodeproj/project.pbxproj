@@ -72,6 +72,7 @@
 		A1C0DE0100000000000000F7 /* ConfigClientBundledFallbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F6 /* ConfigClientBundledFallbackTests.swift */; };
 		A1C0DE0100000000000000F9 /* fallback-stations.json in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F8 /* fallback-stations.json */; };
 		A1C0DE0100000000000000FB /* fallback-stations-before-launch.json in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000FA /* fallback-stations-before-launch.json */; };
+		A1C0DE0100000000000000F5 /* LockScreenLiveShowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F4 /* LockScreenLiveShowTests.swift */; };
 		A1C0DE0200000000000000A1 /* StationChangeMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0200000000000000A2 /* StationChangeMetadataTests.swift */; };
 		B6B0CEB08FFF4CC6A8931B5F /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
 		B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
@@ -179,6 +180,7 @@
 		A1C0DE0100000000000000F6 /* ConfigClientBundledFallbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigClientBundledFallbackTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000F8 /* fallback-stations.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "fallback-stations.json"; sourceTree = "<group>"; };
 		A1C0DE0100000000000000FA /* fallback-stations-before-launch.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "fallback-stations-before-launch.json"; sourceTree = "<group>"; };
+		A1C0DE0100000000000000F4 /* LockScreenLiveShowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenLiveShowTests.swift; sourceTree = "<group>"; };
 		A1C0DE0200000000000000A2 /* StationChangeMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationChangeMetadataTests.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsClient.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B61 /* test-credits.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-credits.json"; sourceTree = "<group>"; };
@@ -302,6 +304,7 @@
 				A1C0DE0100000000000000F0 /* TitleFitTests.swift */,
 				A1C0DE0100000000000000F2 /* LockScreenArtworkTests.swift */,
 				A1C0DE0100000000000000F6 /* ConfigClientBundledFallbackTests.swift */,
+				A1C0DE0100000000000000F4 /* LockScreenLiveShowTests.swift */,
 				A1C0DE0100000000000000E2 /* StartFadeTests.swift */,
 				A1C0DE0100000000000000D4 /* StubURLProtocol.swift */,
 				A1C0DE0100000000000000D6 /* ConfigClientHTTPIntegrationTests.swift */,
@@ -658,6 +661,7 @@
 				A1C0DE0100000000000000F1 /* TitleFitTests.swift in Sources */,
 				A1C0DE0100000000000000F3 /* LockScreenArtworkTests.swift in Sources */,
 				A1C0DE0100000000000000F7 /* ConfigClientBundledFallbackTests.swift in Sources */,
+				A1C0DE0100000000000000F5 /* LockScreenLiveShowTests.swift in Sources */,
 				A1C0DE0100000000000000E3 /* StartFadeTests.swift in Sources */,
 				A1C0DE0100000000000000D3 /* StubURLProtocol.swift in Sources */,
 				A1C0DE0100000000000000D5 /* ConfigClientHTTPIntegrationTests.swift in Sources */,
