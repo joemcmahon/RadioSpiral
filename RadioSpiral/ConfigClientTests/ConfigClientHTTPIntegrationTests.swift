@@ -30,6 +30,9 @@ final class ConfigClientHTTPIntegrationTests: XCTestCase {
     private func makeClient() -> ConfigClient {
         let client = ConfigClient(configURL: configURL)
         client.session = StubURLProtocol.makeSession()
+        // These test the client's own failure handling; the bundled fallback has its own tests
+        // (ConfigClientBundledFallbackTests).
+        client.bundledFallback = { [] }
         return client
     }
 

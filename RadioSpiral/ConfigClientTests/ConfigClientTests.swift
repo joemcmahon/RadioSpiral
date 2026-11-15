@@ -394,6 +394,9 @@ final class ConfigOfflineTests: XCTestCase {
                                   _ message: String = "",
                                   file: StaticString = #filePath,
                                   line: UInt = #line) {
+        // This checks the failure itself. The bundled fallback that would hide it has its own tests
+        // (ConfigClientBundledFallbackTests).
+        client.bundledFallback = { [] }
         switch fetch(client) {
         case .failure(let error):
             XCTAssertEqual(error as? ConfigClientError, .dataNotFound, message, file: file, line: line)

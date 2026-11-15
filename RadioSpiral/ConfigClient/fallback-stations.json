@@ -1,0 +1,49 @@
+{
+  "configs": [
+    {
+      "format": "static",
+      "stations": [
+        {
+          "name": "RadioSpiral",
+          "streamURL": "https://spiral.radio:8000/stream.mp3",
+          "imageURL": "https://spiral.radio/static/uploads/radiospiral/album_art.png",
+          "desc": "captivating electronica",
+          "longDesc": "Our primary stream, featuring a selected set of our library of captivating electronica, 24/7.\nFeaturing live DJs and live performances, every day of the week.",
+          "serverName": "spiral.radio",
+          "shortCode": "radiospiral",
+          "defaultDJ": "Spud the Ambient Robot"
+        },
+        {
+          "name": "Inner Sanctum",
+          "streamURL": "https://spiral.radio:8010/radio.mp3",
+          "imageURL": "https://spiral.radio/static/uploads/inner_sanctum/album_art.png",
+          "desc": "deep listening",
+          "longDesc": "deep listening",
+          "serverName": "spiral.radio",
+          "shortCode": "inner_sanctum",
+          "defaultDJ": "Roshi"
+        },
+        {
+          "name": "Outer Limits",
+          "streamURL": "https://spiral.radio:8020/radio.mp3",
+          "imageURL": "https://spiral.radio/static/uploads/outer_limits/album_art.png",
+          "desc": "unusual, noisy, and unpredictable",
+          "longDesc": "unusual, noisy, and unpredictable",
+          "serverName": "spiral.radio",
+          "shortCode": "outer_limits",
+          "defaultDJ": "Igor"
+        },
+        {
+          "name": "Pulse",
+          "streamURL": "https://spiral.radio:8040/radio.mp3",
+          "imageURL": "https://spiral.radio/static/uploads/pulse/album_art.png",
+          "desc": "beats with a brain",
+          "longDesc": "beats with a brain",
+          "serverName": "spiral.radio",
+          "shortCode": "pulse",
+          "defaultDJ": "Bop"
+        }
+      ]
+    }
+  ]
+}
