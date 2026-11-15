@@ -26,12 +26,17 @@ Real-device testing uses an iPhone 13 Pro; CarPlay is tested in the CarPlay Simu
 
 - **Station list loading** uses one source, chosen by a flag in `DataManager.getStation`:
   `Config.useConfigClient`, otherwise HTTP `stations.json`. It isn't a runtime fallback: with the
-  current flag only `ConfigClient` runs, and its failure goes to the error and retry screen in
-  `LoaderController`.
+  current flag only `ConfigClient` runs. Its failure reaches the error and retry screen in
+  `LoaderController` only if the bundled fallback (below) is missing or empty.
 - **`ConfigClient`** loads the remote `config.json` from the `radiospiral-config` repo. TestFlight
   and Xcode builds can select `config-test.json` on the About screen (`StationServer`). It tries
   the listed sources in order (AzuraCast public API, or a static list), then its
-  stations cached in memory. AzuraCast sources have an exclude list (e.g. `rstest`).
+  stations cached in memory. AzuraCast sources have an exclude list (e.g. `rstest`). Last resort, for
+  any config: if it can't be had at all (GitHub down, every source failing) and nothing is cached,
+  it shows the stations bundled in the app, chosen by date (`ConfigClient.launchDate`, 2026-12-19 12:00 UTC): RadioSpiral alone from `fallback-stations-before-launch.json` until then, so the new stations can't appear early, and the four in `fallback-stations.json` from then on. `isUsingBundledFallback` is true while it is in use, and
+  `isUsingBundledFallback` is true. TestFlight and Xcode builds then show a "FORCED FALLBACK" banner
+  (`StationServer.currentBannerLabel`); a listener's app shows no label. **Those files are copies of the station list: update them
+  when stations change, or the fallback goes stale until the next App Store release.**
 - **Now-playing metadata** comes from the AzuraCast WebSocket, then falls back to station info
   (`ConfigClient`, then `RadioStation`; the DJ name checks `RadioStation` first). See
   `StationMetadataManager`.

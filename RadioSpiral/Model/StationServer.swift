@@ -54,7 +54,7 @@ enum StationServer: String, CaseIterable {
 
     var configURL: String {
         switch self {
-        case .production: return "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config.json"
+        case .production: return ConfigClient.productionConfigURL
         case .preview: return "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config-preview.json"
         case .test: return "https://raw.githubusercontent.com/joemcmahon/radiospiral-config/master/config-test.json"
         }
@@ -69,6 +69,20 @@ enum StationServer: String, CaseIterable {
         case .preview: return "PREVIEW"
         case .test: return "TEST SERVER"
         }
+    }
+
+    /// What the banner says. While the bundled stations are in use because no config could be had,
+    /// it says so on any server. Only installs that allow the tester selector see that wording:
+    /// a listener's app, on the fallback or not, shows no tester label.
+    static func bannerLabel(for server: StationServer, usingFallback: Bool, environment: InstallEnvironment?) -> String? {
+        if usingFallback && environment?.allowsTestServer == true { return "FORCED FALLBACK" }
+        return server.bannerLabel
+    }
+
+    /// The banner label for the server in use right now. Main thread only.
+    static var currentBannerLabel: String? {
+        bannerLabel(for: current, usingFallback: ConfigClient.shared.isUsingBundledFallback,
+                    environment: InstallEnvironment.current)
     }
 
     /// The tester's saved choice. Only honored where the install environment allows it.
