@@ -428,13 +428,22 @@ class NowPlayingViewController: UIViewController {
             timeBubble.text = leftPadding + "LIVE  \(formatTime(showElapsed))" + rightPadding
         } else if metadataDuration > 0 {
             // Pre-recorded track: show track elapsed / duration
-            let currentElapsed = metadataElapsed + Date().timeIntervalSince(metadataReceivedAt!)
+            let currentElapsed = elapsedShown(base: metadataElapsed,
+                                              since: Date().timeIntervalSince(metadataReceivedAt!),
+                                              duration: metadataDuration)
             timeBubble.text = leftPadding + "\(formatTime(currentElapsed)) / \(formatTime(metadataDuration))" + rightPadding
         } else {
             // No broadcast start, no duration — fallback
             let currentElapsed = metadataElapsed + Date().timeIntervalSince(metadataReceivedAt!)
             timeBubble.text = leftPadding + "\(formatTime(currentElapsed))" + rightPadding
         }
+    }
+
+    /// The elapsed time to show: counted on from when the metadata arrived, but never past the track's
+    /// length, which the bubble showed as 5:05 / 4:50 when the next update was late. No duration, no cap.
+    func elapsedShown(base: TimeInterval, since: TimeInterval, duration: TimeInterval) -> TimeInterval {
+        let elapsed = base + since
+        return duration > 0 ? min(elapsed, duration) : elapsed
     }
 
     /// Server times arrive unchecked, and converting one that doesn't fit in an Int would crash.
