@@ -279,10 +279,20 @@ extension StationsManager {
         info[MPMediaItemPropertyArtist] = artistLine
         info[MPMediaItemPropertyTitle] = metadata.trackName
         info[MPMediaItemPropertyAlbumTitle] = metadata.albumName
-        if let duration = metadata.duration {
-            info[MPMediaItemPropertyPlaybackDuration] = duration
+        if metadata.isLiveDJ {
+            // A live show's duration and elapsed time are the silent placeholder track's: about
+            // 12 minutes that mean nothing and keep resetting. Publish it as a live stream, with
+            // no time, and drop any time left over from the previous track.
+            info[MPNowPlayingInfoPropertyIsLiveStream] = true
+            info[MPMediaItemPropertyPlaybackDuration] = nil
+            info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = nil
+        } else {
+            info[MPNowPlayingInfoPropertyIsLiveStream] = false
+            if let duration = metadata.duration {
+                info[MPMediaItemPropertyPlaybackDuration] = duration
+            }
+            info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = metadata.elapsed ?? 0.0
         }
-        info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = metadata.elapsed ?? 0.0
         // Always set rate to 1.0 when receiving metadata — we're actively streaming.
         // Play/pause state changes update the rate separately via setupPlaybackStateObserver.
         info[MPNowPlayingInfoPropertyPlaybackRate] = 1.0
