@@ -667,17 +667,28 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertEqual(empty.status.connection, .disconnected)
     }
 
-    func testFailedSubscriptionSendIsRecordedButNobodyIsTold() throws {
+    // H-7 (task-44): a subscription that can't be sent is the connection dropping, not the station
+    // refusing the subscription. failedSubscribe is for the server saying so, so a normal network
+    // drop never looks like a failed station. The silent connection's timeout still brings it back.
+    func testAFailedSubscriptionSendIsADroppedConnectionNotAFailedStation() throws {
         let failing = FakeSocket()
         failing.sendError = URLError(.networkConnectionLost)
+        var opened = 0
         let client = ACWebSocketClient(serverName: "radio.example", shortCode: shortCode, defaultDJ: "",
-                                       clock: clock) { _ in failing }
+                                       clock: clock) { _ in opened += 1; return failing }
         client.addSubscriber { [unowned self] status in self.notified.append(status.connection) }
 
         client.connect()
 
-        XCTAssertEqual(client.status.connection, .failedSubscribe)
-        XCTAssertTrue(notified.isEmpty)
+        XCTAssertEqual(client.status.connection, .connecting)
+        XCTAssertFalse(notified.contains(.failedSubscribe))
+
+        // Nothing arrives, so the opening timeout takes over, waits, and tries again.
+        try XCTUnwrap(clock.liveTimers.first).action()
+        clock.fireNextDelayed()
+
+        XCTAssertEqual(opened, 2)
+        XCTAssertFalse(notified.contains(.failedSubscribe), "\(notified)")
     }
 
     // MARK: Switching station
@@ -794,13 +805,13 @@ final class SocketClientIntegrationTests: XCTestCase {
         XCTAssertEqual(client.status.connection, .disconnected)
     }
 
-    func testCurrentSocketsLateSendFailureIsStillRecorded() throws {
+    func testCurrentSocketsLateSendFailureIsNotAFailedStationEither() throws {
         holdSendResults = true
         client.connect()
 
         try socket(0).finishHeldSend(with: URLError(.networkConnectionLost))
 
-        XCTAssertEqual(client.status.connection, .failedSubscribe)
+        XCTAssertEqual(client.status.connection, .connecting)
     }
 
     /// Runs on a background thread, as URLSession does, and returns with the main thread having

@@ -371,12 +371,11 @@ public class ACWebSocketClient: ObservableObject {
             webSocketTask.send(.string(jsonString)) { error in
                 if let error = error {
                     print("Failed to send subscription message: \(error)")
-                    Self.onMain {
-                        // A replaced or cancelled socket no longer speaks for this client.
-                        guard webSocketTask === self.webSocketTask else { return }
-                        self.status.connection = ACConnectionState.failedSubscribe
-                        self.status.changed = true
-                    }
+                    // A send that fails is the connection dropping, not the station refusing the
+                    // subscription (H-7, task-44). failedSubscribe is for the server saying so, so a
+                    // normal network drop never looks like a failed channel. The socket's receive
+                    // failure, or the silent-connection timeout, reconnects it.
+                    self.debugLog("[Subscribe]", "Subscription send failed: \(error)", ACActivityTrace)
                 }
             }
         } else {
