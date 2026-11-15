@@ -31,8 +31,13 @@ class StationsManager {
         }
     }
     
+    /// Where the system's clock is, from the last Now Playing write that set the time. Nil for a
+    /// live show, which has no clock (task-49).
+    private var clock: NowPlayingClock?
+
     private(set) var currentStation: RadioStation? {
         didSet {
+            clock = nil
             notifiyObservers { observer in
                 observer.stationsManager(self, stationDidChange: currentStation)
             }
@@ -231,7 +236,17 @@ extension StationsManager {
     
     private func updateLockScreenPlaybackRate(isPlaying: Bool) {
         guard var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo else { return }
-        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
+        if let current = clock {
+            // Write the live time, as the time bubble shows it: the value in the info is the one
+            // from the last metadata message, and writing it back restarts the system's count
+            // from there. Pausing only freezes the display; the track's timeline keeps going.
+            let now = ProcessInfo.processInfo.systemUptime
+            let updated = current.with(rate: isPlaying ? 1 : 0, at: now)
+            clock = updated
+            nowPlayingInfo = updated.apply(to: nowPlayingInfo, at: now)
+        } else {
+            nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
+        }
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
     }
 
@@ -245,7 +260,17 @@ extension StationsManager {
         guard var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo,
               let metadata = metadataManager.getCurrentMetadata() else { return }
         nowPlayingInfo[MPMediaItemPropertyArtist] = artistLine(for: metadata.artistName)
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+        publishNowPlaying(nowPlayingInfo)
+    }
+
+    /// Writes `info` with the clock's time as it is now, if there is a clock. Artwork arrives
+    /// after a download, so the time in `info` may be seconds old by the time it is written.
+    private func publishNowPlaying(_ info: [String: Any]) {
+        var info = info
+        if let clock = clock {
+            info = clock.apply(to: info, at: ProcessInfo.processInfo.systemUptime)
+        }
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
     }
 
     private func updateLockScreen(with metadata: UnifiedMetadata?) {
@@ -255,6 +280,7 @@ extension StationsManager {
             nowPlayingInfo = Self.trackInfo(from: nowPlayingInfo, metadata: metadata,
                                             artistLine: artistLine(for: metadata.artistName),
                                             notice: ChannelStatusMessages.nowPlayingTitle(connection: metadataManager.connectionState))
+            clock = NowPlayingClock.forTrack(metadata, at: ProcessInfo.processInfo.systemUptime)
             if let artworkURL = metadata.artworkURL {
                 URLSession.shared.dataTask(with: artworkURL) { [weak self] data, response, error in
                     if let data = data, let image = UIImage(data: data) {
@@ -262,7 +288,7 @@ extension StationsManager {
                             nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size, requestHandler: { _ in
                                 return image
                             })
-                            MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+                            self?.publishNowPlaying(nowPlayingInfo)
                         }
                     } else {
                         self?.publishWithStationArtwork(nowPlayingInfo)
@@ -274,20 +300,20 @@ extension StationsManager {
             publishWithStationArtwork(nowPlayingInfo)
             return
         }
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+        publishNowPlaying(nowPlayingInfo)
     }
 
     /// Publishes `info` with the current station's art, or without any art if there is no station.
     private func publishWithStationArtwork(_ info: [String: Any]) {
         guard let station = currentStation else {
-            DispatchQueue.main.async { MPNowPlayingInfoCenter.default().nowPlayingInfo = info }
+            DispatchQueue.main.async { [weak self] in self?.publishNowPlaying(info) }
             return
         }
-        station.getImage { image in
+        station.getImage { [weak self] image in
             DispatchQueue.main.async {
                 var info = info
                 info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size, requestHandler: { _ in image })
-                MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+                self?.publishNowPlaying(info)
             }
         }
     }
