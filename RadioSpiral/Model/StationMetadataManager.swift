@@ -33,13 +33,21 @@ public struct UnifiedMetadata: Equatable {
         self.isLiveDJ = isLiveDJ
     }
     
+    /// Whether two metadata are the same for subscribers, who are only told about a change (F5, task-45).
+    /// The track and album compare trimmed and case-blind. The artist, artwork, DJ and live-DJ flag count
+    /// as they are: a new one on the same song is a change. The elapsed time, duration and broadcast
+    /// start do not count, since they move without the song changing.
     public static func == (lhs: UnifiedMetadata, rhs: UnifiedMetadata) -> Bool {
         let lhsTrack = lhs.trackName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let rhsTrack = rhs.trackName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let lhsAlbum = (lhs.albumName ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let rhsAlbum = (rhs.albumName ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let result = lhsTrack == rhsTrack && lhsAlbum == rhsAlbum
-        return result
+        return lhsTrack == rhsTrack
+            && lhsAlbum == rhsAlbum
+            && lhs.artistName == rhs.artistName
+            && lhs.artworkURL == rhs.artworkURL
+            && lhs.djName == rhs.djName
+            && lhs.isLiveDJ == rhs.isLiveDJ
     }
 }
 
@@ -200,7 +208,7 @@ public class StationMetadataManager: ObservableObject {
     private func updateMetadata() {
         let newMetadata = getUnifiedMetadata()
         
-        // Only update if metadata has actually changed
+        // Only update if metadata has actually changed (see UnifiedMetadata.==)
         if newMetadata != currentMetadata {
             currentMetadata = newMetadata
             notifySubscribers(with: newMetadata)

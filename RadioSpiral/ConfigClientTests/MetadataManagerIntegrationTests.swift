@@ -20,9 +20,8 @@
 //  on purpose opens a real socket, so these tests don't pin its contents. They pin
 //  that nothing from the unusable status gets through.
 //
-//  These capture what the code does today. Some of it looks wrong, and those tests
-//  say so: see F5 and F6 in the findings log. A fix should turn them red, and the
-//  test then changes to assert the new behaviour.
+//  These capture what the code does. Findings F5 (task-45) and F6 (task-43) in the findings
+//  log were fixed, and the tests that pinned the old behaviour now assert the new.
 //
 
 import XCTest
@@ -338,10 +337,9 @@ final class MetadataManagerIntegrationTests: XCTestCase {
 
     // MARK: - F5: other fields changing on the same song
 
-    // F5 in the findings log: `UnifiedMetadata ==` compares only track and album, so
-    // these updates are dropped, though the comment at StationMetadataManager.swift:186
-    // says the update happens when metadata changed. These pin that today. A fix turns
-    // them red, and they then change to assert the update arrives.
+    // F5 in the findings log (task-45): a new artist, artwork, DJ or live-DJ flag on the same song is
+    // a change and reaches subscribers. The elapsed time, duration and broadcast start move without
+    // the song changing, so on their own they send nothing.
 
     /// Applies one song, then the same song differing as `edit` says.
     private func applyingChangeOnSameSong(_ edit: (ACStreamStatus) -> Void) -> [Step] {
@@ -362,49 +360,50 @@ final class MetadataManagerIntegrationTests: XCTestCase {
         return applying(first, second)
     }
 
-    func testNewArtistOnSameSongIsDropped() {
+    func testNewArtistOnSameSongIsStoredAndNotified() {
         let steps = applyingChangeOnSameSong { $0.artist = "New" }
 
-        XCTAssertEqual(steps[1].notifications.count, 0)
-        XCTAssertEqual(steps[1].metadata?.artistName, "Old")
+        XCTAssertEqual(steps[1].notifications.count, 1)
+        XCTAssertEqual(steps[1].metadata?.artistName, "New")
     }
 
-    func testNewArtworkOnSameSongIsDropped() {
-        let steps = applyingChangeOnSameSong { $0.artwork = URL(string: "https://example.test/new.png") }
+    func testNewArtworkOnSameSongIsStoredAndNotified() {
+        let artwork = URL(string: "https://example.test/new.png")
+        let steps = applyingChangeOnSameSong { $0.artwork = artwork }
 
-        XCTAssertEqual(steps[1].notifications.count, 0)
-        XCTAssertNil(steps[1].metadata?.artworkURL)
+        XCTAssertEqual(steps[1].notifications.count, 1)
+        XCTAssertEqual(steps[1].metadata?.artworkURL, artwork)
     }
 
-    func testNewDJOnSameSongIsDropped() {
+    func testNewDJOnSameSongIsStoredAndNotified() {
         let steps = applyingChangeOnSameSong { $0.dj = "New" }
 
-        XCTAssertEqual(steps[1].notifications.count, 0)
-        XCTAssertEqual(steps[1].metadata?.djName, "Old")
+        XCTAssertEqual(steps[1].notifications.count, 1)
+        XCTAssertEqual(steps[1].metadata?.djName, "New")
     }
 
-    func testLiveDJFlagOnSameSongIsDropped() {
+    func testLiveDJFlagOnSameSongIsStoredAndNotified() {
         let steps = applyingChangeOnSameSong { $0.isLiveDJ = true }
 
-        XCTAssertEqual(steps[1].notifications.count, 0)
-        XCTAssertEqual(steps[1].metadata?.isLiveDJ, false)
+        XCTAssertEqual(steps[1].notifications.count, 1)
+        XCTAssertEqual(steps[1].metadata?.isLiveDJ, true)
     }
 
-    func testNewDurationOnSameSongIsDropped() {
+    func testNewDurationOnSameSongSendsNothing() {
         let steps = applyingChangeOnSameSong { $0.duration = 999 }
 
         XCTAssertEqual(steps[1].notifications.count, 0)
         XCTAssertEqual(steps[1].metadata?.duration, 300)
     }
 
-    func testNewElapsedOnSameSongIsDropped() {
+    func testNewElapsedOnSameSongSendsNothing() {
         let steps = applyingChangeOnSameSong { $0.elapsed = 99 }
 
         XCTAssertEqual(steps[1].notifications.count, 0)
         XCTAssertEqual(steps[1].metadata?.elapsed, 10)
     }
 
-    func testNewBroadcastStartOnSameSongIsDropped() {
+    func testNewBroadcastStartOnSameSongSendsNothing() {
         let steps = applyingChangeOnSameSong { $0.broadcastStart = Date(timeIntervalSince1970: 1_000) }
 
         XCTAssertEqual(steps[1].notifications.count, 0)

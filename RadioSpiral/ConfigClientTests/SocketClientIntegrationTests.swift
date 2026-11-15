@@ -924,8 +924,10 @@ final class SocketClientIntegrationTests: XCTestCase {
 
     // MARK: What subscribers receive
 
-    // Known-wrong (F1): the comment in handleMessage says a repeat is skipped.
-    func testRepeatedMessageNotifiesAgain() throws {
+    // F1 (task-45): a message that repeats the last one is skipped, as the comment in handleMessage
+    // says. What counts as a change is the connection state, the live-DJ flag, track, artist, album,
+    // DJ and artwork; the elapsed time moves without the song changing.
+    func testARepeatedMessageDoesNotNotifyAgain() throws {
         client.switchToStation(station())
         let message = try connectMessage()
         try socket(0).deliver(message)
@@ -936,7 +938,64 @@ final class SocketClientIntegrationTests: XCTestCase {
         try socket(0).deliver(message)
         drainMainQueue()
 
+        XCTAssertEqual(notifiedTracks.count, afterFirst)
+    }
+
+    func testARepeatWithOnlyADifferentElapsedTimeDoesNotNotify() throws {
+        client.switchToStation(station())
+        let now = Int(Date().timeIntervalSince1970)
+        try socket(0).deliver(try message { $0["played_at"] = now - 30 })
+        drainMainQueue()
+        let afterFirst = notifiedTracks.count
+
+        try socket(0).deliver(try message { $0["played_at"] = now - 60 })
+        drainMainQueue()
+
+        XCTAssertEqual(notifiedTracks.count, afterFirst, "A later point in the same song is not a new status")
+    }
+
+    func testANewArtistOnTheSameSongIsNotified() throws {
+        client.switchToStation(station())
+        try socket(0).deliver(try message { _ in })
+        drainMainQueue()
+        let afterFirst = notifiedTracks.count
+
+        try socket(0).deliver(try message { nowPlaying in
+            var song = nowPlaying["song"] as? [String: Any] ?? [:]
+            song["artist"] = "A Different Artist"
+            nowPlaying["song"] = song
+        })
+        drainMainQueue()
+
         XCTAssertEqual(notifiedTracks.count, afterFirst + 1)
+        XCTAssertEqual(client.status.artist, "A Different Artist")
+    }
+
+    func testNewArtworkOnTheSameSongIsNotified() throws {
+        client.switchToStation(station())
+        try socket(0).deliver(try message { _ in })
+        drainMainQueue()
+        let afterFirst = notifiedTracks.count
+
+        try socket(0).deliver(try message { nowPlaying in
+            var song = nowPlaying["song"] as? [String: Any] ?? [:]
+            song["art"] = "https://example.test/a-new-cover.png"
+            nowPlaying["song"] = song
+        })
+        drainMainQueue()
+
+        XCTAssertEqual(notifiedTracks.count, afterFirst + 1)
+        XCTAssertEqual(client.status.artwork, URL(string: "https://example.test/a-new-cover.png"))
+    }
+
+    /// The connect message with its now_playing block edited.
+    private func message(_ edit: @escaping (inout [String: Any]) -> Void) throws -> String {
+        let data = try ConnectMessageFixture.data { np in
+            var nowPlaying = np["now_playing"] as? [String: Any] ?? [:]
+            edit(&nowPlaying)
+            np["now_playing"] = nowPlaying
+        }
+        return try XCTUnwrap(String(data: data, encoding: .utf8))
     }
 
     func testAMessageReachesSubscribersWithItsTrackAndTheRealConnectionState() throws {
