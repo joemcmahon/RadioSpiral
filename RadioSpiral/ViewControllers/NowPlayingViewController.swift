@@ -238,14 +238,15 @@ class NowPlayingViewController: UIViewController {
             self?.handleMetadataUpdate(metadata)
         }
 
-        // The banner follows the audio. If only metadata is lost, the music is still playing,
-        // so there's nothing to report.
-        player.$isStalled
-            .removeDuplicates()
+        // The banner follows the audio first: if only the metadata socket drops, the music is still
+        // playing, so there's nothing to report. An offline channel, or one whose information can't
+        // be loaded, says so (task-44); ChannelStatusMessages decides which message wins.
+        Publishers.CombineLatest(player.$isStalled.removeDuplicates(),
+                                 metadataManager.$connectionState.removeDuplicates())
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] isStalled in
-                if isStalled {
-                    self?.showConnectionBanner("Connection lost — reconnecting…")
+            .sink { [weak self] isStalled, connection in
+                if let message = ChannelStatusMessages.phoneBanner(connection: connection, isStalled: isStalled) {
+                    self?.showConnectionBanner(message)
                 } else {
                     self?.hideConnectionBanner()
                 }

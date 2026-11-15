@@ -68,6 +68,7 @@ class StationsManager {
     private init() {
         setupMetadataObserver()
         setupPlaybackStateObserver()
+        setupConnectionStateObserver()
     }
     
     func fetch(_ completion: StationsCompletion? = nil) {
@@ -146,6 +147,29 @@ class StationsManager {
                 self?.handleMetadataUpdate(metadata)
             }
         }
+    }
+
+    /// The metadata only notifies when it changes, and an offline channel can keep the same fallback
+    /// metadata, so the lock screen and CarPlay title follow the connection state directly (task-44).
+    private func setupConnectionStateObserver() {
+        metadataManager.$connectionState
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.refreshTitle() }
+            .store(in: &cancellables)
+    }
+
+    /// Rewrites only the title: the channel's notice, or the track's own once nothing is wrong.
+    private func refreshTitle() {
+        guard var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo else { return }
+        if let notice = ChannelStatusMessages.nowPlayingTitle(connection: metadataManager.connectionState) {
+            nowPlayingInfo[MPMediaItemPropertyTitle] = notice
+        } else if let metadata = metadataManager.getCurrentMetadata() {
+            nowPlayingInfo[MPMediaItemPropertyTitle] = metadata.trackName
+        } else {
+            return
+        }
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
     }
 
     private func setupPlaybackStateObserver() {
@@ -229,7 +253,8 @@ extension StationsManager {
         var nowPlayingInfo = nowPLayingInfoCenter.nowPlayingInfo ?? [String : Any]()
         if let metadata = metadata {
             nowPlayingInfo = Self.trackInfo(from: nowPlayingInfo, metadata: metadata,
-                                            artistLine: artistLine(for: metadata.artistName))
+                                            artistLine: artistLine(for: metadata.artistName),
+                                            notice: ChannelStatusMessages.nowPlayingTitle(connection: metadataManager.connectionState))
             if let artworkURL = metadata.artworkURL {
                 URLSession.shared.dataTask(with: artworkURL) { [weak self] data, response, error in
                     if let data = data, let image = UIImage(data: data) {
@@ -271,13 +296,16 @@ extension StationsManager {
 extension StationsManager {
 
     /// The lock screen's info for a new track, built on top of what's there now.
-    static func trackInfo(from existing: [String: Any], metadata: UnifiedMetadata, artistLine: String) -> [String: Any] {
+    /// - Parameter notice: What to show as the title instead of the track's, when the channel is offline or
+    ///   can't be described (task-44). Nil keeps the track's title.
+    static func trackInfo(from existing: [String: Any], metadata: UnifiedMetadata, artistLine: String,
+                          notice: String? = nil) -> [String: Any] {
         var info = existing
         // The previous track's art never carries over; the caller sets this track's art
         // (or the station's) when it has it.
         info[MPMediaItemPropertyArtwork] = nil
         info[MPMediaItemPropertyArtist] = artistLine
-        info[MPMediaItemPropertyTitle] = metadata.trackName
+        info[MPMediaItemPropertyTitle] = notice ?? metadata.trackName
         info[MPMediaItemPropertyAlbumTitle] = metadata.albumName
         if metadata.isLiveDJ {
             // A live show's duration and elapsed time are the silent placeholder track's: about
