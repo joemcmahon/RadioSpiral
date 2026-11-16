@@ -13,7 +13,7 @@ class NowPlayingView: UIView {
     
     var tapHandler: (() -> Void)?
     
-    private static let resetTitle = "Choose a station above to begin..."
+    private static let resetTitle = "Choose a channel above to begin..."
     
     private let animationView: NVActivityIndicatorView = {
         let activityIndicatorView = NVActivityIndicatorView(frame: .zero, type: .audioEqualizer, color: .white, padding: nil)

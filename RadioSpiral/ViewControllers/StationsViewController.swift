@@ -103,7 +103,7 @@ class StationsViewController: BaseController, Handoffable {
     /// Shown in place of the list until stations arrive.
     private let loadingLabel: UILabel = {
         let label = UILabel()
-        label.text = "Loading Stations..."
+        label.text = "Loading Channels..."
         label.font = .preferredFont(forTextStyle: .headline)
         label.textColor = UIColor(white: 0.85, alpha: 1)
         label.textAlignment = .center
