@@ -1,5 +1,5 @@
 {
-  "originHash" : "f0b011e53b081afda399cc4887b78ebd13258544805e8a44ae6d4f0d509ac4cf",
+  "originHash" : "8fd7671b74233d79f1fb720029805aec1d419c7aa4fdd37406a984099c453500",
   "pins" : [
     {
       "identity" : "kingfisher",
@@ -22,10 +22,10 @@
     {
       "identity" : "spring",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/fethica/Spring.git",
+      "location" : "https://github.com/joemcmahon/Spring",
       "state" : {
-        "branch" : "master",
-        "revision" : "63d6b2b4339606181617caddea3a988aa65bcadd"
+        "revision" : "1939b18c365521032a95b77860e2da7e17db4a46",
+        "version" : "2.0.0"
       }
     }
   ],
