@@ -249,10 +249,14 @@ public class ParseWebSocketData {
         if status.dj == "Cypress Rosewood" {
             // Tony's metadata has the track name in artist and the artist
             // name in track. Album is currently unset, but we'll revisit this
-            // if he adds it.
-            let save = status.track
-            status.track = status.artist
-            status.artist = save
+            // if he adds it. Only when he sent both: a show title with no
+            // artist (his 54-minute show on 2026-11-15) has nothing to swap,
+            // and swapping would leave the track empty.
+            if !status.track.isEmpty && !status.artist.isEmpty {
+                let save = status.track
+                status.track = status.artist
+                status.artist = save
+            }
         } else if status.dj != "" && status.album == "" {
             // Working around the bug in Azuracast that misparses the stream
             // metadata: trackname and album are in track, album is empty.
@@ -266,6 +270,12 @@ public class ParseWebSocketData {
                 status.album = parts.removeLast()
                 status.track = parts.joined(separator:" - ")
             }
+        }
+
+        // A live streamer who sends no artist: show the streamer as the artist. The app needs both
+        // a track and an artist to use the message, and a live show has no other artist to give.
+        if status.isLiveDJ && status.artist.isEmpty && !status.dj.isEmpty {
+            status.artist = status.dj
         }
         return status
     }
