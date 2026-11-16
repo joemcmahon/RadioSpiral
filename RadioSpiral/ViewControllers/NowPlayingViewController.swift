@@ -564,11 +564,11 @@ class NowPlayingViewController: UIViewController {
         let message: String?
         switch playbackState {
         case .paused:
-            message = "Station Paused..."
+            message = "Channel Paused..."
         case .playing:
             message = nil
         case .stopped:
-            message = "Station Stopped..."
+            message = "Channel Stopped..."
         }
         updateLabels(with: message, animate: animate)
         isPlayingDidChange(player.isPlaying)
@@ -581,10 +581,10 @@ class NowPlayingViewController: UIViewController {
             if songLabel.text != "" {
                 message = songLabel.text
             } else {
-                message = "Station loading..."
+                message = "Channel loading..."
             }
         case .idle:
-            message = "Station URL not valid"
+            message = "Channel URL not valid"
         case .readyToPlay:
             playbackStateDidChange(player.playbackState, animate: animate)
             return

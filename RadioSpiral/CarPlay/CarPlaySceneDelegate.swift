@@ -63,7 +63,7 @@ import MediaPlayer
     /// so the header prompts the user to pick one.
     private func stationsSection(for stations: [RadioStation]) -> CPListSection {
         let items = stations.map { createStationListItem(for: $0) }
-        let prompt = StationsManager.shared.currentStation == nil ? "Select a station to start" : nil
+        let prompt = StationsManager.shared.currentStation == nil ? "Select a channel to start" : nil
         // CPListTemplate's title can't change after creation, so the test-server label goes here.
         let testLabel = StationServer.currentBannerLabel
         let header = [testLabel, prompt].compactMap { $0 }.joined(separator: " · ")
@@ -73,7 +73,7 @@ import MediaPlayer
     /// Creates the stations list template
     private func createStationsListTemplate() -> CPListTemplate {
         let section = stationsSection(for: StationsManager.shared.stations)
-        return CPListTemplate(title: "Stations", sections: [section])
+        return CPListTemplate(title: "Channels", sections: [section])
     }
 
     /// Creates a list item for a single station
@@ -184,7 +184,7 @@ extension CarPlaySceneDelegate: StationsManagerObserver {
     }
 
     func stationsManager(_ manager: StationsManager, stationDidChange station: RadioStation?) {
-        // Show or hide the "Select a station to start" header.
+        // Show or hide the "Select a channel to start" header.
         DispatchQueue.main.async { [weak self] in
             self?.refreshTemplate(with: manager.stations)
             self?.restartStationNameTimer()
