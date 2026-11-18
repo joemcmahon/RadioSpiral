@@ -70,6 +70,7 @@
 		A1C0DE010000000000000117 /* ViewControllerIdiomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */; };
 		A1C0DE0100000000000000EB /* FoldInnerDisplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */; };
 		A1C0DE0100000000000000ED /* NowPlayingLayoutUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EC /* NowPlayingLayoutUITests.swift */; };
+		A1C0DE010000000000000119 /* NowPlayingFrameBaselineUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */; };
 		A1C0DE0100000000000000EF /* TitleFit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EE /* TitleFit.swift */; };
 		A1C0DE0100000000000000F1 /* TitleFitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F0 /* TitleFitTests.swift */; };
 		A1C0DE0100000000000000F3 /* LockScreenArtworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F2 /* LockScreenArtworkTests.swift */; };
@@ -190,6 +191,7 @@
 		A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerIdiomTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoldInnerDisplayTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000EC /* NowPlayingLayoutUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingLayoutUITests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingFrameBaselineUITests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000EE /* TitleFit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleFit.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000F0 /* TitleFitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleFitTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000F2 /* LockScreenArtworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenArtworkTests.swift; sourceTree = "<group>"; };
@@ -266,6 +268,7 @@
 				2C5545BC1C1124DE00728469 /* SwiftRadioUITests.swift */,
 				A1C0DE0100000000000000AE /* StationListE2ETests.swift */,
 				A1C0DE0100000000000000EC /* NowPlayingLayoutUITests.swift */,
+				A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */,
 				2C5545BE1C1124DE00728469 /* Info.plist */,
 			);
 			path = RadioSpiralUITests;
@@ -691,6 +694,7 @@
 				2C5545BD1C1124DE00728469 /* SwiftRadioUITests.swift in Sources */,
 				A1C0DE0100000000000000AD /* StationListE2ETests.swift in Sources */,
 				A1C0DE0100000000000000ED /* NowPlayingLayoutUITests.swift in Sources */,
+				A1C0DE010000000000000119 /* NowPlayingFrameBaselineUITests.swift in Sources */,
 				715C87A62B23E141003FC57A /* SnapshotHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

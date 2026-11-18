@@ -165,6 +165,7 @@ class NowPlayingViewController: UIViewController {
         // Accessibility identifiers for UI testing
         playingButton.accessibilityIdentifier = "playPauseButton"
         infoButton.accessibilityIdentifier = "infoButton"
+        albumImageView.accessibilityIdentifier = "albumArt"
 
         // Scale UI elements for iPad
         if traitCollection.userInterfaceIdiom == .pad {
