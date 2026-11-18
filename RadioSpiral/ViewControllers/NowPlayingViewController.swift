@@ -147,7 +147,7 @@ class NowPlayingViewController: UIViewController {
         // time bubble stay in the system font). Set before the base fonts are captured below.
         songLabel.font = AppFont.display(.title1)
         artistLabel.font = AppFont.display(.title3)
-        djName.font = AppFont.display(.body)
+        djName.font = AppFont.display(.caption1)   // 12 pt
 
         setupLandscapeConstraints()
         // currentLayout starts nil, so the first pass always applies a layout.
