@@ -63,7 +63,12 @@ class NowPlayingViewController: UIViewController {
     @IBOutlet var portraitInfoLeading: NSLayoutConstraint!
 
     // Landscape layout
+    /// Every landscape constraint (all variants below), for deactivating them in one call.
     private var landscapeConstraints: [NSLayoutConstraint] = []
+    private var landscapeCommonConstraints: [NSLayoutConstraint] = []
+    private var landscapeCenteredBoxConstraints: [NSLayoutConstraint] = []
+    private var landscapePinnedBoxConstraints: [NSLayoutConstraint] = []
+    private var landscapeArtWidthConstraints: [(fraction: CGFloat, constraint: NSLayoutConstraint)] = []
     private var allPortraitConstraints: [NSLayoutConstraint] = []
     private var landscapeRightPanel: UIView?
 
@@ -97,8 +102,24 @@ class NowPlayingViewController: UIViewController {
     private var foldWideEdgeConstraints: [NSLayoutConstraint] = []
     /// Storyboard constraint centering AirPlay in the full-width toolbar (swapped out in foldWide).
     private var airPlayToolbarCenterX: NSLayoutConstraint?
-    /// Label fonts as loaded (after iPad scaling), so per-layout scaling never compounds.
-    private var baseLabelFonts: [(UILabel, UIFont)] = []
+    /// The play, previous, next, info, AirPlay and share sizes and the toolbar height, as the
+    /// storyboard has them. First used in `viewDidLoad` before any scale is applied, so the
+    /// captured bases are the unscaled values and `applyMetrics` never compounds.
+    private lazy var scaledConstraints: ScaledConstraints = {
+        var constraints: [NSLayoutConstraint] = []
+        func sizes(of view: UIView?) -> [NSLayoutConstraint] {
+            (view?.constraints ?? []).filter { $0.firstAttribute == .width || $0.firstAttribute == .height }
+        }
+        for view in [playingButton, previousButton, nextButton, infoButton, airPlayView] as [UIView?] {
+            constraints += sizes(of: view)
+        }
+        constraints += sizes(of: toolsView.subviews.first { $0.accessibilityIdentifier == "shareButton" })
+        constraints += toolsView.constraints.filter { $0.firstAttribute == .height }
+        return ScaledConstraints(constraints)
+    }()
+    /// The song, artist and release labels with the fonts they have when first used (the display
+    /// fonts, set in `viewDidLoad` first), so per-layout scaling never compounds.
+    private lazy var scaledFonts = ScaledFonts([songLabel, artistLabel, releaseLabel])
     /// What the last phone-landscape fit was computed for; nil forces a new fit.
     private var lastFitKey: String?
 
@@ -150,6 +171,11 @@ class NowPlayingViewController: UIViewController {
         releaseLabel.font = AppFont.display(.subheadline)   // 15 pt, the size it had
         djName.font = AppFont.display(.caption1)   // 12 pt
 
+        // Capture the unscaled constraint sizes and label fonts now, before the first
+        // `applyMetrics` (inside `optimizeForDeviceSize` below) scales anything.
+        _ = scaledConstraints
+        _ = scaledFonts
+
         setupLandscapeConstraints()
         // currentLayout starts nil, so the first pass always applies a layout.
         optimizeForDeviceSize(size: view.bounds.size)
@@ -166,56 +192,6 @@ class NowPlayingViewController: UIViewController {
         playingButton.accessibilityIdentifier = "playPauseButton"
         infoButton.accessibilityIdentifier = "infoButton"
         albumImageView.accessibilityIdentifier = "albumArt"
-
-        // Scale UI elements for iPad
-        if traitCollection.userInterfaceIdiom == .pad {
-            let scale: CGFloat = 1.4
-            songLabel.font = songLabel.font.withSize(songLabel.font.pointSize * scale)
-            artistLabel.font = artistLabel.font.withSize(artistLabel.font.pointSize * scale)
-            releaseLabel.font = releaseLabel.font.withSize(releaseLabel.font.pointSize * scale)
-
-            // Scale play/prev/next buttons
-            for button in [playingButton, previousButton, nextButton] {
-                guard let button = button else { continue }
-                for constraint in button.constraints {
-                    if constraint.firstAttribute == .width || constraint.firstAttribute == .height {
-                        constraint.constant *= scale
-                    }
-                }
-            }
-
-            // Scale toolbar icons (info, share, AirPlay) and toolbar height
-            for button in [infoButton] as [UIView?] {
-                guard let button = button else { continue }
-                for constraint in button.constraints {
-                    if constraint.firstAttribute == .width || constraint.firstAttribute == .height {
-                        constraint.constant *= scale
-                    }
-                }
-            }
-            for constraint in airPlayView.constraints {
-                if constraint.firstAttribute == .width || constraint.firstAttribute == .height {
-                    constraint.constant *= scale
-                }
-            }
-            // Find share button by accessibility identifier and scale it
-            if let shareButton = toolsView.subviews.first(where: { $0.accessibilityIdentifier == "shareButton" }) {
-                for constraint in shareButton.constraints {
-                    if constraint.firstAttribute == .width || constraint.firstAttribute == .height {
-                        constraint.constant *= scale
-                    }
-                }
-            }
-            // Scale toolsView height
-            for constraint in toolsView.constraints {
-                if constraint.firstAttribute == .height {
-                    constraint.constant *= scale
-                }
-            }
-        }
-
-        baseLabelFonts = [songLabel, artistLabel, releaseLabel].map { ($0, $0.font) }
-        applyLabelScale(for: currentLayout ?? .portrait, size: view.bounds.size)
 
         // Set UI
         djName.text = ""
@@ -608,14 +584,11 @@ class NowPlayingViewController: UIViewController {
     
     func setupLandscapeConstraints() {
         let safeArea = view.safeAreaLayoutGuide
-        let artWidthFraction: CGFloat = (traitCollection.userInterfaceIdiom == .pad) ? 0.35 : 0.40
 
         // Container for right-side controls — vertically centered on iPad
         let rightPanel = UIView()
         rightPanel.translatesAutoresizingMaskIntoConstraints = false
         landscapeRightPanel = rightPanel
-
-        let isPad = traitCollection.userInterfaceIdiom == .pad
 
         // Labels, volume and controls stacked inside the panel (shared by landscape and foldWide).
         panelContentConstraints = [
@@ -645,43 +618,50 @@ class NowPlayingViewController: UIViewController {
             rightPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ]
 
-        // The art box: phones let it fill the height (the art is aspect-fit inside it). On iPad
-        // it is a square centered in the space above the toolbar, so the time bubble (anchored
-        // to the box's bottom) sits right under the drawn art, not down at the toolbar.
+        // Both art-box variants and both art widths are built once; `activateLandscapeConstraints`
+        // turns on the set the metrics pick, so a window that changes size class swaps sets and
+        // no layout guide or constraint is ever created again.
+        //
+        // Centered (a tall window): the art box is a square centered in the space above the
+        // toolbar, so the time bubble (anchored to the box's bottom) sits right under the drawn
+        // art, not down at the toolbar, and the right panel is centered on it.
         let artArea = UILayoutGuide()
         view.addLayoutGuide(artArea)
-        let artBoxConstraints: [NSLayoutConstraint]
-        if isPad {
-            artBoxConstraints = [
-                artArea.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
-                artArea.bottomAnchor.constraint(equalTo: toolsView.topAnchor, constant: -8),
-                albumImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: artWidthFraction),
-                albumImageView.heightAnchor.constraint(equalTo: albumImageView.widthAnchor),
-                albumImageView.centerYAnchor.constraint(equalTo: artArea.centerYAnchor),
-                albumImageView.topAnchor.constraint(greaterThanOrEqualTo: artArea.topAnchor),
-                albumImageView.bottomAnchor.constraint(lessThanOrEqualTo: artArea.bottomAnchor),
-            ]
-        } else {
-            artBoxConstraints = [
-                albumImageView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: artWidthFraction),
-                albumImageView.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
-                albumImageView.bottomAnchor.constraint(equalTo: toolsView.topAnchor, constant: -8),
-            ]
+        landscapeCenteredBoxConstraints = [
+            artArea.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
+            artArea.bottomAnchor.constraint(equalTo: toolsView.topAnchor, constant: -8),
+            albumImageView.heightAnchor.constraint(equalTo: albumImageView.widthAnchor),
+            albumImageView.centerYAnchor.constraint(equalTo: artArea.centerYAnchor),
+            albumImageView.topAnchor.constraint(greaterThanOrEqualTo: artArea.topAnchor),
+            albumImageView.bottomAnchor.constraint(lessThanOrEqualTo: artArea.bottomAnchor),
+            rightPanel.centerYAnchor.constraint(equalTo: albumImageView.centerYAnchor),
+        ]
+        // Pinned (a short window, every phone): the box fills the height (the art is aspect-fit
+        // inside it) and the right panel is pinned to the top.
+        landscapePinnedBoxConstraints = [
+            albumImageView.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
+            albumImageView.bottomAnchor.constraint(equalTo: toolsView.topAnchor, constant: -8),
+            rightPanel.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
+        ]
+        // The art's width follows the window's width, not its height. The multipliers match
+        // `NowPlayingMetrics.landscapeArtWidthFraction`.
+        landscapeArtWidthConstraints = [0.35, 0.40].map {
+            (fraction: $0, constraint: albumImageView.widthAnchor.constraint(equalTo: view.widthAnchor,
+                                                                           multiplier: $0))
         }
 
-        landscapeConstraints = landscapeEdgeConstraints + artBoxConstraints + [
-
+        landscapeCommonConstraints = landscapeEdgeConstraints + [
             // Right panel: positioned between art and trailing edge
             rightPanel.leadingAnchor.constraint(equalTo: albumImageView.trailingAnchor, constant: 24),
-            isPad
-                ? rightPanel.centerYAnchor.constraint(equalTo: albumImageView.centerYAnchor)
-                : rightPanel.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
             rightPanel.bottomAnchor.constraint(lessThanOrEqualTo: toolsView.topAnchor, constant: -4),
 
             // Info button: left side of toolbar area in landscape
             infoButton.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 20),
             infoButton.centerYAnchor.constraint(equalTo: toolsView.centerYAnchor),
         ]
+        // Everything landscape can activate, so one deactivate call clears every variant.
+        landscapeConstraints = landscapeCommonConstraints + landscapeCenteredBoxConstraints
+            + landscapePinnedBoxConstraints + landscapeArtWidthConstraints.map(\.constraint)
 
         setupFoldWideConstraints(rightPanel: rightPanel)
         setupFoldLaptopConstraints()
@@ -886,7 +866,7 @@ class NowPlayingViewController: UIViewController {
     }
 
     /// Scales label fonts up to suit the space each layout gives them.
-    private func applyLabelScale(for layout: NowPlayingLayout, size: CGSize) {
+    private func applyLabelScale(for layout: NowPlayingLayout, size: CGSize, uiScale: CGFloat) {
         let scale: CGFloat
         switch layout {
         case .foldWide:
@@ -901,9 +881,16 @@ class NowPlayingViewController: UIViewController {
         case .landscape:
             scale = 1.0   // phones: fitLabelsToPanel() shrinks per title, only when needed
         }
-        for (label, font) in baseLabelFonts {
-            label.font = font.withSize(font.pointSize * scale)
-        }
+        scaledFonts.apply(scale: scale * uiScale)
+    }
+
+    /// Applies the metrics' scale to the controls and labels. Idempotent: every call sets
+    /// base * scale, so repeating it, or going back to scale 1.0, never compounds.
+    private func applyMetrics(_ metrics: NowPlayingMetrics) {
+        scaledConstraints.apply(scale: metrics.uiScale)
+        applyLabelScale(for: currentLayout ?? .portrait, size: currentLayoutSize ?? view.bounds.size,
+                        uiScale: metrics.uiScale)
+        lastFitKey = nil   // fonts were reset: fit again at the next layout
     }
 
     override func viewDidLayoutSubviews() {
@@ -917,7 +904,7 @@ class NowPlayingViewController: UIViewController {
     /// the column width or the toolbar position changed since the last fit.
     private func fitLabelsToPanel() {
         guard currentLayout == .landscape, currentMetrics(for: view.bounds.size).fitsLabelsToPanel,
-              baseLabelFonts.count == 3, landscapeRightPanel?.superview != nil else { return }
+              landscapeRightPanel?.superview != nil else { return }
         let width = labelsStackView.bounds.width
         guard width > 0 else { return }
         let key = [songLabel.text, artistLabel.text, releaseLabel.text].map { $0 ?? "" }
@@ -930,10 +917,12 @@ class NowPlayingViewController: UIViewController {
         let room = toolsView.frame.minY - 4 - (view.safeAreaInsets.top + 8)
             - volumeStackView.bounds.height - controlsStackView.bounds.height - 6
 
+        let labels: [UILabel] = [songLabel, artistLabel, releaseLabel]
+        let baseFonts = scaledFonts.baseFonts
         func apply(title: CGFloat, others: CGFloat) {
-            for (index, entry) in baseLabelFonts.enumerated() {
+            for (index, label) in labels.enumerated() {
                 let scale = index == 0 ? title : others
-                entry.0.font = entry.1.withSize(max(11, entry.1.pointSize * scale))
+                label.font = baseFonts[index].withSize(max(11, baseFonts[index].pointSize * scale))
             }
         }
         func needed() -> CGFloat {
@@ -945,7 +934,7 @@ class NowPlayingViewController: UIViewController {
 
         // The title first, to its two lines; then, if the column is still too tall, everything
         // together by one factor so the sizes keep their order (no label goes under 11 pt).
-        let title = TitleFit.scale(for: songLabel.text ?? "", font: baseLabelFonts[0].1,
+        let title = TitleFit.scale(for: songLabel.text ?? "", font: baseFonts[0],
                                    width: width, maxLines: 2)
         var factor: CGFloat = 1
         apply(title: title, others: 1)
@@ -953,6 +942,16 @@ class NowPlayingViewController: UIViewController {
             factor -= 0.05
             apply(title: title * factor, others: factor)
         }
+    }
+
+    /// Turns on the landscape constraints the metrics select: the centered or the pinned art
+    /// box, and the art width for this window's width. The caller has deactivated all of them.
+    private func activateLandscapeConstraints(for metrics: NowPlayingMetrics) {
+        let widthChoice = landscapeArtWidthConstraints.first { $0.fraction == metrics.landscapeArtWidthFraction }
+            ?? landscapeArtWidthConstraints.last
+        NSLayoutConstraint.activate(landscapeCommonConstraints
+            + (metrics.landscapeArtBoxCentered ? landscapeCenteredBoxConstraints : landscapePinnedBoxConstraints)
+            + [widthChoice?.constraint].compactMap { $0 })
     }
 
     func optimizeForDeviceSize(size: CGSize) {
@@ -982,7 +981,7 @@ class NowPlayingViewController: UIViewController {
                 airPlayToolbarCenterX?.isActive = false
                 NSLayoutConstraint.activate(foldWideConstraints)
             } else {
-                NSLayoutConstraint.activate(landscapeConstraints)
+                activateLandscapeConstraints(for: currentMetrics(for: size))
             }
             if Config.debugLog { print("[NowPlaying] Switched to \(newLayout) layout") }
         case .portrait, .foldLaptop:
@@ -1009,8 +1008,7 @@ class NowPlayingViewController: UIViewController {
                 if Config.debugLog { print("[NowPlaying] Switched to portrait layout, albumHeight=\(imageHeight)") }
             }
         }
-        applyLabelScale(for: newLayout, size: size)
-        lastFitKey = nil   // fonts were reset: fit again at the next layout
+        applyMetrics(currentMetrics(for: size))
         // Long track names wrap to a second line (tail-truncated after two lines) instead of
         // truncating at one: the fold layouts and phone landscape have room for it.
         songLabel.numberOfLines = (newLayout == .foldWide || newLayout == .foldLaptop || newLayout == .landscape) ? 2 : 1
