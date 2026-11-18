@@ -22,12 +22,22 @@ final class AppFontTests: XCTestCase {
         XCTAssertEqual(font.familyName, "Michroma")
     }
 
-    func testDisplayFontStartsAtTheSystemSizeForTheStyle() {
+    /// Michroma looks bigger than the system font at the same point size, so every display size is
+    /// the system size for the style times `AppFont.displayScale` (one number to tune them all).
+    /// UIFontMetrics rounds the result to a whole point (28 x 0.95 = 26.6 comes out as 27), hence
+    /// the half-point tolerance.
+    func testDisplayFontStartsAtTheScaledSystemSizeForTheStyle() {
         for style: UIFont.TextStyle in [.title1, .title3, .headline] {
             let system = UIFont.preferredFont(forTextStyle: style, compatibleWith: large)
-            XCTAssertEqual(AppFont.display(style, compatibleWith: large).pointSize, system.pointSize,
-                           "\(style.rawValue) should start at the system size")
+            XCTAssertEqual(AppFont.display(style, compatibleWith: large).pointSize,
+                           system.pointSize * AppFont.displayScale, accuracy: 0.5,
+                           "\(style.rawValue) should start at the scaled system size")
         }
+    }
+
+    func testTheDisplayScaleIsASmallReduction() {
+        XCTAssertGreaterThan(AppFont.displayScale, 0.8)
+        XCTAssertLessThanOrEqual(AppFont.displayScale, 1)
     }
 
     func testDisplayFontGrowsWithDynamicType() {
