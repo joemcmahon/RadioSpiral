@@ -142,7 +142,13 @@ class NowPlayingViewController: UIViewController {
             navigationItem.hidesBackButton = true
         }
         manager.addObserver(self)
-        
+
+        // Display font for the song title and artist line only (the release line, banner and
+        // time bubble stay in the system font). Set before the base fonts are captured below.
+        songLabel.font = AppFont.display(.title1)
+        artistLabel.font = AppFont.display(.title3)
+        djName.font = AppFont.display(.body)
+
         setupLandscapeConstraints()
         // currentLayout starts nil, so the first pass always applies a layout.
         optimizeForDeviceSize(size: view.bounds.size)
@@ -151,8 +157,10 @@ class NowPlayingViewController: UIViewController {
         createNowPlayingAnimation()
         
         // Set View Title
+        // The title view carries the display font; `title` stays for the back button's label.
         self.title = manager.currentStation?.name
-        
+        navigationItem.titleView = AppFont.titleLabel(title)
+
         // Accessibility identifiers for UI testing
         playingButton.accessibilityIdentifier = "playPauseButton"
         infoButton.accessibilityIdentifier = "infoButton"
