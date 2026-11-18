@@ -101,7 +101,7 @@
 		CED6353B293081ED002B216F /* Handoffable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED6353A293081ED002B216F /* Handoffable.swift */; };
 		CEDABBED29121BBA00C0367F /* UIImage+Cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEDABBEC29121BBA00C0367F /* UIImage+Cache.swift */; };
 		CF72ACE721F7155200461EED /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CF72ACE621F714D000461EED /* Main.storyboard */; };
-		A1C0DE01000000000000010B /* ZenDots-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000010A /* ZenDots-Regular.ttf */; };
+		A1C0DE01000000000000010B /* Michroma-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000010A /* Michroma-Regular.ttf */; };
 		A1C0DE01000000000000010F /* AppFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000010E /* AppFont.swift */; };
 		A1C0DE010000000000000111 /* AppFontTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000110 /* AppFontTests.swift */; };
 /* End PBXBuildFile section */
@@ -217,7 +217,7 @@
 		CEDABBEC29121BBA00C0367F /* UIImage+Cache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Cache.swift"; sourceTree = "<group>"; };
 		CF72ACE621F714D000461EED /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		FEB1F0A11DE24DA9A9641A24 /* InterruptionPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterruptionPreference.swift; sourceTree = "<group>"; };
-		A1C0DE01000000000000010A /* ZenDots-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ZenDots-Regular.ttf"; sourceTree = "<group>"; };
+		A1C0DE01000000000000010A /* Michroma-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Michroma-Regular.ttf"; sourceTree = "<group>"; };
 		A1C0DE01000000000000010C /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
 		A1C0DE01000000000000010E /* AppFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFont.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000110 /* AppFontTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFontTests.swift; sourceTree = "<group>"; };
@@ -486,7 +486,7 @@
 		A1C0DE01000000000000010D /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
-				A1C0DE01000000000000010A /* ZenDots-Regular.ttf */,
+				A1C0DE01000000000000010A /* Michroma-Regular.ttf */,
 				A1C0DE01000000000000010C /* OFL.txt */,
 			);
 			path = Fonts;
@@ -642,7 +642,7 @@
 				CF72ACE721F7155200461EED /* Main.storyboard in Resources */,
 				5FDEE0221F72FF980064333C /* LaunchScreen.storyboard in Resources */,
 				A1B2C3D4E5F6A7B8C9D0E1F3 /* Settings.bundle in Resources */,
-				A1C0DE01000000000000010B /* ZenDots-Regular.ttf in Resources */,
+				A1C0DE01000000000000010B /* Michroma-Regular.ttf in Resources */,
 				9409E1261ABF6FEA00312E2B /* Images.xcassets in Resources */,
 				A1C0DE0100000000000000F9 /* fallback-stations.json in Resources */,
 				A1C0DE0100000000000000FB /* fallback-stations-before-launch.json in Resources */,

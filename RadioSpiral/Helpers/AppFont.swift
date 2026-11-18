@@ -2,20 +2,20 @@
 //  AppFont.swift
 //  RadioSpiral
 //
-//  The app's display font, Zen Dots (SIL Open Font License; the license is in `Fonts/OFL.txt`).
+//  The app's display font, Michroma (SIL Open Font License; the license is in `Fonts/OFL.txt`).
 //  It is for big, short, high-impact text only: the song title, the artist line and channel
-//  names. It has one weight, is wide, and is hard to read small, and it has no monospaced
-//  digits, so body text, captions, the connection banner and the time bubble stay in the system
-//  font. CarPlay, the lock screen and system alerts always use the system font.
+//  names. It has one weight and is wide, so body text, captions and the connection banner stay in
+//  the system font; so does the time bubble, which needs monospaced digits. CarPlay, the lock
+//  screen and system alerts always use the system font.
 //
 
 import UIKit
 
 enum AppFont {
 
-    /// PostScript name of the bundled font file (`Fonts/ZenDots-Regular.ttf`, listed under
+    /// PostScript name of the bundled font file (`Fonts/Michroma-Regular.ttf`, listed under
     /// `UIAppFonts` in `Info.plist`).
-    static let displayFontName = "ZenDots-Regular"
+    static let displayFontName = "Michroma-Regular"
 
     /// The display font for a text style. It starts at the size the system uses for that style
     /// at the default content size, then scales with Dynamic Type like the system font does.

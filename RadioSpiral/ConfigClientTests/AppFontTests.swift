@@ -2,7 +2,7 @@
 //  AppFontTests.swift
 //  ConfigClientTests
 //
-//  The display font (Zen Dots) used for big, short, high-impact text: the song title, the artist
+//  The display font (Michroma) used for big, short, high-impact text: the song title, the artist
 //  line, and channel names. Body text, captions, the connection banner and the time bubble stay
 //  in the system font. The tests run inside the app, so the font file is registered by the app's
 //  Info.plist, exactly as on a device.
@@ -16,10 +16,10 @@ final class AppFontTests: XCTestCase {
     private let large = UITraitCollection(preferredContentSizeCategory: .large)
     private let huge = UITraitCollection(preferredContentSizeCategory: .accessibilityExtraExtraExtraLarge)
 
-    func testDisplayFontIsZenDots() {
+    func testDisplayFontIsMichroma() {
         let font = AppFont.display(.title1, compatibleWith: large)
-        XCTAssertEqual(font.fontName, "ZenDots-Regular")
-        XCTAssertEqual(font.familyName, "Zen Dots")
+        XCTAssertEqual(font.fontName, "Michroma-Regular")
+        XCTAssertEqual(font.familyName, "Michroma")
     }
 
     func testDisplayFontStartsAtTheSystemSizeForTheStyle() {
@@ -48,7 +48,7 @@ final class AppFontTests: XCTestCase {
     func testTitleLabelShowsTheTextInTheDisplayFontAndShrinksToFit() {
         let label = AppFont.titleLabel("Inner Sanctum")
         XCTAssertEqual(label.text, "Inner Sanctum")
-        XCTAssertEqual(label.font.fontName, "ZenDots-Regular")
+        XCTAssertEqual(label.font.fontName, "Michroma-Regular")
         XCTAssertTrue(label.adjustsFontSizeToFitWidth)
         XCTAssertLessThan(label.minimumScaleFactor, 1)
         XCTAssertEqual(label.textColor, .white)
@@ -65,7 +65,7 @@ final class AppFontTests: XCTestCase {
     func testLargeTitleFitsOnOneLineInTheWidth() {
         let text = "RadioSpiral streams"
         let font = AppFont.largeTitle(text, fitting: 300, compatibleWith: large)
-        XCTAssertEqual(font.fontName, "ZenDots-Regular")
+        XCTAssertEqual(font.fontName, "Michroma-Regular")
         XCTAssertEqual(TitleFit.lineCount(of: text, font: font, width: 300), 1)
     }
 
@@ -90,7 +90,7 @@ final class AppFontTests: XCTestCase {
     /// Shrinking a title to fit calls `withSize`, which must keep the family.
     func testShrinkingKeepsTheDisplayFont() {
         let shrunk = AppFont.display(.title1, compatibleWith: large).withSize(14)
-        XCTAssertEqual(shrunk.fontName, "ZenDots-Regular")
+        XCTAssertEqual(shrunk.fontName, "Michroma-Regular")
         XCTAssertEqual(shrunk.pointSize, 14)
     }
 }
