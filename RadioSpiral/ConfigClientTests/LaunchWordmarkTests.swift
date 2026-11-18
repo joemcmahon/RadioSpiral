@@ -47,8 +47,10 @@ final class LaunchWordmarkTests: XCTestCase {
     func testTheArtworkKeepsItsShapeAndIsCentered() {
         let wordmark = laidOut(width: 393, height: 852)
         let image = UIImage(named: LaunchWordmark.imageName)!
+        // A frame snaps to device pixels, so a 38.4 pt height can come out as 38.6 pt: allow 0.1
+        // (1.5%) on a ratio of about 6.66.
         XCTAssertEqual(wordmark.frame.width / wordmark.frame.height,
-                       image.size.width / image.size.height, accuracy: 0.01)
+                       image.size.width / image.size.height, accuracy: 0.1)
         XCTAssertEqual(wordmark.frame.midX, 393 / 2, accuracy: 0.5)
         XCTAssertEqual(wordmark.frame.midY, 852 / 2, accuracy: 0.5)
     }
