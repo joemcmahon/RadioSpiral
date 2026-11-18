@@ -178,6 +178,11 @@ class NowPlayingViewController: UIViewController {
             (self: Self, _) in
             self.optimizeForDeviceSize(size: self.view.bounds.size)
         }
+        // The artwork is downsampled for the display's scale: moving the window to a display
+        // with a different scale (an external screen) loads it again at the right one.
+        registerForTraitChanges([UITraitDisplayScale.self]) { (self: Self, _) in
+            self.updateTrackArtwork()
+        }
 
         // Create Now Playing BarItem
         createNowPlayingAnimation()
