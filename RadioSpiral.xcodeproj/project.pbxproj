@@ -108,6 +108,8 @@
 		A1C0DE01000000000000010B /* Michroma-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000010A /* Michroma-Regular.ttf */; };
 		A1C0DE01000000000000010F /* AppFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000010E /* AppFont.swift */; };
 		A1C0DE010000000000000111 /* AppFontTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000110 /* AppFontTests.swift */; };
+		A1C0DE01000000000000011B /* NowPlayingMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011A /* NowPlayingMetrics.swift */; };
+		A1C0DE01000000000000011D /* NowPlayingMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011C /* NowPlayingMetricsTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -229,6 +231,8 @@
 		A1C0DE01000000000000010C /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
 		A1C0DE01000000000000010E /* AppFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFont.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000110 /* AppFontTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFontTests.swift; sourceTree = "<group>"; };
+		A1C0DE01000000000000011A /* NowPlayingMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetrics.swift; sourceTree = "<group>"; };
+		A1C0DE01000000000000011C /* NowPlayingMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetricsTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -336,6 +340,7 @@
 				A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */,
 				A1C0DE0100000000000000F0 /* TitleFitTests.swift */,
 				A1C0DE010000000000000110 /* AppFontTests.swift */,
+				A1C0DE01000000000000011C /* NowPlayingMetricsTests.swift */,
 				A1C0DE0100000000000000F2 /* LockScreenArtworkTests.swift */,
 				A1C0DE0100000000000000F6 /* ConfigClientBundledFallbackTests.swift */,
 				A1C0DE0100000000000000FE /* ChannelStatusMessagesTests.swift */,
@@ -485,6 +490,7 @@
 				A1C0DE0100000000000000E8 /* SecureURL.swift */,
 				A1C0DE0100000000000000EE /* TitleFit.swift */,
 				A1C0DE01000000000000010E /* AppFont.swift */,
+				A1C0DE01000000000000011A /* NowPlayingMetrics.swift */,
 				CE6ECD02292F358C008B3C16 /* UIViewController+Email.swift */,
 				94D260951B45E3FA00DE671C /* AnimationFrames.swift */,
 				94E9761B1B1A8F3200F52B1E /* UIImage+DropShadow.swift */,
@@ -716,6 +722,7 @@
 				A1C0DE0100000000000000EB /* FoldInnerDisplayTests.swift in Sources */,
 				A1C0DE0100000000000000F1 /* TitleFitTests.swift in Sources */,
 				A1C0DE010000000000000111 /* AppFontTests.swift in Sources */,
+				A1C0DE01000000000000011D /* NowPlayingMetricsTests.swift in Sources */,
 				A1C0DE0100000000000000F3 /* LockScreenArtworkTests.swift in Sources */,
 				A1C0DE0100000000000000F7 /* ConfigClientBundledFallbackTests.swift in Sources */,
 				A1C0DE0100000000000000FF /* ChannelStatusMessagesTests.swift in Sources */,
@@ -774,6 +781,7 @@
 				A1C0DE010000000000000113 /* LaunchWordmark.swift in Sources */,
 				A1C0DE0100000000000000EF /* TitleFit.swift in Sources */,
 				A1C0DE01000000000000010F /* AppFont.swift in Sources */,
+				A1C0DE01000000000000011B /* NowPlayingMetrics.swift in Sources */,
 				CE6036252A48F68D00E15E15 /* NowPlayingView.swift in Sources */,
 				27D776512BD747B293E5A498 /* InterruptionPreference.swift in Sources */,
 				A1C0DE0100000000000000D9 /* BuildInfo.swift in Sources */,
