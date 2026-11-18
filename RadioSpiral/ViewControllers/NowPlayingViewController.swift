@@ -90,7 +90,7 @@ class NowPlayingViewController: UIViewController {
     // Constraints placing labels/volume/controls inside landscapeRightPanel (landscape and foldWide).
     private var panelContentConstraints: [NSLayoutConstraint] = []
     private var foldWideConstraints: [NSLayoutConstraint] = []
-    /// Outer-edge constraints for foldWide; constants track the safe-area insets.
+    /// Outer-edge constraints for foldWide, pinned to the safe-area guide with fixed gaps.
     private var foldWideEdgeConstraints: [NSLayoutConstraint] = []
     /// Storyboard constraint centering AirPlay in the full-width toolbar (swapped out in foldWide).
     private var airPlayToolbarCenterX: NSLayoutConstraint?
@@ -610,11 +610,12 @@ class NowPlayingViewController: UIViewController {
             controlsStackView.bottomAnchor.constraint(equalTo: rightPanel.bottomAnchor),
         ]
 
-        // Edges use the wider side inset on both sides (see updateSideMargins), so a one-sided
-        // inset (e.g. the Duo outer screen's side strip) doesn't push the art off-center.
+        // The edges sit on the safe-area guide, so each side clears only its own inset (a
+        // one-sided inset, like the Duo outer screen's side strip, gives asymmetric margins).
+        // `applyMetrics` sets the constants from `landscapeSideMarginBase`.
         landscapeEdgeConstraints = [
-            albumImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            rightPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            albumImageView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor),
+            rightPanel.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor),
         ]
 
         // Both art-box variants and both art widths are built once; `activateLandscapeConstraints`
@@ -710,8 +711,10 @@ class NowPlayingViewController: UIViewController {
         let content = UILayoutGuide()  // vertical band between the top safe area and the toolbar
         [leftHalf, rightHalf, content].forEach(view.addLayoutGuide)
 
-        let leftEdge = leftHalf.leadingAnchor.constraint(equalTo: view.leadingAnchor)
-        let rightEdge = rightHalf.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        // Each edge clears only its own side's safe-area inset, plus a fixed gap.
+        let safeArea = view.safeAreaLayoutGuide
+        let leftEdge = leftHalf.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 10)
+        let rightEdge = rightHalf.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16)
         foldWideEdgeConstraints = [leftEdge, rightEdge]
 
         airPlayToolbarCenterX = toolsView.constraints.first {
@@ -812,29 +815,6 @@ class NowPlayingViewController: UIViewController {
         view.addInteraction(interaction)
     }
 
-    /// Recomputes side margins from the current safe-area insets.
-    /// - landscape: symmetric, both sides use the wider inset.
-    /// - foldWide: asymmetric, each edge clears only its own side's inset.
-    private func updateSideMargins() {
-        let insets = view.safeAreaInsets
-        if landscapeEdgeConstraints.count == 2 {
-            // iPad has room: keep the art off the screen edge.
-            let base: CGFloat = traitCollection.userInterfaceIdiom == .pad ? 40 : 12
-            let margin = max(insets.left, insets.right) + base
-            landscapeEdgeConstraints[0].constant = margin
-            landscapeEdgeConstraints[1].constant = -margin
-        }
-        if foldWideEdgeConstraints.count == 2 {
-            foldWideEdgeConstraints[0].constant = insets.left + 10
-            foldWideEdgeConstraints[1].constant = -(insets.right + 16)
-        }
-    }
-
-    override func viewSafeAreaInsetsDidChange() {
-        super.viewSafeAreaInsetsDidChange()
-        updateSideMargins()
-    }
-
     /// iPhone Duo inner display: a phone-idiom screen at least 850 pt long and under 1.7:1.
     /// (UIHinge reports open/closed but not the fold's position, so the screen size identifies it.)
     /// A long side alone isn't enough: the iPhone 17 (874 pt), Air (912) and 17 Pro Max (956)
@@ -887,6 +867,10 @@ class NowPlayingViewController: UIViewController {
     /// base * scale, so repeating it, or going back to scale 1.0, never compounds.
     private func applyMetrics(_ metrics: NowPlayingMetrics) {
         scaledConstraints.apply(scale: metrics.uiScale)
+        if landscapeEdgeConstraints.count == 2 {
+            landscapeEdgeConstraints[0].constant = metrics.landscapeSideMarginBase
+            landscapeEdgeConstraints[1].constant = -metrics.landscapeSideMarginBase
+        }
         applyLabelScale(for: currentLayout ?? .portrait, size: currentLayoutSize ?? view.bounds.size,
                         uiScale: metrics.uiScale)
         lastFitKey = nil   // fonts were reset: fit again at the next layout
@@ -976,7 +960,6 @@ class NowPlayingViewController: UIViewController {
                 panel.addSubview(controlsStackView)
             }
             albumHeightConstraint.isActive = false
-            updateSideMargins()
             NSLayoutConstraint.activate(panelContentConstraints)
             if newLayout == .foldWide {
                 airPlayToolbarCenterX?.isActive = false
