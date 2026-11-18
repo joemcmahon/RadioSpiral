@@ -607,14 +607,14 @@ class NowPlayingViewController: UIViewController {
     
     func setupLandscapeConstraints() {
         let safeArea = view.safeAreaLayoutGuide
-        let artWidthFraction: CGFloat = (UIDevice.current.userInterfaceIdiom == .pad) ? 0.35 : 0.40
+        let artWidthFraction: CGFloat = (traitCollection.userInterfaceIdiom == .pad) ? 0.35 : 0.40
 
         // Container for right-side controls — vertically centered on iPad
         let rightPanel = UIView()
         rightPanel.translatesAutoresizingMaskIntoConstraints = false
         landscapeRightPanel = rightPanel
 
-        let isPad = UIDevice.current.userInterfaceIdiom == .pad
+        let isPad = traitCollection.userInterfaceIdiom == .pad
 
         // Labels, volume and controls stacked inside the panel (shared by landscape and foldWide).
         panelContentConstraints = [
