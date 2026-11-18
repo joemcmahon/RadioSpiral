@@ -220,7 +220,7 @@ class StationsViewController: BaseController, Handoffable {
 
         let font = AppFont.largeTitle(title, fitting: width, compatibleWith: traitCollection)
         func fitted(_ source: UINavigationBarAppearance) -> UINavigationBarAppearance {
-            let appearance = (source.copy() as? UINavigationBarAppearance) ?? source
+            let appearance = source.copy()
             var attributes = appearance.largeTitleTextAttributes
             attributes[.font] = font
             if attributes[.foregroundColor] == nil { attributes[.foregroundColor] = UIColor.white }
