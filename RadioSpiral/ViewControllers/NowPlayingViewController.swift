@@ -143,10 +143,11 @@ class NowPlayingViewController: UIViewController {
         }
         manager.addObserver(self)
 
-        // Display font for the song title and artist line only (the release line, banner and
+        // Display font for the song title, artist line and release (album) line (the banner and
         // time bubble stay in the system font). Set before the base fonts are captured below.
         songLabel.font = AppFont.display(.title1)
         artistLabel.font = AppFont.display(.title3)
+        releaseLabel.font = AppFont.display(.subheadline)   // 15 pt, the size it had
         djName.font = AppFont.display(.caption1)   // 12 pt
 
         setupLandscapeConstraints()

@@ -17,16 +17,22 @@ enum AppFont {
     /// `UIAppFonts` in `Info.plist`).
     static let displayFontName = "Michroma-Regular"
 
+    /// Michroma looks bigger than the system font at the same point size, so every display size
+    /// is the system size for its style times this. One number to tune them all; individual
+    /// labels pick their text style at the call site.
+    static let displayScale: CGFloat = 0.95
+
     /// The display font for a text style. It starts at the size the system uses for that style
-    /// at the default content size, then scales with Dynamic Type like the system font does.
-    /// If the font can't be loaded it returns the system font for the style, so text still shows.
+    /// at the default content size times `displayScale`, then scales with Dynamic Type like the
+    /// system font does. If the font can't be loaded it returns the system font for the style
+    /// (at its normal size), so text still shows.
     static func display(_ style: UIFont.TextStyle,
                         fontName: String = displayFontName,
                         compatibleWith traits: UITraitCollection? = nil) -> UIFont {
         let defaultSize = UIFont.preferredFont(
             forTextStyle: style,
             compatibleWith: UITraitCollection(preferredContentSizeCategory: .large)).pointSize
-        guard let font = UIFont(name: fontName, size: defaultSize) else {
+        guard let font = UIFont(name: fontName, size: defaultSize * displayScale) else {
             return UIFont.preferredFont(forTextStyle: style, compatibleWith: traits)
         }
         return UIFontMetrics(forTextStyle: style).scaledFont(for: font, compatibleWith: traits)
