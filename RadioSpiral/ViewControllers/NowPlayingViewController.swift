@@ -343,7 +343,7 @@ class NowPlayingViewController: UIViewController {
                 self.albumImageView.kf.indicatorType = .activity
                 self.albumImageView.kf.setImage(with: artworkURL,
                                                options: [.processor(processor),
-                                                         .scaleFactor(UIScreen.main.scale),
+                                                         .scaleFactor(max(self.traitCollection.displayScale, 1)),
                                                          .transition(.fade(1))
                                                ])
             } else {
@@ -548,7 +548,7 @@ class NowPlayingViewController: UIViewController {
                 albumImageView.kf.indicatorType = .activity
                 albumImageView.kf.setImage(with: artworkURL,
                                            options: [.processor(processor),
-                                                     .scaleFactor(UIScreen.main.scale),
+                                                     .scaleFactor(max(self.traitCollection.displayScale, 1)),
                                                      .transition(.fade(1))
                                            ])
             }
