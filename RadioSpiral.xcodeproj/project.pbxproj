@@ -101,6 +101,9 @@
 		CED6353B293081ED002B216F /* Handoffable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED6353A293081ED002B216F /* Handoffable.swift */; };
 		CEDABBED29121BBA00C0367F /* UIImage+Cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEDABBEC29121BBA00C0367F /* UIImage+Cache.swift */; };
 		CF72ACE721F7155200461EED /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CF72ACE621F714D000461EED /* Main.storyboard */; };
+		A1C0DE01000000000000010B /* ZenDots-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000010A /* ZenDots-Regular.ttf */; };
+		A1C0DE01000000000000010F /* AppFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000010E /* AppFont.swift */; };
+		A1C0DE010000000000000111 /* AppFontTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000110 /* AppFontTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -214,6 +217,10 @@
 		CEDABBEC29121BBA00C0367F /* UIImage+Cache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Cache.swift"; sourceTree = "<group>"; };
 		CF72ACE621F714D000461EED /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		FEB1F0A11DE24DA9A9641A24 /* InterruptionPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterruptionPreference.swift; sourceTree = "<group>"; };
+		A1C0DE01000000000000010A /* ZenDots-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ZenDots-Regular.ttf"; sourceTree = "<group>"; };
+		A1C0DE01000000000000010C /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
+		A1C0DE01000000000000010E /* AppFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFont.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000110 /* AppFontTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFontTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -317,6 +324,7 @@
 				A1C0DE0100000000000000E6 /* SecureURLTests.swift */,
 				A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */,
 				A1C0DE0100000000000000F0 /* TitleFitTests.swift */,
+				A1C0DE010000000000000110 /* AppFontTests.swift */,
 				A1C0DE0100000000000000F2 /* LockScreenArtworkTests.swift */,
 				A1C0DE0100000000000000F6 /* ConfigClientBundledFallbackTests.swift */,
 				A1C0DE0100000000000000FE /* ChannelStatusMessagesTests.swift */,
@@ -380,6 +388,7 @@
 				94D260901B45D20000DE671C /* Config.swift */,
 				9409E11B1ABF6FEA00312E2B /* AppDelegate.swift */,
 				9409E1251ABF6FEA00312E2B /* Images.xcassets */,
+				A1C0DE01000000000000010D /* Fonts */,
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* Settings.bundle */,
 				9409E11A1ABF6FEA00312E2B /* Info.plist */,
 				CEA82F492921F260009E9FA0 /* Info-CarPlay.plist */,
@@ -463,6 +472,7 @@
 				CEDABBEC29121BBA00C0367F /* UIImage+Cache.swift */,
 				A1C0DE0100000000000000E8 /* SecureURL.swift */,
 				A1C0DE0100000000000000EE /* TitleFit.swift */,
+				A1C0DE01000000000000010E /* AppFont.swift */,
 				CE6ECD02292F358C008B3C16 /* UIViewController+Email.swift */,
 				94D260951B45E3FA00DE671C /* AnimationFrames.swift */,
 				94E9761B1B1A8F3200F52B1E /* UIImage+DropShadow.swift */,
@@ -471,6 +481,15 @@
 				CE321FF229371140001572BD /* Bundle+appName.swift */,
 			);
 			path = Helpers;
+			sourceTree = "<group>";
+		};
+		A1C0DE01000000000000010D /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				A1C0DE01000000000000010A /* ZenDots-Regular.ttf */,
+				A1C0DE01000000000000010C /* OFL.txt */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -623,6 +642,7 @@
 				CF72ACE721F7155200461EED /* Main.storyboard in Resources */,
 				5FDEE0221F72FF980064333C /* LaunchScreen.storyboard in Resources */,
 				A1B2C3D4E5F6A7B8C9D0E1F3 /* Settings.bundle in Resources */,
+				A1C0DE01000000000000010B /* ZenDots-Regular.ttf in Resources */,
 				9409E1261ABF6FEA00312E2B /* Images.xcassets in Resources */,
 				A1C0DE0100000000000000F9 /* fallback-stations.json in Resources */,
 				A1C0DE0100000000000000FB /* fallback-stations-before-launch.json in Resources */,
@@ -680,6 +700,7 @@
 				A1C0DE0100000000000000E7 /* SecureURLTests.swift in Sources */,
 				A1C0DE0100000000000000EB /* FoldInnerDisplayTests.swift in Sources */,
 				A1C0DE0100000000000000F1 /* TitleFitTests.swift in Sources */,
+				A1C0DE010000000000000111 /* AppFontTests.swift in Sources */,
 				A1C0DE0100000000000000F3 /* LockScreenArtworkTests.swift in Sources */,
 				A1C0DE0100000000000000F7 /* ConfigClientBundledFallbackTests.swift in Sources */,
 				A1C0DE0100000000000000FF /* ChannelStatusMessagesTests.swift in Sources */,
@@ -736,6 +757,7 @@
 				CEDABBED29121BBA00C0367F /* UIImage+Cache.swift in Sources */,
 				A1C0DE0100000000000000E9 /* SecureURL.swift in Sources */,
 				A1C0DE0100000000000000EF /* TitleFit.swift in Sources */,
+				A1C0DE01000000000000010F /* AppFont.swift in Sources */,
 				CE6036252A48F68D00E15E15 /* NowPlayingView.swift in Sources */,
 				27D776512BD747B293E5A498 /* InterruptionPreference.swift in Sources */,
 				A1C0DE0100000000000000D9 /* BuildInfo.swift in Sources */,
