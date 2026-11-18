@@ -65,6 +65,8 @@
 		A1C0DE0100000000000000E5 /* StartFade.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E4 /* StartFade.swift */; };
 		A1C0DE0100000000000000E7 /* SecureURLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E6 /* SecureURLTests.swift */; };
 		A1C0DE0100000000000000E9 /* SecureURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E8 /* SecureURL.swift */; };
+		A1C0DE010000000000000113 /* LaunchWordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000112 /* LaunchWordmark.swift */; };
+		A1C0DE010000000000000115 /* LaunchWordmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000114 /* LaunchWordmarkTests.swift */; };
 		A1C0DE0100000000000000EB /* FoldInnerDisplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */; };
 		A1C0DE0100000000000000ED /* NowPlayingLayoutUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EC /* NowPlayingLayoutUITests.swift */; };
 		A1C0DE0100000000000000EF /* TitleFit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EE /* TitleFit.swift */; };
@@ -179,6 +181,8 @@
 		A1C0DE0100000000000000E4 /* StartFade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartFade.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000E6 /* SecureURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureURLTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000E8 /* SecureURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureURL.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000112 /* LaunchWordmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchWordmark.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000114 /* LaunchWordmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchWordmarkTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoldInnerDisplayTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000EC /* NowPlayingLayoutUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingLayoutUITests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000EE /* TitleFit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleFit.swift; sourceTree = "<group>"; };
@@ -315,6 +319,7 @@
 				A1C0DE0100000000000000D2 /* SocketClientIntegrationTests.swift */,
 				A1C0DE0100000000000000DE /* StallRecoveryTests.swift */,
 				A1C0DE0100000000000000E6 /* SecureURLTests.swift */,
+				A1C0DE010000000000000114 /* LaunchWordmarkTests.swift */,
 				A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */,
 				A1C0DE0100000000000000F0 /* TitleFitTests.swift */,
 				A1C0DE0100000000000000F2 /* LockScreenArtworkTests.swift */,
@@ -460,6 +465,7 @@
 			isa = PBXGroup;
 			children = (
 				CE6ECCFF292F215F008B3C16 /* Storyboard.swift */,
+				A1C0DE010000000000000112 /* LaunchWordmark.swift */,
 				CEDABBEC29121BBA00C0367F /* UIImage+Cache.swift */,
 				A1C0DE0100000000000000E8 /* SecureURL.swift */,
 				A1C0DE0100000000000000EE /* TitleFit.swift */,
@@ -678,6 +684,7 @@
 				A1C0DE0100000000000000D1 /* SocketClientIntegrationTests.swift in Sources */,
 				A1C0DE0100000000000000DF /* StallRecoveryTests.swift in Sources */,
 				A1C0DE0100000000000000E7 /* SecureURLTests.swift in Sources */,
+				A1C0DE010000000000000115 /* LaunchWordmarkTests.swift in Sources */,
 				A1C0DE0100000000000000EB /* FoldInnerDisplayTests.swift in Sources */,
 				A1C0DE0100000000000000F1 /* TitleFitTests.swift in Sources */,
 				A1C0DE0100000000000000F3 /* LockScreenArtworkTests.swift in Sources */,
@@ -735,6 +742,7 @@
 				B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */,
 				CEDABBED29121BBA00C0367F /* UIImage+Cache.swift in Sources */,
 				A1C0DE0100000000000000E9 /* SecureURL.swift in Sources */,
+				A1C0DE010000000000000113 /* LaunchWordmark.swift in Sources */,
 				A1C0DE0100000000000000EF /* TitleFit.swift in Sources */,
 				CE6036252A48F68D00E15E15 /* NowPlayingView.swift in Sources */,
 				27D776512BD747B293E5A498 /* InterruptionPreference.swift in Sources */,
