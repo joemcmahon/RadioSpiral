@@ -304,7 +304,7 @@ class NowPlayingViewController: UIViewController {
             #endif
 
             // Update live DJ indicator
-            self.liveDJIndicator.isHidden = !metadata.isLiveDJ
+            self.liveDJIndicator.isHidden = DemoLiveShow.indicatorHidden(isLiveDJ: metadata.isLiveDJ)
 
             // Update time tracking for bubble
             self.metadataReceivedAt = Date()
@@ -1026,7 +1026,7 @@ class NowPlayingViewController: UIViewController {
             // Radio is (hopefully) streaming properly - use unified metadata
             var titleChanged = false
             if let metadata = metadataManager.getCurrentMetadata() {
-                self.liveDJIndicator.isHidden = !metadata.isLiveDJ
+                self.liveDJIndicator.isHidden = DemoLiveShow.indicatorHidden(isLiveDJ: metadata.isLiveDJ)
                 if !metadata.trackName.isEmpty {
                     // Only a different title animates: Play reaches here three
                     // times (task-55) and the text is the same each time.

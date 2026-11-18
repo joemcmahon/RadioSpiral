@@ -19,6 +19,11 @@ network. The exception is `LiveServerSmokeTests`, two labeled tests that check t
 server error, and fail only on a format change. Don't rerun them in loops. Other tests may start real
 connections from the running app, so check connectivity before treating a failure as a regression.
 
+**A live DJ show changes Now Playing's layout:** the live-show indicator appears beside the DJ name
+and moves it, so a UI test that reads frames depends on who is on air. Debug builds take
+`-nowPlayingDemoLive on|off` (`DemoLiveShow`) to decide it. The frame UI tests pin it to `off`
+(`TEST_RUNNER_LAYOUT_LIVE=on` shows it). Set it in any new UI test that reads frames.
+
 Real-device testing uses an iPhone 13 Pro; CarPlay is tested in the CarPlay Simulator.
 `CARPLAY-UPGRADE.md` documents the CarPlay work.
 

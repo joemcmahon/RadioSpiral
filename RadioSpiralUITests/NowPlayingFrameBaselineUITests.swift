@@ -12,7 +12,8 @@
 //
 //  Live, like NowPlayingLayoutUITests: it needs GitHub and the production server (one station,
 //  so Now Playing opens directly). Debug builds replace the labels' text through the
-//  `-nowPlayingDemoTitle` launch argument. TEST_RUNNER_LAYOUT_SERVER=test uses the test server.
+//  `-nowPlayingDemoTitle` launch argument. The live-show indicator is pinned off through `-nowPlayingDemoLive`
+//  (TEST_RUNNER_LAYOUT_LIVE=on shows it), so a live DJ on air cannot change a dump. TEST_RUNNER_LAYOUT_SERVER=test uses the test server.
 //
 
 import XCTest
@@ -27,6 +28,9 @@ final class NowPlayingFrameBaselineUITests: XCTestCase {
         "Puja in the Temple of Sound (with Lam Sadashiva) — Excerpt",
         "the sky is superimposed with myriads of drones preparing to wipe humanity off the face of the earth (Extended Version)",
     ]
+    /// Whether the live-show indicator shows: "off" unless TEST_RUNNER_LAYOUT_LIVE=on, so what is on
+    /// air never changes a dump (a live show adds the indicator and moves the DJ name).
+    private let liveShow = ProcessInfo.processInfo.environment["LAYOUT_LIVE"] == "on" ? "on" : "off"
     private let artist = "Demo Artist"
     private let album = "Demo Album (2006-2023)"
     private let dj = "Demo DJ"
@@ -48,7 +52,7 @@ final class NowPlayingFrameBaselineUITests: XCTestCase {
         app.terminate()
         let useTestServer = ProcessInfo.processInfo.environment["LAYOUT_SERVER"] == "test"
         app.launchArguments = (useTestServer ? ["-stationServer", "test"] : [])
-            + ["-nowPlayingDemoTitle", title]
+            + ["-nowPlayingDemoTitle", title, "-nowPlayingDemoLive", liveShow]
         app.launch()
         let playButton = app.buttons["playPauseButton"]
         if !playButton.waitForExistence(timeout: 20) {
