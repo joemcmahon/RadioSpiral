@@ -30,7 +30,7 @@ class StationCell: UICollectionViewCell {
     
     let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .title3)
+        label.font = AppFont.display(.title3)
         label.numberOfLines = 0 // Allow multi-line titles if needed
         label.translatesAutoresizingMaskIntoConstraints = false
         return label

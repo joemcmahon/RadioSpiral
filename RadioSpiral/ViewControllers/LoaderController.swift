@@ -81,17 +81,10 @@ class LoaderController: BaseController {
     override func setupViews() {
         super.setupViews()
         
-        // Logo Image
-        let logoImage = UIImage(named: "radiospiral")
-        let logoImageView = UIImageView(image: logoImage)
-        logoImageView.translatesAutoresizingMaskIntoConstraints = false
-        
+        // Wordmark: sized by `LaunchWordmark`, the same numbers as LaunchScreen.storyboard
+        let logoImageView = LaunchWordmark.makeImageView()
         view.addSubview(logoImageView)
-        
-        NSLayoutConstraint.activate([
-            logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            logoImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        ])
+        NSLayoutConstraint.activate(LaunchWordmark.constraints(for: logoImageView, in: view))
         
         // Activity Indicator
         view.addSubview(activityIndicatorView)

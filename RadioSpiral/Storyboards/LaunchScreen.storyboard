@@ -19,8 +19,8 @@
                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFill" insetsLayoutMarginsFromSafeArea="NO" image="background" translatesAutoresizingMaskIntoConstraints="NO" id="142-uQ-lyQ">
                                 <rect key="frame" x="0.0" y="0.0" width="768" height="1024"/>
                             </imageView>
-                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="radiospiral" translatesAutoresizingMaskIntoConstraints="NO" id="yiw-CN-vnc">
-                                <rect key="frame" x="338" y="376" width="93" height="247"/>
+                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" insetsLayoutMarginsFromSafeArea="NO" image="wordmark" translatesAutoresizingMaskIntoConstraints="NO" id="yiw-CN-vnc">
+                                <rect key="frame" x="134" y="460.5" width="500" height="75"/>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
@@ -31,6 +31,9 @@
                             <constraint firstItem="142-uQ-lyQ" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="mOU-OW-ZGC"/>
                             <constraint firstItem="142-uQ-lyQ" firstAttribute="bottom" secondItem="Ze5-6b-2t3" secondAttribute="bottom" id="qlD-89-AfJ"/>
                             <constraint firstItem="yiw-CN-vnc" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="r7u-yy-47J"/>
+                            <constraint firstItem="yiw-CN-vnc" firstAttribute="width" secondItem="Ze5-6b-2t3" secondAttribute="width" multiplier="0.65" priority="999" id="wm1-Wd-Pct"/>
+                            <constraint firstItem="yiw-CN-vnc" firstAttribute="width" relation="lessThanOrEqual" constant="520" id="wm2-Mx-Wdt"/>
+                            <constraint firstItem="yiw-CN-vnc" firstAttribute="width" secondItem="yiw-CN-vnc" secondAttribute="height" multiplier="5112:768" id="wm3-Asp-Rto"/>
                             <constraint firstItem="142-uQ-lyQ" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="rN9-Xk-8n7"/>
                         </constraints>
                     </view>
@@ -42,6 +45,6 @@
     </scenes>
     <resources>
         <image name="background" width="320" height="568"/>
-        <image name="radiospiral" width="179" height="108"/>
+        <image name="wordmark" width="1278" height="192"/>
     </resources>
 </document>

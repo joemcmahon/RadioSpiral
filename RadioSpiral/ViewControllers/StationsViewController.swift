@@ -197,7 +197,38 @@ class StationsViewController: BaseController, Handoffable {
         title = "RadioSpiral streams"
         // A large title can't wrap, so the test-server label goes on its own line above it
         navigationItem.prompt = StationServer.currentBannerLabel
+        updateLargeTitleFont()
         showNowPlayingIfOnlyStation()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateLargeTitleFont()   // the width changes on rotation and in iPad split view
+    }
+
+    /// Width the large title was last fitted to, so the bar appearance is only rebuilt on a change.
+    private var largeTitleFittedWidth: CGFloat = 0
+
+    /// Puts this screen's large title in the display font, sized to fit on one line. The bar's own
+    /// appearance is copied and only the large-title font is changed, and only on this screen's
+    /// navigation item, so every other screen keeps the system font.
+    private func updateLargeTitleFont() {
+        guard let title, !title.isEmpty, let bar = navigationController?.navigationBar else { return }
+        let width = (view.bounds.width - bar.layoutMargins.left - bar.layoutMargins.right).rounded(.down)
+        guard width > 0, width != largeTitleFittedWidth else { return }
+        largeTitleFittedWidth = width
+
+        let font = AppFont.largeTitle(title, fitting: width, compatibleWith: traitCollection)
+        func fitted(_ source: UINavigationBarAppearance) -> UINavigationBarAppearance {
+            let appearance = (source.copy() as? UINavigationBarAppearance) ?? source
+            var attributes = appearance.largeTitleTextAttributes
+            attributes[.font] = font
+            if attributes[.foregroundColor] == nil { attributes[.foregroundColor] = UIColor.white }
+            appearance.largeTitleTextAttributes = attributes
+            return appearance
+        }
+        navigationItem.standardAppearance = fitted(bar.standardAppearance)
+        navigationItem.scrollEdgeAppearance = fitted(bar.scrollEdgeAppearance ?? bar.standardAppearance)
     }
 
     /// With a single station there's nothing to choose, so go straight to Now Playing.
