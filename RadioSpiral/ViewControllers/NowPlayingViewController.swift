@@ -871,6 +871,14 @@ class NowPlayingViewController: UIViewController {
         Self.isFoldInnerDisplay(size, isPhone: traitCollection.userInterfaceIdiom == .phone)
     }
 
+    /// The layout numbers for a view of this size, chosen from the size classes (not the idiom);
+    /// the Duo's inner display keeps the phone values.
+    private func currentMetrics(for size: CGSize) -> NowPlayingMetrics {
+        NowPlayingMetrics(horizontal: traitCollection.horizontalSizeClass,
+                          vertical: traitCollection.verticalSizeClass,
+                          isFoldInner: isFoldInnerDisplay(size))
+    }
+
     private func layout(for size: CGSize) -> NowPlayingLayout {
         let fold = isFoldInnerDisplay(size)
         if size.width > size.height { return fold ? .foldWide : .landscape }
@@ -908,7 +916,7 @@ class NowPlayingViewController: UIViewController {
     /// iOS minimum in the Human Interface Guidelines). Runs from layout, but only when the text,
     /// the column width or the toolbar position changed since the last fit.
     private func fitLabelsToPanel() {
-        guard currentLayout == .landscape, traitCollection.userInterfaceIdiom == .phone,
+        guard currentLayout == .landscape, currentMetrics(for: view.bounds.size).fitsLabelsToPanel,
               baseLabelFonts.count == 3, landscapeRightPanel?.superview != nil else { return }
         let width = labelsStackView.bounds.width
         guard width > 0 else { return }
@@ -995,8 +1003,7 @@ class NowPlayingViewController: UIViewController {
             } else {
                 albumHeightConstraint.isActive = true
                 NSLayoutConstraint.activate(allPortraitConstraints)
-                let heightFraction: CGFloat = (traitCollection.userInterfaceIdiom == .pad) ? 0.55 : 0.40
-                let imageHeight = size.height * heightFraction
+                let imageHeight = size.height * currentMetrics(for: size).portraitAlbumHeightFraction
                 albumHeightConstraint.constant = imageHeight
                 albumMaxHeight?.constant = imageHeight
                 if Config.debugLog { print("[NowPlaying] Switched to portrait layout, albumHeight=\(imageHeight)") }
