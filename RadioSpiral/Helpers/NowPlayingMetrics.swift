@@ -6,8 +6,9 @@
 //  device idiom. Each value follows the axis whose room it needs:
 //
 //  - the 1.4x scale needs room on both axes, so both classes must be regular;
-//  - the portrait album height and the landscape side margin follow the width;
-//  - the landscape art width is 0.35 only with room on both axes (a large phone keeps 0.40);
+//  - the portrait album height follows the width;
+//  - the landscape art width (0.35) and side margin (40) need room on both axes; a large phone
+//    in landscape keeps the phone's 0.40 and 12;
 //  - the landscape art box (centered square or pinned) and the label fit follow the height.
 //
 //  A class that is `.unspecified` counts as neither regular nor compact. The Duo's inner display
@@ -69,7 +70,7 @@ struct NowPlayingMetrics: Equatable {
             portraitAlbumHeightFraction: wide ? 0.55 : 0.40,
             landscapeArtBoxCentered: tall,
             landscapeArtWidthFraction: wide && tall ? 0.35 : 0.40,
-            landscapeSideMarginBase: wide ? 40 : 12,
+            landscapeSideMarginBase: wide && tall ? 40 : 12,
             fitsLabelsToPanel: vertical == .compact
         )
     }
