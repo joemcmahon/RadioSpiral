@@ -72,18 +72,10 @@ class NowPlayingViewController: UIViewController {
     private var allPortraitConstraints: [NSLayoutConstraint] = []
     private var landscapeRightPanel: UIView?
 
-    /// Which arrangement the Now Playing screen is in.
-    private enum NowPlayingLayout {
-        case portrait
-        case landscape
-        /// iPhone Duo inner display, wider than tall (fully open or book): art and controls
-        /// sit in equal halves on either side of the vertical fold.
-        case foldWide
-        /// iPhone Duo inner display, taller than wide, partly open on a table ("laptop"):
-        /// art and labels above the horizontal fold, volume/controls/toolbar on the flat half below.
-        case foldLaptop
-    }
     private var currentLayout: NowPlayingLayout?
+    /// What the layout was last applied for. A change in any part, including the metrics alone
+    /// (a trait change at the same size), applies it again.
+    private var appliedKey: LayoutApplyKey?
     /// Size the current layout was applied for. Font scale and art height depend on size, so
     /// e.g. Duo fully-open upright -> closed upright (both .portrait) must still re-apply.
     private var currentLayoutSize: CGSize?
@@ -177,9 +169,16 @@ class NowPlayingViewController: UIViewController {
         _ = scaledFonts
 
         setupLandscapeConstraints()
-        // currentLayout starts nil, so the first pass always applies a layout.
+        // appliedKey starts nil, so the first pass always applies a layout.
         optimizeForDeviceSize(size: view.bounds.size)
-        
+        // A size class can change with the size staying the same (an iPad window crossing a
+        // class boundary at a size the layout already saw): apply the layout again, keyed on
+        // the metrics as well as the size.
+        registerForTraitChanges([UITraitHorizontalSizeClass.self, UITraitVerticalSizeClass.self]) {
+            (self: Self, _) in
+            self.optimizeForDeviceSize(size: self.view.bounds.size)
+        }
+
         // Create Now Playing BarItem
         createNowPlayingAnimation()
         
@@ -956,7 +955,9 @@ class NowPlayingViewController: UIViewController {
 
     func optimizeForDeviceSize(size: CGSize) {
         let newLayout = layout(for: size)
-        guard newLayout != currentLayout || size != currentLayoutSize else { return }
+        let key = LayoutApplyKey(layout: newLayout, size: size, metrics: currentMetrics(for: size))
+        guard key != appliedKey else { return }
+        appliedKey = key
         currentLayout = newLayout
         currentLayoutSize = size
 

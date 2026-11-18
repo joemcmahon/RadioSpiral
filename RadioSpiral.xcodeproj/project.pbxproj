@@ -112,6 +112,7 @@
 		A1C0DE01000000000000011D /* NowPlayingMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011C /* NowPlayingMetricsTests.swift */; };
 		A1C0DE01000000000000011F /* ScaledValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011E /* ScaledValues.swift */; };
 		A1C0DE010000000000000121 /* ScaledValuesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000120 /* ScaledValuesTests.swift */; };
+		A1C0DE010000000000000123 /* LayoutApplyKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000122 /* LayoutApplyKeyTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -237,6 +238,7 @@
 		A1C0DE01000000000000011C /* NowPlayingMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetricsTests.swift; sourceTree = "<group>"; };
 		A1C0DE01000000000000011E /* ScaledValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledValues.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000120 /* ScaledValuesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledValuesTests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000122 /* LayoutApplyKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutApplyKeyTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -346,6 +348,7 @@
 				A1C0DE010000000000000110 /* AppFontTests.swift */,
 				A1C0DE01000000000000011C /* NowPlayingMetricsTests.swift */,
 				A1C0DE010000000000000120 /* ScaledValuesTests.swift */,
+				A1C0DE010000000000000122 /* LayoutApplyKeyTests.swift */,
 				A1C0DE0100000000000000F2 /* LockScreenArtworkTests.swift */,
 				A1C0DE0100000000000000F6 /* ConfigClientBundledFallbackTests.swift */,
 				A1C0DE0100000000000000FE /* ChannelStatusMessagesTests.swift */,
@@ -730,6 +733,7 @@
 				A1C0DE010000000000000111 /* AppFontTests.swift in Sources */,
 				A1C0DE01000000000000011D /* NowPlayingMetricsTests.swift in Sources */,
 				A1C0DE010000000000000121 /* ScaledValuesTests.swift in Sources */,
+				A1C0DE010000000000000123 /* LayoutApplyKeyTests.swift in Sources */,
 				A1C0DE0100000000000000F3 /* LockScreenArtworkTests.swift in Sources */,
 				A1C0DE0100000000000000F7 /* ConfigClientBundledFallbackTests.swift in Sources */,
 				A1C0DE0100000000000000FF /* ChannelStatusMessagesTests.swift in Sources */,

@@ -73,3 +73,24 @@ struct NowPlayingMetrics: Equatable {
         )
     }
 }
+
+/// Which arrangement the Now Playing screen is in.
+enum NowPlayingLayout {
+    case portrait
+    case landscape
+    /// iPhone Duo inner display, wider than tall (fully open or book): art and controls
+    /// sit in equal halves on either side of the vertical fold.
+    case foldWide
+    /// iPhone Duo inner display, taller than wide, partly open on a table ("laptop"):
+    /// art and labels above the horizontal fold, volume/controls/toolbar on the flat half below.
+    case foldLaptop
+}
+
+/// What `optimizeForDeviceSize` last applied. Two keys are equal only when the layout, the size
+/// and the metrics all match, so a trait change that leaves the size alone (the metrics differ)
+/// still applies the layout again.
+struct LayoutApplyKey: Equatable {
+    let layout: NowPlayingLayout
+    let size: CGSize
+    let metrics: NowPlayingMetrics
+}
