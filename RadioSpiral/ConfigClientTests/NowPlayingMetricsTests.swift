@@ -62,12 +62,13 @@ final class NowPlayingMetricsTests: XCTestCase {
     }
 
     /// A large phone in landscape reports a regular width and a compact height: it takes the values
-    /// tied to the width (portrait album height, art width, margin) and keeps the phone's scale,
-    /// pinned art box and label fit.
+    /// tied to the width (portrait album height, margin) and keeps the phone's scale, pinned art
+    /// box, label fit and art width (Joe, 2026-11-18: the wider 0.40 art stays on large phones;
+    /// 0.35 is for windows that are regular in both directions).
     func testPlusMaxLandscapeTakesOnlyTheWidthValues() {
         let metrics = NowPlayingMetrics(horizontal: .regular, vertical: .compact, isFoldInner: false)
         assertMetrics(metrics, uiScale: 1.0, portraitAlbumHeightFraction: 0.55,
-                      landscapeArtBoxCentered: false, landscapeArtWidthFraction: 0.35,
+                      landscapeArtBoxCentered: false, landscapeArtWidthFraction: 0.40,
                       landscapeSideMarginBase: 40, fitsLabelsToPanel: true)
     }
 
