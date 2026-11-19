@@ -65,13 +65,8 @@
 		A1C0DE0100000000000000E5 /* StartFade.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E4 /* StartFade.swift */; };
 		A1C0DE0100000000000000E7 /* SecureURLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E6 /* SecureURLTests.swift */; };
 		A1C0DE0100000000000000E9 /* SecureURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000E8 /* SecureURL.swift */; };
-		A1C0DE010000000000000113 /* LaunchWordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000112 /* LaunchWordmark.swift */; };
-		A1C0DE010000000000000115 /* LaunchWordmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000114 /* LaunchWordmarkTests.swift */; };
-		A1C0DE010000000000000117 /* ViewControllerIdiomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */; };
 		A1C0DE0100000000000000EB /* FoldInnerDisplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */; };
 		A1C0DE0100000000000000ED /* NowPlayingLayoutUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EC /* NowPlayingLayoutUITests.swift */; };
-		A1C0DE010000000000000119 /* NowPlayingFrameBaselineUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */; };
-		A1C0DE010000000000000125 /* NowPlayingRotationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000124 /* NowPlayingRotationUITests.swift */; };
 		A1C0DE0100000000000000EF /* TitleFit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000EE /* TitleFit.swift */; };
 		A1C0DE0100000000000000F1 /* TitleFitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F0 /* TitleFitTests.swift */; };
 		A1C0DE0100000000000000F3 /* LockScreenArtworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0100000000000000F2 /* LockScreenArtworkTests.swift */; };
@@ -86,6 +81,21 @@
 		A1C0DE010000000000000105 /* NowPlayingClock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000104 /* NowPlayingClock.swift */; };
 		A1C0DE010000000000000107 /* NowPlayingClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000106 /* NowPlayingClockTests.swift */; };
 		A1C0DE010000000000000109 /* ParseLiveShowBackfillTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000108 /* ParseLiveShowBackfillTests.swift */; };
+		A1C0DE01000000000000010B /* Michroma-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000010A /* Michroma-Regular.ttf */; };
+		A1C0DE01000000000000010F /* AppFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000010E /* AppFont.swift */; };
+		A1C0DE010000000000000111 /* AppFontTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000110 /* AppFontTests.swift */; };
+		A1C0DE010000000000000113 /* LaunchWordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000112 /* LaunchWordmark.swift */; };
+		A1C0DE010000000000000115 /* LaunchWordmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000114 /* LaunchWordmarkTests.swift */; };
+		A1C0DE010000000000000117 /* ViewControllerIdiomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */; };
+		A1C0DE010000000000000119 /* NowPlayingFrameBaselineUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */; };
+		A1C0DE01000000000000011B /* NowPlayingMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011A /* NowPlayingMetrics.swift */; };
+		A1C0DE01000000000000011D /* NowPlayingMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011C /* NowPlayingMetricsTests.swift */; };
+		A1C0DE01000000000000011F /* ScaledValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011E /* ScaledValues.swift */; };
+		A1C0DE010000000000000121 /* ScaledValuesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000120 /* ScaledValuesTests.swift */; };
+		A1C0DE010000000000000123 /* LayoutApplyKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000122 /* LayoutApplyKeyTests.swift */; };
+		A1C0DE010000000000000125 /* NowPlayingRotationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000124 /* NowPlayingRotationUITests.swift */; };
+		A1C0DE010000000000000127 /* DemoLiveShow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000126 /* DemoLiveShow.swift */; };
+		A1C0DE010000000000000129 /* DemoLiveShowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000128 /* DemoLiveShowTests.swift */; };
 		A1C0DE0200000000000000A1 /* StationChangeMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0200000000000000A2 /* StationChangeMetadataTests.swift */; };
 		B6B0CEB08FFF4CC6A8931B5F /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
 		B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
@@ -106,16 +116,6 @@
 		CED6353B293081ED002B216F /* Handoffable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED6353A293081ED002B216F /* Handoffable.swift */; };
 		CEDABBED29121BBA00C0367F /* UIImage+Cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEDABBEC29121BBA00C0367F /* UIImage+Cache.swift */; };
 		CF72ACE721F7155200461EED /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CF72ACE621F714D000461EED /* Main.storyboard */; };
-		A1C0DE01000000000000010B /* Michroma-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000010A /* Michroma-Regular.ttf */; };
-		A1C0DE01000000000000010F /* AppFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000010E /* AppFont.swift */; };
-		A1C0DE010000000000000111 /* AppFontTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000110 /* AppFontTests.swift */; };
-		A1C0DE01000000000000011B /* NowPlayingMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011A /* NowPlayingMetrics.swift */; };
-		A1C0DE01000000000000011D /* NowPlayingMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011C /* NowPlayingMetricsTests.swift */; };
-		A1C0DE01000000000000011F /* ScaledValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011E /* ScaledValues.swift */; };
-		A1C0DE010000000000000121 /* ScaledValuesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000120 /* ScaledValuesTests.swift */; };
-		A1C0DE010000000000000123 /* LayoutApplyKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000122 /* LayoutApplyKeyTests.swift */; };
-		A1C0DE010000000000000127 /* DemoLiveShow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000126 /* DemoLiveShow.swift */; };
-		A1C0DE010000000000000129 /* DemoLiveShowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000128 /* DemoLiveShowTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -194,13 +194,8 @@
 		A1C0DE0100000000000000E4 /* StartFade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartFade.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000E6 /* SecureURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureURLTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000E8 /* SecureURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureURL.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000112 /* LaunchWordmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchWordmark.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000114 /* LaunchWordmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchWordmarkTests.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerIdiomTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoldInnerDisplayTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000EC /* NowPlayingLayoutUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingLayoutUITests.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingFrameBaselineUITests.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000124 /* NowPlayingRotationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingRotationUITests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000EE /* TitleFit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleFit.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000F0 /* TitleFitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleFitTests.swift; sourceTree = "<group>"; };
 		A1C0DE0100000000000000F2 /* LockScreenArtworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenArtworkTests.swift; sourceTree = "<group>"; };
@@ -215,6 +210,22 @@
 		A1C0DE010000000000000104 /* NowPlayingClock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingClock.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000106 /* NowPlayingClockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingClockTests.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000108 /* ParseLiveShowBackfillTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseLiveShowBackfillTests.swift; sourceTree = "<group>"; };
+		A1C0DE01000000000000010A /* Michroma-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Michroma-Regular.ttf"; sourceTree = "<group>"; };
+		A1C0DE01000000000000010C /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
+		A1C0DE01000000000000010E /* AppFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFont.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000110 /* AppFontTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFontTests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000112 /* LaunchWordmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchWordmark.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000114 /* LaunchWordmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchWordmarkTests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerIdiomTests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingFrameBaselineUITests.swift; sourceTree = "<group>"; };
+		A1C0DE01000000000000011A /* NowPlayingMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetrics.swift; sourceTree = "<group>"; };
+		A1C0DE01000000000000011C /* NowPlayingMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetricsTests.swift; sourceTree = "<group>"; };
+		A1C0DE01000000000000011E /* ScaledValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledValues.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000120 /* ScaledValuesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledValuesTests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000122 /* LayoutApplyKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutApplyKeyTests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000124 /* NowPlayingRotationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingRotationUITests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000126 /* DemoLiveShow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoLiveShow.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000128 /* DemoLiveShowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoLiveShowTests.swift; sourceTree = "<group>"; };
 		A1C0DE0200000000000000A2 /* StationChangeMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationChangeMetadataTests.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsClient.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B61 /* test-credits.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-credits.json"; sourceTree = "<group>"; };
@@ -234,17 +245,6 @@
 		CEDABBEC29121BBA00C0367F /* UIImage+Cache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Cache.swift"; sourceTree = "<group>"; };
 		CF72ACE621F714D000461EED /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		FEB1F0A11DE24DA9A9641A24 /* InterruptionPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterruptionPreference.swift; sourceTree = "<group>"; };
-		A1C0DE01000000000000010A /* Michroma-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Michroma-Regular.ttf"; sourceTree = "<group>"; };
-		A1C0DE01000000000000010C /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
-		A1C0DE01000000000000010E /* AppFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFont.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000110 /* AppFontTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFontTests.swift; sourceTree = "<group>"; };
-		A1C0DE01000000000000011A /* NowPlayingMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetrics.swift; sourceTree = "<group>"; };
-		A1C0DE01000000000000011C /* NowPlayingMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetricsTests.swift; sourceTree = "<group>"; };
-		A1C0DE01000000000000011E /* ScaledValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledValues.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000120 /* ScaledValuesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledValuesTests.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000122 /* LayoutApplyKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutApplyKeyTests.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000126 /* DemoLiveShow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoLiveShow.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000128 /* DemoLiveShowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoLiveShowTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -428,6 +428,15 @@
 			path = RadioSpiral;
 			sourceTree = "<group>";
 		};
+		A1C0DE01000000000000010D /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				A1C0DE01000000000000010A /* Michroma-Regular.ttf */,
+				A1C0DE01000000000000010C /* OFL.txt */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
 		CE0A4993291F39660071C0CC /* CarPlay */ = {
 			isa = PBXGroup;
 			children = (
@@ -517,15 +526,6 @@
 				CE321FF229371140001572BD /* Bundle+appName.swift */,
 			);
 			path = Helpers;
-			sourceTree = "<group>";
-		};
-		A1C0DE01000000000000010D /* Fonts */ = {
-			isa = PBXGroup;
-			children = (
-				A1C0DE01000000000000010A /* Michroma-Regular.ttf */,
-				A1C0DE01000000000000010C /* OFL.txt */,
-			);
-			path = Fonts;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1069,7 +1069,7 @@
 				CODE_SIGN_ENTITLEMENTS = RadioSpiral/RadioSpiral.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 80;
+				CURRENT_PROJECT_VERSION = 81;
 				DEFINES_MODULE = YES;
 				ENABLE_MODULE_VERIFIER = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1084,7 +1084,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.3.4;
+				MARKETING_VERSION = 3.4;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu99 gnu++11";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pemungkah.radiospiral;
@@ -1105,7 +1105,7 @@
 				CODE_SIGN_ENTITLEMENTS = RadioSpiral/RadioSpiral.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 80;
+				CURRENT_PROJECT_VERSION = 81;
 				DEFINES_MODULE = YES;
 				ENABLE_MODULE_VERIFIER = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1120,7 +1120,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.3.4;
+				MARKETING_VERSION = 3.4;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu99 gnu++11";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pemungkah.radiospiral;
