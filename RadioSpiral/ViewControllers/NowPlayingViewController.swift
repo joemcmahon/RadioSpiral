@@ -589,7 +589,8 @@ class NowPlayingViewController: UIViewController {
     func setupLandscapeConstraints() {
         let safeArea = view.safeAreaLayoutGuide
 
-        // Container for right-side controls — vertically centered on iPad
+        // Container for right-side controls: the layouts that use it (landscape, centered, foldWide)
+        // each constrain its vertical position below
         let rightPanel = UIView()
         rightPanel.translatesAutoresizingMaskIntoConstraints = false
         landscapeRightPanel = rightPanel
