@@ -85,6 +85,8 @@ final class AboutCreditsFitTests: XCTestCase {
 
         XCTAssertEqual(try shownAttributions(in: about).count, 2, "both copies are shown")
 
+        // The credits hold still for a moment when they appear (AboutCreditsStartDelayTests).
+        RunLoop.main.run(until: Date().addingTimeInterval(AboutViewController.startDelay + 0.3))
         scroll.contentOffset.y = 0
         about.scrollCredits()
         XCTAssertGreaterThan(scroll.contentOffset.y, 0, "credits that overflow scroll")

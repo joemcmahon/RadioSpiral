@@ -91,6 +91,7 @@
 		A1C0DE01000000000000012F /* NowPlayingSideInsetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000012E /* NowPlayingSideInsetTests.swift */; };
 		A1C0DE010000000000000131 /* NowPlayingViewDirectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000130 /* NowPlayingViewDirectionTests.swift */; };
 		A1C0DE010000000000000133 /* AboutCreditsFitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000132 /* AboutCreditsFitTests.swift */; };
+		A1C0DE010000000000000135 /* AboutCreditsStartDelayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000134 /* AboutCreditsStartDelayTests.swift */; };
 		A1C0DE010000000000000117 /* ViewControllerIdiomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */; };
 		A1C0DE010000000000000119 /* NowPlayingFrameBaselineUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */; };
 		A1C0DE01000000000000011B /* NowPlayingMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011A /* NowPlayingMetrics.swift */; };
@@ -226,6 +227,7 @@
 		A1C0DE01000000000000012E /* NowPlayingSideInsetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingSideInsetTests.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000130 /* NowPlayingViewDirectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingViewDirectionTests.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000132 /* AboutCreditsFitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutCreditsFitTests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000134 /* AboutCreditsStartDelayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutCreditsStartDelayTests.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerIdiomTests.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingFrameBaselineUITests.swift; sourceTree = "<group>"; };
 		A1C0DE01000000000000011A /* NowPlayingMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetrics.swift; sourceTree = "<group>"; };
@@ -365,6 +367,7 @@
 				A1C0DE01000000000000012E /* NowPlayingSideInsetTests.swift */,
 				A1C0DE010000000000000130 /* NowPlayingViewDirectionTests.swift */,
 				A1C0DE010000000000000132 /* AboutCreditsFitTests.swift */,
+				A1C0DE010000000000000134 /* AboutCreditsStartDelayTests.swift */,
 				A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */,
 				A1C0DE0100000000000000F0 /* TitleFitTests.swift */,
 				A1C0DE010000000000000110 /* AppFontTests.swift */,
@@ -758,6 +761,7 @@
 				A1C0DE01000000000000012F /* NowPlayingSideInsetTests.swift in Sources */,
 				A1C0DE010000000000000131 /* NowPlayingViewDirectionTests.swift in Sources */,
 				A1C0DE010000000000000133 /* AboutCreditsFitTests.swift in Sources */,
+				A1C0DE010000000000000135 /* AboutCreditsStartDelayTests.swift in Sources */,
 				A1C0DE0100000000000000EB /* FoldInnerDisplayTests.swift in Sources */,
 				A1C0DE0100000000000000F1 /* TitleFitTests.swift in Sources */,
 				A1C0DE010000000000000111 /* AppFontTests.swift in Sources */,

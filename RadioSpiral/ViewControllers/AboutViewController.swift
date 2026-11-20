@@ -36,6 +36,10 @@ class AboutViewController: UIViewController {
     private var displayLink: CADisplayLink?
     private var isScrollPaused = false
     private static let scrollSpeed: CGFloat = 0.3 // points per frame (~18pt/sec at 60fps)
+    /// Seconds the credits hold still after they appear, so the first credit can be read.
+    static let startDelay: TimeInterval = 2
+    /// The credits do not roll before this time (`CACurrentMediaTime`); set whenever they are back at the top.
+    private var scrollStartTime: CFTimeInterval = 0
 
     // Constraints that change between portrait/landscape
     private var okLeadingToSafeArea: NSLayoutConstraint!
@@ -75,6 +79,7 @@ class AboutViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         isScrollPaused = ProcessInfo.processInfo.arguments.contains("-FASTLANE_SNAPSHOT")
+        holdCreditsAtTheTop()
         startDisplayLink()
     }
 
@@ -152,6 +157,7 @@ class AboutViewController: UIViewController {
         websiteButton.removeFromSuperview()
         emailButton.removeFromSuperview()
         buildBody()
+        holdCreditsAtTheTop()
         if view.window != nil { startDisplayLink() }
     }
 
@@ -388,8 +394,14 @@ class AboutViewController: UIViewController {
     }
 
     // Internal (not private) so tests can step the credits without waiting on the display link.
+    /// Give the first credit a moment at the top before the credits start to roll.
+    private func holdCreditsAtTheTop() {
+        scrollStartTime = CACurrentMediaTime() + Self.startDelay
+    }
+
     @objc func scrollCredits() {
-        guard !isScrollPaused, let scrollView = creditsScrollView, !creditsFit(in: scrollView) else { return }
+        guard !isScrollPaused, CACurrentMediaTime() >= scrollStartTime,
+              let scrollView = creditsScrollView, !creditsFit(in: scrollView) else { return }
         let loopLength = creditsLoopLength
         guard loopLength > 0 else { return }
 
