@@ -239,4 +239,20 @@ final class AboutScreenHeaderTests: XCTestCase {
                           "\(layout.name): tapping the credits pauses them")
         }
     }
+
+    /// The credits are shown twice for a seamless loop, and the loop jumps back by `creditsLoopLength`
+    /// when it wraps. That is only invisible if the jump equals the distance between the two copies;
+    /// the attribution ends each copy, so the distance between the two attributions is that distance.
+    func testTheLoopWrapsByExactlyTheDistanceBetweenTheTwoCopies() throws {
+        for layout in layouts {
+            let about = try makeAbout(size: layout.size, compact: layout.compact)
+
+            let both = attributions(in: about.view)
+            XCTAssertEqual(both.count, 2, "\(layout.name): one attribution per copy")
+            let scroll = try XCTUnwrap(scrollViews(in: about.view).first { both.first?.isDescendant(of: $0) == true })
+            let tops = both.map { $0.convert($0.bounds, to: scroll).minY }.sorted()
+            XCTAssertEqual(about.creditsLoopLength, tops[1] - tops[0], accuracy: 0.5,
+                           "\(layout.name): wrapping must not jump the credits")
+        }
+    }
 }

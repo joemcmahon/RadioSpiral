@@ -27,6 +27,8 @@ class AboutViewController: UIViewController {
 
     // Rolling credits state
     private var creditsScrollView: UIScrollView?
+    /// First view of the second copy of the credits; where the loop wraps to.
+    private weak var secondCopyStart: UIView?
     private var displayLink: CADisplayLink?
     private var isScrollPaused = false
     private static let scrollSpeed: CGFloat = 0.3 // points per frame (~18pt/sec at 60fps)
@@ -297,7 +299,9 @@ class AboutViewController: UIViewController {
         spacer.heightAnchor.constraint(equalToConstant: 24).isActive = true
         stack.addArrangedSubview(spacer)
         // Second copy (for seamless loop)
+        let secondCopyIndex = stack.arrangedSubviews.count
         addSequence()
+        secondCopyStart = stack.arrangedSubviews[secondCopyIndex]
 
         scrollView.addSubview(stack)
 
@@ -341,18 +345,25 @@ class AboutViewController: UIViewController {
         displayLink = nil
     }
 
+    /// How far the credits scroll before the loop wraps back to the top: the distance to where the
+    /// second copy starts, so the jump back is invisible. (Half the content height is not that
+    /// distance: the spacer and its two gaps sit between the copies, not inside either.) Zero until
+    /// the screen has been laid out. Internal so a test can read it.
+    var creditsLoopLength: CGFloat {
+        guard let scrollView = creditsScrollView, let start = secondCopyStart else { return 0 }
+        return scrollView.convert(start.bounds, from: start).minY
+    }
+
     @objc private func scrollCredits() {
         guard !isScrollPaused, let scrollView = creditsScrollView else { return }
-        let contentHeight = scrollView.contentSize.height
-        guard contentHeight > 0 else { return }
+        let loopLength = creditsLoopLength
+        guard loopLength > 0 else { return }
 
-        // Midpoint is where the second copy starts (half of total content)
-        let midpoint = contentHeight / 2.0
         var offset = scrollView.contentOffset.y + Self.scrollSpeed
 
         // When we've scrolled past the first copy, jump back seamlessly
-        if offset >= midpoint {
-            offset -= midpoint
+        if offset >= loopLength {
+            offset -= loopLength
         }
 
         scrollView.contentOffset.y = offset
