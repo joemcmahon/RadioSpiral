@@ -38,6 +38,13 @@ class AboutViewController: UIViewController {
     private static let scrollSpeed: CGFloat = 0.3 // points per frame (~18pt/sec at 60fps)
     /// Seconds the credits hold still after they appear, so the first credit can be read.
     static let startDelay: TimeInterval = 2
+    /// The controls around the credits (buttons, server selector, build label) stop growing with
+    /// the text size here, so the credits keep room. The credits' own text keeps growing.
+    private static let controlsLargestTextSize = UIContentSizeCategory.accessibilityMedium
+    /// Lines of credit text the portrait credits area always has room for.
+    private static let creditsMinimumLines: CGFloat = 4
+    /// Portrait only: keeps the credits area at least `creditsMinimumLines` tall at the current text size.
+    private var creditsMinimumHeight: NSLayoutConstraint?
     /// Space between the end of one pass of the credits and the start of the next (plus the stack's
     /// 12 pt on each side), so the listener can see a new pass beginning.
     private static let loopSpacerHeight: CGFloat = 48
@@ -53,13 +60,17 @@ class AboutViewController: UIViewController {
         var config = UIButton.Configuration.tinted()
         config.title = "Visit our website"
         config.baseForegroundColor = .white
-        return UIButton(configuration: config)
+        let button = UIButton(configuration: config)
+        button.maximumContentSizeCategory = AboutViewController.controlsLargestTextSize
+        return button
     }()
     private let emailButton: UIButton = {
         var config = UIButton.Configuration.tinted()
         config.title = "Email us"
         config.baseForegroundColor = .white
-        return UIButton(configuration: config)
+        let button = UIButton(configuration: config)
+        button.maximumContentSizeCategory = AboutViewController.controlsLargestTextSize
+        return button
     }()
 
     // MARK: - Lifecycle
@@ -154,6 +165,7 @@ class AboutViewController: UIViewController {
     func rebuildBody() {
         stopDisplayLink()
         creditsScrollView = nil
+        creditsMinimumHeight = nil
         bodyContainer?.removeFromSuperview()
         bodyContainer = nil
         // Detach buttons from old parent so they can be re-added
@@ -194,7 +206,14 @@ class AboutViewController: UIViewController {
         ])
 
         stack.addArrangedSubview(makeHeader())
-        stack.addArrangedSubview(makeRollingCredits())
+        let credits = makeRollingCredits()
+        stack.addArrangedSubview(credits)
+        // Just under required: in a window too small for everything, the controls give way, not this.
+        let minimumHeight = credits.heightAnchor.constraint(greaterThanOrEqualToConstant: 0)
+        minimumHeight.priority = UILayoutPriority(999)
+        minimumHeight.isActive = true
+        creditsMinimumHeight = minimumHeight
+        updateCreditsMinimumHeight()
         stack.addArrangedSubview(websiteButton)
         stack.addArrangedSubview(emailButton)
         if let selector = makeServerSelector() { stack.addArrangedSubview(selector) }
@@ -382,8 +401,17 @@ class AboutViewController: UIViewController {
         if fits && scrollView.contentOffset.y != 0 { scrollView.contentOffset.y = 0 }
     }
 
+    /// Four lines of credit text plus the gaps between them, at the current text size.
+    private func updateCreditsMinimumHeight() {
+        guard let constraint = creditsMinimumHeight else { return }
+        let line = UIFont.preferredFont(forTextStyle: .caption1, compatibleWith: traitCollection).lineHeight
+        let height = ceil(Self.creditsMinimumLines * line + (Self.creditsMinimumLines - 1) * 12)
+        if constraint.constant != height { constraint.constant = height }
+    }
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        updateCreditsMinimumHeight()
         updateLoopCopy()
     }
 
@@ -448,6 +476,7 @@ class AboutViewController: UIViewController {
         label.textAlignment = .center
         label.numberOfLines = 0
         label.accessibilityIdentifier = "buildInfoLabel"
+        label.maximumContentSizeCategory = Self.controlsLargestTextSize
         return label
     }
 
@@ -472,6 +501,7 @@ class AboutViewController: UIViewController {
         let stack = UIStackView(arrangedSubviews: [label, control])
         stack.axis = .vertical
         stack.spacing = 4
+        stack.maximumContentSizeCategory = Self.controlsLargestTextSize
         return stack
     }
 
