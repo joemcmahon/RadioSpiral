@@ -173,8 +173,9 @@ class NowPlayingViewController: UIViewController {
         optimizeForDeviceSize(size: view.bounds.size)
         // A size class can change with the size staying the same (an iPad window crossing a
         // class boundary at a size the layout already saw): apply the layout again, keyed on
-        // the metrics as well as the size.
-        registerForTraitChanges([UITraitHorizontalSizeClass.self, UITraitVerticalSizeClass.self]) {
+        // the metrics as well as the size. The idiom is read too (the Duo check), so it counts.
+        registerForTraitChanges([UITraitHorizontalSizeClass.self, UITraitVerticalSizeClass.self,
+                                 UITraitUserInterfaceIdiom.self]) {
             (self: Self, _) in
             self.optimizeForDeviceSize(size: self.view.bounds.size)
         }

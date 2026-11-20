@@ -86,6 +86,7 @@
 		A1C0DE010000000000000111 /* AppFontTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000110 /* AppFontTests.swift */; };
 		A1C0DE010000000000000113 /* LaunchWordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000112 /* LaunchWordmark.swift */; };
 		A1C0DE010000000000000115 /* LaunchWordmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000114 /* LaunchWordmarkTests.swift */; };
+		A1C0DE01000000000000012B /* NowPlayingIdiomRefreshTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000012A /* NowPlayingIdiomRefreshTests.swift */; };
 		A1C0DE010000000000000117 /* ViewControllerIdiomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */; };
 		A1C0DE010000000000000119 /* NowPlayingFrameBaselineUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */; };
 		A1C0DE01000000000000011B /* NowPlayingMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011A /* NowPlayingMetrics.swift */; };
@@ -216,6 +217,7 @@
 		A1C0DE010000000000000110 /* AppFontTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFontTests.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000112 /* LaunchWordmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchWordmark.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000114 /* LaunchWordmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchWordmarkTests.swift; sourceTree = "<group>"; };
+		A1C0DE01000000000000012A /* NowPlayingIdiomRefreshTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingIdiomRefreshTests.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerIdiomTests.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingFrameBaselineUITests.swift; sourceTree = "<group>"; };
 		A1C0DE01000000000000011A /* NowPlayingMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetrics.swift; sourceTree = "<group>"; };
@@ -350,6 +352,7 @@
 				A1C0DE0100000000000000E6 /* SecureURLTests.swift */,
 				A1C0DE010000000000000114 /* LaunchWordmarkTests.swift */,
 				A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */,
+				A1C0DE01000000000000012A /* NowPlayingIdiomRefreshTests.swift */,
 				A1C0DE0100000000000000EA /* FoldInnerDisplayTests.swift */,
 				A1C0DE0100000000000000F0 /* TitleFitTests.swift */,
 				A1C0DE010000000000000110 /* AppFontTests.swift */,
@@ -738,6 +741,7 @@
 				A1C0DE0100000000000000E7 /* SecureURLTests.swift in Sources */,
 				A1C0DE010000000000000115 /* LaunchWordmarkTests.swift in Sources */,
 				A1C0DE010000000000000117 /* ViewControllerIdiomTests.swift in Sources */,
+				A1C0DE01000000000000012B /* NowPlayingIdiomRefreshTests.swift in Sources */,
 				A1C0DE0100000000000000EB /* FoldInnerDisplayTests.swift in Sources */,
 				A1C0DE0100000000000000F1 /* TitleFitTests.swift in Sources */,
 				A1C0DE010000000000000111 /* AppFontTests.swift in Sources */,
