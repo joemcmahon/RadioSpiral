@@ -217,10 +217,21 @@ final class AboutScreenHeaderTests: XCTestCase {
         XCTAssertLessThanOrEqual(width, LaunchWordmark.maximumWidth + 0.5)
     }
 
+    /// A credit line: a label inside a scroll view that reads "role: name".
+    private func creditLabel(in root: UIView) -> UILabel? {
+        labels(in: root).first { $0.text?.contains(": ") == true && isInsideAScrollView($0, in: root) }
+    }
+
     func testCreditsStillHaveRoomAtTheLargestTextSizeInLandscape() throws {
+        let normal = try makeAbout(size: landscapeSize, compact: true)
+        let normalSize = try XCTUnwrap(creditLabel(in: normal.view)).font.pointSize
+
         let about = try makeAbout(size: landscapeSize, compact: true,
                                   category: .accessibilityExtraExtraExtraLarge)
 
+        // Harness check: the text really is larger, or the rest proves nothing.
+        let credit = try XCTUnwrap(creditLabel(in: about.view))
+        XCTAssertGreaterThan(credit.font.pointSize, normalSize, "harness: the largest text size reaches the credits")
         let attribution = try XCTUnwrap(attributionLabel(in: about.view))
         let scroll = try XCTUnwrap(scrollViews(in: about.view).first { attribution.isDescendant(of: $0) })
         XCTAssertGreaterThan(frameInWindow(scroll).height, 0)

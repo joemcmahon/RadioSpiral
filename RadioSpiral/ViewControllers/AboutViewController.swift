@@ -325,6 +325,7 @@ class AboutViewController: UIViewController {
         let label = UILabel()
         label.text = "\(credit.role): \(credit.name)"
         label.font = UIFont.preferredFont(forTextStyle: .caption1)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = .white
         label.textAlignment = .center
         label.numberOfLines = 0
@@ -377,6 +378,7 @@ class AboutViewController: UIViewController {
         let label = UILabel()
         label.text = "Based on Swift Radio Pro\nby Matthew Fecher & Fethi El Hassasna"
         label.font = UIFont.preferredFont(forTextStyle: .caption1)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = .white
         label.textAlignment = .center
         label.numberOfLines = 0
@@ -389,6 +391,7 @@ class AboutViewController: UIViewController {
         let label = UILabel()
         label.text = BuildInfo.aboutText
         label.font = UIFont.preferredFont(forTextStyle: .caption2)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = .white
         label.textAlignment = .center
         label.numberOfLines = 0
@@ -404,6 +407,7 @@ class AboutViewController: UIViewController {
         let label = UILabel()
         label.text = "Station server (testers only)"
         label.font = UIFont.preferredFont(forTextStyle: .caption1)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = .white
         label.textAlignment = .center
 
