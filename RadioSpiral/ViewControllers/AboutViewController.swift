@@ -264,9 +264,10 @@ class AboutViewController: UIViewController {
             wordmark.widthAnchor.constraint(lessThanOrEqualToConstant: LaunchWordmark.maximumWidth),
             wordmark.widthAnchor.constraint(equalTo: wordmark.heightAnchor, multiplier: size.width / size.height),
         ])
-        // The header keeps its own height; the credits take what is left.
-        container.setContentHuggingPriority(.required, for: .vertical)
-        container.setContentCompressionResistancePriority(.required, for: .vertical)
+        // The container has no intrinsic size, so hugging and compression priorities would do
+        // nothing here. Its height comes from the wordmark pinned top and bottom: the wordmark's
+        // width follows the space (up to the cap) and its height follows from the artwork's shape.
+        // The credits take whatever is left.
         return container
     }
 
