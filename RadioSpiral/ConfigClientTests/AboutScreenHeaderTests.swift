@@ -254,8 +254,12 @@ final class AboutScreenHeaderTests: XCTestCase {
     /// The credits are shown twice for a seamless loop, and the loop jumps back by `creditsLoopLength`
     /// when it wraps. That is only invisible if the jump equals the distance between the two copies;
     /// the attribution ends each copy, so the distance between the two attributions is that distance.
+    /// Only layouts where the credits overflow loop; a tall portrait window shows them once, still
+    /// (see AboutCreditsFitTests), so this uses a short portrait window.
     func testTheLoopWrapsByExactlyTheDistanceBetweenTheTwoCopies() throws {
-        for layout in layouts {
+        let looping: [(name: String, size: CGSize, compact: Bool)] =
+            [("short portrait", CGSize(width: 402, height: 560), false), ("landscape", landscapeSize, true)]
+        for layout in looping {
             let about = try makeAbout(size: layout.size, compact: layout.compact)
 
             let both = attributions(in: about.view)

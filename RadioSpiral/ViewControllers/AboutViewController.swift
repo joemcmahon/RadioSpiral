@@ -29,6 +29,10 @@ class AboutViewController: UIViewController {
     private var creditsScrollView: UIScrollView?
     /// First view of the second copy of the credits; where the loop wraps to.
     private weak var secondCopyStart: UIView?
+    /// Last view of the first copy (the attribution): where one full copy of the credits ends.
+    private weak var firstCopyEnd: UIView?
+    /// The spacer and the second copy: only needed for the loop, hidden when the credits fit.
+    private var loopOnlyViews: [UIView] = []
     private var displayLink: CADisplayLink?
     private var isScrollPaused = false
     private static let scrollSpeed: CGFloat = 0.3 // points per frame (~18pt/sec at 60fps)
@@ -293,6 +297,7 @@ class AboutViewController: UIViewController {
 
         // First copy
         addSequence()
+        firstCopyEnd = stack.arrangedSubviews.last
         // Spacer between copies
         let spacer = UIView()
         spacer.translatesAutoresizingMaskIntoConstraints = false
@@ -302,6 +307,7 @@ class AboutViewController: UIViewController {
         let secondCopyIndex = stack.arrangedSubviews.count
         addSequence()
         secondCopyStart = stack.arrangedSubviews[secondCopyIndex]
+        loopOnlyViews = Array(stack.arrangedSubviews[(secondCopyIndex - 1)...])
 
         scrollView.addSubview(stack)
 
@@ -346,6 +352,31 @@ class AboutViewController: UIViewController {
         displayLink = nil
     }
 
+    /// Whether one full copy of the credits (through the attribution) fits in the scroll view. Read
+    /// from the first copy alone, so hiding the loop's second copy cannot change the answer.
+    /// False until the screen has been laid out.
+    private func creditsFit(in scrollView: UIScrollView) -> Bool {
+        guard let end = firstCopyEnd, scrollView.bounds.height > 0 else { return false }
+        return scrollView.convert(end.bounds, from: end).maxY <= scrollView.bounds.height
+    }
+
+    /// The loop needs a second copy to wrap without a seam. When everything already fits (a tall
+    /// iPad window), a second copy would show the credits twice and there is nothing to scroll, so
+    /// hide it and hold the credits at the top.
+    private func updateLoopCopy() {
+        guard let scrollView = creditsScrollView else { return }
+        // The credits' own layout can lag this callback by a pass; measure the settled positions.
+        scrollView.layoutIfNeeded()
+        let fits = creditsFit(in: scrollView)
+        for view in loopOnlyViews where view.isHidden != fits { view.isHidden = fits }
+        if fits && scrollView.contentOffset.y != 0 { scrollView.contentOffset.y = 0 }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateLoopCopy()
+    }
+
     /// How far the credits scroll before the loop wraps back to the top: the distance to where the
     /// second copy starts, so the jump back is invisible. (Half the content height is not that
     /// distance: the spacer and its two gaps sit between the copies, not inside either.) Zero until
@@ -355,8 +386,9 @@ class AboutViewController: UIViewController {
         return scrollView.convert(start.bounds, from: start).minY
     }
 
-    @objc private func scrollCredits() {
-        guard !isScrollPaused, let scrollView = creditsScrollView else { return }
+    // Internal (not private) so tests can step the credits without waiting on the display link.
+    @objc func scrollCredits() {
+        guard !isScrollPaused, let scrollView = creditsScrollView, !creditsFit(in: scrollView) else { return }
         let loopLength = creditsLoopLength
         guard loopLength > 0 else { return }
 
