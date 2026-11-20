@@ -38,6 +38,9 @@ class AboutViewController: UIViewController {
     private static let scrollSpeed: CGFloat = 0.3 // points per frame (~18pt/sec at 60fps)
     /// Seconds the credits hold still after they appear, so the first credit can be read.
     static let startDelay: TimeInterval = 2
+    /// Space between the end of one pass of the credits and the start of the next (plus the stack's
+    /// 12 pt on each side), so the listener can see a new pass beginning.
+    private static let loopSpacerHeight: CGFloat = 48
     /// The credits do not roll before this time (`CACurrentMediaTime`); set whenever they are back at the top.
     private var scrollStartTime: CFTimeInterval = 0
 
@@ -308,7 +311,7 @@ class AboutViewController: UIViewController {
         // Spacer between copies
         let spacer = UIView()
         spacer.translatesAutoresizingMaskIntoConstraints = false
-        spacer.heightAnchor.constraint(equalToConstant: 24).isActive = true
+        spacer.heightAnchor.constraint(equalToConstant: Self.loopSpacerHeight).isActive = true
         stack.addArrangedSubview(spacer)
         // Second copy (for seamless loop)
         let secondCopyIndex = stack.arrangedSubviews.count
