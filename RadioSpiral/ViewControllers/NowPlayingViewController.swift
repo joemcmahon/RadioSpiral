@@ -14,6 +14,8 @@ import Spring
 import Kingfisher
 
 protocol NowPlayingViewControllerDelegate: AnyObject {
+    // The info (About) screen no longer shows station content, so its only implementer
+    // (MainCoordinator) ignores `station`. The parameter stays so this signature does not change.
     func didTapInfoButton(_ nowPlayingViewController: NowPlayingViewController, station: RadioStation?)
     func didTapShareButton(_ nowPlayingViewController: NowPlayingViewController, station: RadioStation, artworkURL: URL?)
 }

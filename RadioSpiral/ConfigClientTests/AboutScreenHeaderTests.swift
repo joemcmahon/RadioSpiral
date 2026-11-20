@@ -18,9 +18,23 @@ final class AboutScreenHeaderTests: XCTestCase {
 
     private var window: UIWindow!
 
+    override class func setUp() {
+        super.setUp()
+        // The host app's launch fetch can land mid-test, and the stations manager then clears a
+        // current station that is not in the fetched list. No signal says the fetch is done: a
+        // list means it succeeded; offline there is never one, so stop after its 10 second
+        // request timeout. The extra second lets the app open a single station.
+        let deadline = Date().addingTimeInterval(12)
+        while StationsManager.shared.stations.isEmpty && Date() < deadline {
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        }
+        RunLoop.main.run(until: Date().addingTimeInterval(1))
+    }
+
     override func tearDown() {
         window?.isHidden = true
         window = nil
+        StationsManager.shared.set(station: nil)
         super.tearDown()
     }
 
@@ -36,11 +50,10 @@ final class AboutScreenHeaderTests: XCTestCase {
     /// before the view loads, because the screen builds its body in `viewDidLoad` and picks the
     /// layout from that class. The helper then checks which layout it actually got, and fails
     /// itself (not a test expectation) if that is not the one asked for.
-    private func makeAbout(size: CGSize, compact: Bool, station: RadioStation? = nil,
+    private func makeAbout(size: CGSize, compact: Bool,
                            category: UIContentSizeCategory? = nil) throws -> AboutViewController {
         try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .phone, "Run on an iPhone simulator")
         let controller = AboutViewController()
-        controller.currentStation = station
         if compact { controller.traitOverrides.verticalSizeClass = .compact }
         if let category { controller.traitOverrides.preferredContentSizeCategory = category }
         window = UIWindow(frame: CGRect(origin: .zero, size: size))
@@ -112,16 +125,37 @@ final class AboutScreenHeaderTests: XCTestCase {
 
     func testPortraitAndLandscapeShowOneWordmarkAndNoStationText() throws {
         for layout in layouts {
-            let about = try makeAbout(size: layout.size, compact: layout.compact, station: pulse)
+            let about = try makeAbout(size: layout.size, compact: layout.compact)
 
             let marks = wordmarks(in: about.view)
             XCTAssertEqual(marks.count, 1, "\(layout.name): one wordmark")
-            XCTAssertFalse(labels(in: about.view).contains { $0.text == "Pulse Test" },
-                           "\(layout.name): no station name")
+            XCTAssertTrue(marks.first?.superview.map { labels(in: $0).isEmpty } ?? false,
+                          "\(layout.name): the header is the image alone")
             XCTAssertFalse(labels(in: about.view).contains { $0.text?.hasPrefix("RadioSpiral: 24/7") == true },
                            "\(layout.name): no generic blurb")
-            XCTAssertFalse(labels(in: about.view).contains { $0.text == "A long blurb for Pulse." },
+        }
+    }
+
+    /// The original bug. About no longer receives a station, so this goes through the shared
+    /// stations manager: even if About read the current station itself, none of its content
+    /// may appear. The station is asserted current before and after, so a lost race with the
+    /// launch fetch fails loudly instead of passing vacuously.
+    func testNoStationContentAppearsWhileAnotherStationIsCurrent() throws {
+        let pulse = self.pulse
+        StationsManager.shared.set(station: pulse)
+
+        for layout in layouts {
+            XCTAssertEqual(StationsManager.shared.currentStation?.name, "Pulse Test",
+                           "\(layout.name): the station is current before About is built")
+            let about = try makeAbout(size: layout.size, compact: layout.compact)
+            XCTAssertEqual(StationsManager.shared.currentStation?.name, "Pulse Test",
+                           "\(layout.name): the station is still current after About is built")
+
+            XCTAssertFalse(labels(in: about.view).contains { $0.text?.contains("Pulse Test") == true },
+                           "\(layout.name): no station name")
+            XCTAssertFalse(labels(in: about.view).contains { $0.text?.contains(pulse.longDesc) == true },
                            "\(layout.name): no station blurb")
+            XCTAssertEqual(wordmarks(in: about.view).count, 1, "\(layout.name): the wordmark is the header")
         }
     }
 

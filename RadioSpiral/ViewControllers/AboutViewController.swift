@@ -19,10 +19,6 @@ class AboutViewController: UIViewController {
 
     weak var delegate: AboutViewControllerDelegate?
 
-    /// When set, a station info row (image + name + description) appears above credits.
-    /// Nil when opened from the popup menu (no station context).
-    var currentStation: RadioStation?
-
     // Credits loaded from remote (falls back to hardcoded)
     private var loadedCredits: [CreditPair] = fallbackCredits
 

@@ -66,9 +66,8 @@ class MainCoordinator: Coordinator {
         return worked
     }
     
-    func openAbout(in viewController: UIViewController, station: RadioStation? = nil) {
+    func openAbout(in viewController: UIViewController) {
         let aboutController = AboutViewController()
-        aboutController.currentStation = station
         aboutController.delegate = self
         viewController.present(aboutController, animated: true)
     }
@@ -96,7 +95,7 @@ extension MainCoordinator: StationsViewControllerDelegate {
     }
     
     func didTapInfoButton(_ stationsViewController: StationsViewController) {
-        openAbout(in: stationsViewController, station: StationsManager.shared.currentStation)
+        openAbout(in: stationsViewController)
     }
 }
 
@@ -105,7 +104,7 @@ extension MainCoordinator: StationsViewControllerDelegate {
 extension MainCoordinator: NowPlayingViewControllerDelegate {
     
     func didTapInfoButton(_ nowPlayingViewController: NowPlayingViewController, station: RadioStation?) {
-        openAbout(in: nowPlayingViewController, station: station)
+        openAbout(in: nowPlayingViewController)
     }
 
     func didTapShareButton(_ nowPlayingViewController: NowPlayingViewController, station: RadioStation, artworkURL: URL?) {
