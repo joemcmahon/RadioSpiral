@@ -106,4 +106,28 @@ final class AboutCreditsFitTests: XCTestCase {
         settle()
         XCTAssertEqual(try shownAttributions(in: about).count, 1, "tall again: shown once")
     }
+
+    // MARK: - A wrong answer corrects itself
+
+    /// The fit is worked out from the layout, and a layout can settle after the check without
+    /// triggering another one. If the second copy ends up hidden while the credits overflow, the
+    /// credits would scroll off into blank space, so the next scrolling tick must put it back.
+    func testASecondCopyHiddenByMistakeComesBackOnTheNextTick() throws {
+        let about = try makeAbout(size: CGSize(width: 874, height: 402), compact: true)
+        let scroll = try creditsScroll(in: about)
+        // The first tick, which the display link delivers within a frame of the screen appearing.
+        about.scrollCredits()
+        XCTAssertEqual(try shownAttributions(in: about).count, 2, "harness: both copies shown to begin with")
+
+        // Put it in the wrong state by hand: hide the second attribution, as a stale check would.
+        let all = allSubviews(of: scroll).compactMap { $0 as? UILabel }
+            .filter { $0.text?.hasPrefix("Based on Swift Radio Pro") == true }
+        let second = try XCTUnwrap(all.last)
+        second.isHidden = true
+        XCTAssertEqual(try shownAttributions(in: about).count, 1, "harness: the wrong state is in place")
+
+        // Checked straight after the tick, before any layout pass could do it instead.
+        about.scrollCredits()
+        XCTAssertEqual(try shownAttributions(in: about).count, 2, "the next tick shows the second copy again")
+    }
 }

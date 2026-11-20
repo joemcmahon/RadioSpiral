@@ -400,6 +400,10 @@ class AboutViewController: UIViewController {
     }
 
     @objc func scrollCredits() {
+        // Re-check the fit every tick, paused or not. The layout-time check can be answered from a
+        // layout that then changes without another layout callback; this puts a wrong answer right
+        // within a frame instead of leaving blank space after the last credit.
+        updateLoopCopy()
         guard !isScrollPaused, CACurrentMediaTime() >= scrollStartTime,
               let scrollView = creditsScrollView, !creditsFit(in: scrollView) else { return }
         let loopLength = creditsLoopLength
