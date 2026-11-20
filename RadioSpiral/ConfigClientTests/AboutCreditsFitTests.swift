@@ -16,7 +16,13 @@ final class AboutCreditsFitTests: XCTestCase {
 
     private var window: UIWindow!
 
+    override func setUp() {
+        super.setUp()
+        AboutTestNetwork.block()
+    }
+
     override func tearDown() {
+        AboutTestNetwork.restore()
         window?.isHidden = true
         window = nil
         super.tearDown()

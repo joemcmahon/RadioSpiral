@@ -31,7 +31,13 @@ final class AboutScreenHeaderTests: XCTestCase {
         RunLoop.main.run(until: Date().addingTimeInterval(1))
     }
 
+    override func setUp() {
+        super.setUp()
+        AboutTestNetwork.block()
+    }
+
     override func tearDown() {
+        AboutTestNetwork.restore()
         window?.isHidden = true
         window = nil
         StationsManager.shared.set(station: nil)
