@@ -2,10 +2,9 @@
 //  AboutScreenHeaderTests.swift
 //  ConfigClientTests
 //
-//  The About screen's header and scrolling credits. These tests capture how the screen behaves
-//  today: portrait keeps the attribution fixed below the credits, landscape rolls the generic
-//  blurb, the credits and the attribution together, and the header shows the current station.
-//  Run on an iPhone simulator.
+//  The About screen's header and scrolling credits: the header is the wordmark alone, fixed in
+//  both orientations, and the credits and the attribution scroll together beneath it. Run on an
+//  iPhone simulator.
 //
 
 import XCTest
@@ -37,11 +36,13 @@ final class AboutScreenHeaderTests: XCTestCase {
     /// before the view loads, because the screen builds its body in `viewDidLoad` and picks the
     /// layout from that class. The helper then checks which layout it actually got, and fails
     /// itself (not a test expectation) if that is not the one asked for.
-    private func makeAbout(size: CGSize, compact: Bool, station: RadioStation? = nil) throws -> AboutViewController {
+    private func makeAbout(size: CGSize, compact: Bool, station: RadioStation? = nil,
+                           category: UIContentSizeCategory? = nil) throws -> AboutViewController {
         try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .phone, "Run on an iPhone simulator")
         let controller = AboutViewController()
         controller.currentStation = station
         if compact { controller.traitOverrides.verticalSizeClass = .compact }
+        if let category { controller.traitOverrides.preferredContentSizeCategory = category }
         window = UIWindow(frame: CGRect(origin: .zero, size: size))
         window.rootViewController = controller
         window.makeKeyAndVisible()
@@ -90,35 +91,118 @@ final class AboutScreenHeaderTests: XCTestCase {
         labels(in: root).first { $0.text?.hasPrefix("Based on Swift Radio Pro") == true }
     }
 
-    // MARK: - Today's behavior
+    private func wordmarks(in root: UIView) -> [UIView] {
+        allSubviews(of: root).filter { $0.accessibilityIdentifier == "aboutWordmark" }
+    }
 
-    func testPortraitAttributionIsFixedOutsideTheCreditsScroll() throws {
+    private func attributions(in root: UIView) -> [UILabel] {
+        labels(in: root).filter { $0.text?.hasPrefix("Based on Swift Radio Pro") == true }
+    }
+
+    private func frameInWindow(_ view: UIView) -> CGRect {
+        view.convert(view.bounds, to: window)
+    }
+
+    /// Both layouts, with a string for failure messages.
+    private var layouts: [(name: String, size: CGSize, compact: Bool)] {
+        [("portrait", portraitSize, false), ("landscape", landscapeSize, true)]
+    }
+
+    // MARK: - The header
+
+    func testPortraitAndLandscapeShowOneWordmarkAndNoStationText() throws {
+        for layout in layouts {
+            let about = try makeAbout(size: layout.size, compact: layout.compact, station: pulse)
+
+            let marks = wordmarks(in: about.view)
+            XCTAssertEqual(marks.count, 1, "\(layout.name): one wordmark")
+            XCTAssertFalse(labels(in: about.view).contains { $0.text == "Pulse Test" },
+                           "\(layout.name): no station name")
+            XCTAssertFalse(labels(in: about.view).contains { $0.text?.hasPrefix("RadioSpiral: 24/7") == true },
+                           "\(layout.name): no generic blurb")
+            XCTAssertFalse(labels(in: about.view).contains { $0.text == "A long blurb for Pulse." },
+                           "\(layout.name): no station blurb")
+        }
+    }
+
+    func testTheWordmarkStaysPutWhileTheCreditsScroll() throws {
+        for layout in layouts {
+            let about = try makeAbout(size: layout.size, compact: layout.compact)
+
+            let mark = try XCTUnwrap(wordmarks(in: about.view).first, layout.name)
+            XCTAssertFalse(isInsideAScrollView(mark, in: about.view), "\(layout.name): the header is fixed")
+            let before = frameInWindow(mark)
+            let attribution = try XCTUnwrap(attributionLabel(in: about.view))
+            let scroll = try XCTUnwrap(scrollViews(in: about.view).first { attribution.isDescendant(of: $0) })
+            scroll.contentOffset.y = 60
+            window.layoutIfNeeded()
+            XCTAssertEqual(frameInWindow(mark), before, "\(layout.name): the wordmark does not move")
+        }
+    }
+
+    func testTheAttributionScrollsWithTheCreditsInBothOrientations() throws {
+        for layout in layouts {
+            let about = try makeAbout(size: layout.size, compact: layout.compact)
+
+            let attribution = try XCTUnwrap(attributionLabel(in: about.view), layout.name)
+            let scroll = try XCTUnwrap(scrollViews(in: about.view).first { attribution.isDescendant(of: $0) },
+                                       "\(layout.name): the attribution scrolls")
+            XCTAssertTrue(labels(in: scroll).contains { $0.text?.contains(": ") == true },
+                          "\(layout.name): the credits are in the same scroll view")
+        }
+    }
+
+    // MARK: - Review focus
+
+    /// Rotation and late-arriving credits both rebuild the body. The body is rebuilt for real
+    /// (the wordmark is a new view each time) and there is still one wordmark afterward, and the
+    /// same two attributions as a fresh build (one per copy of the looping sequence), never more.
+    func testRebuildingLeavesOneWordmarkAndNoExtraAttributions() throws {
         let about = try makeAbout(size: portraitSize, compact: false)
+        var previous = try XCTUnwrap(wordmarks(in: about.view).first)
+        XCTAssertEqual(attributions(in: about.view).count, 2, "fresh build: one attribution per loop copy")
 
-        let attribution = try XCTUnwrap(attributionLabel(in: about.view))
-        XCTAssertFalse(isInsideAScrollView(attribution, in: about.view),
-                       "in portrait the attribution is a fixed row below the credits")
-        // A credit reads "role: name". Other labels (the blurb, the build label's
-        // "Environment: Xcode") contain ": " too but sit outside the scroll view.
-        XCTAssertTrue(labels(in: about.view).contains {
-            $0.text?.contains(": ") == true && isInsideAScrollView($0, in: about.view)
-        }, "the credits scroll")
+        for round in 1...2 {
+            about.rebuildBody()
+            window.layoutIfNeeded()
+
+            let marks = wordmarks(in: about.view)
+            XCTAssertEqual(marks.count, 1, "round \(round): one wordmark")
+            XCTAssertEqual(attributions(in: about.view).count, 2, "round \(round): no extra attributions")
+            XCTAssertFalse(marks.first === previous, "round \(round): the body was rebuilt")
+            previous = try XCTUnwrap(marks.first)
+        }
     }
 
-    func testLandscapeAttributionAndDescriptionRollWithTheCredits() throws {
-        let about = try makeAbout(size: landscapeSize, compact: true)
+    func testTheWordmarkIsNoWiderThanTheCapOnAnIPadSizedWindow() throws {
+        let about = try makeAbout(size: CGSize(width: 1024, height: 768), compact: false)
 
-        let attribution = try XCTUnwrap(attributionLabel(in: about.view))
-        XCTAssertTrue(isInsideAScrollView(attribution, in: about.view))
-        let description = try XCTUnwrap(labels(in: about.view).first { $0.text?.hasPrefix("RadioSpiral: 24/7") == true })
-        XCTAssertTrue(isInsideAScrollView(description, in: about.view),
-                      "in landscape the generic blurb scrolls with the credits")
+        let mark = try XCTUnwrap(wordmarks(in: about.view).first)
+        let width = frameInWindow(mark).width
+        XCTAssertGreaterThan(width, 0)
+        XCTAssertLessThanOrEqual(width, LaunchWordmark.maximumWidth + 0.5)
     }
 
-    /// The bug being fixed: the header shows whichever station is current.
-    func testTheHeaderShowsTheCurrentStationsName() throws {
-        let about = try makeAbout(size: portraitSize, compact: false, station: pulse)
+    func testCreditsStillHaveRoomAtTheLargestTextSizeInLandscape() throws {
+        let about = try makeAbout(size: landscapeSize, compact: true,
+                                  category: .accessibilityExtraExtraExtraLarge)
 
-        XCTAssertTrue(labels(in: about.view).contains { $0.text == "Pulse Test" })
+        let attribution = try XCTUnwrap(attributionLabel(in: about.view))
+        let scroll = try XCTUnwrap(scrollViews(in: about.view).first { attribution.isDescendant(of: $0) })
+        XCTAssertGreaterThan(frameInWindow(scroll).height, 0)
+        let ok = try XCTUnwrap(allSubviews(of: about.view).first { $0.accessibilityIdentifier == "okButton" })
+        XCTAssertTrue(window.safeAreaLayoutGuide.layoutFrame.contains(frameInWindow(ok)),
+                      "the OK button stays inside the safe area")
+    }
+
+    func testTheCreditsScrollViewKeepsItsTapToPauseRecognizer() throws {
+        for layout in layouts {
+            let about = try makeAbout(size: layout.size, compact: layout.compact)
+
+            let attribution = try XCTUnwrap(attributionLabel(in: about.view), layout.name)
+            let scroll = try XCTUnwrap(scrollViews(in: about.view).first { attribution.isDescendant(of: $0) })
+            XCTAssertTrue(scroll.gestureRecognizers?.contains { $0 is UITapGestureRecognizer } == true,
+                          "\(layout.name): tapping the credits pauses them")
+        }
     }
 }

@@ -140,7 +140,8 @@ class AboutViewController: UIViewController {
         traitCollection.verticalSizeClass == .compact
     }
 
-    private func rebuildBody() {
+    // Internal (not private) so tests can rebuild the body without a rotation.
+    func rebuildBody() {
         stopDisplayLink()
         creditsScrollView = nil
         bodyContainer?.removeFromSuperview()
@@ -181,9 +182,8 @@ class AboutViewController: UIViewController {
             stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
         ])
 
-        stack.addArrangedSubview(makeDescription())
+        stack.addArrangedSubview(makeHeader())
         stack.addArrangedSubview(makeRollingCredits())
-        stack.addArrangedSubview(makeAttribution())
         stack.addArrangedSubview(websiteButton)
         stack.addArrangedSubview(emailButton)
         if let selector = makeServerSelector() { stack.addArrangedSubview(selector) }
@@ -208,12 +208,17 @@ class AboutViewController: UIViewController {
             container.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
         ])
 
-        // Left side: everything rolls together in landscape
-        let rollingView = makeRollingAll()
+        // Left side: the wordmark stays put; the credits and attribution roll beneath it
+        let header = makeHeader()
+        let rollingView = makeRollingCredits()
+        container.addSubview(header)
         container.addSubview(rollingView)
 
         NSLayoutConstraint.activate([
-            rollingView.topAnchor.constraint(equalTo: container.topAnchor, constant: 8),
+            header.topAnchor.constraint(equalTo: container.topAnchor, constant: 8),
+            header.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
+            header.widthAnchor.constraint(equalTo: container.widthAnchor, multiplier: 0.7, constant: -24),
+            rollingView.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 8),
             rollingView.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -8),
             rollingView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
             rollingView.widthAnchor.constraint(equalTo: container.widthAnchor, multiplier: 0.7, constant: -24),
@@ -234,55 +239,33 @@ class AboutViewController: UIViewController {
         ])
     }
 
-    // MARK: - Description (station-specific when available, generic blurb otherwise)
+    // MARK: - Header (the app's wordmark; never station content)
 
-    private static let defaultDescription = "RadioSpiral: 24/7 captivating electronica, with some of the best of the genre in electronic and ambient music. Featuring live DJs and live performances."
+    /// The fixed header: the wordmark alone, as wide as the space allows up to the launch
+    /// screen's cap, with the height that follows from the artwork's shape.
+    private func makeHeader() -> UIView {
+        let container = UIView()
+        container.translatesAutoresizingMaskIntoConstraints = false
 
-    private func makeDescription() -> UIView {
-        let descText: String
-        if let station = currentStation, !station.longDesc.isEmpty {
-            descText = station.longDesc
-        } else {
-            descText = Self.defaultDescription
-        }
+        let wordmark = LaunchWordmark.makeImageView()
+        wordmark.accessibilityIdentifier = "aboutWordmark"
+        container.addSubview(wordmark)
 
-        let descLabel = UILabel()
-        descLabel.text = descText
-        descLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
-        descLabel.textColor = .white
-        descLabel.numberOfLines = 0
-
-        // When we have a station, show image + name alongside description
-        if let station = currentStation {
-            let imageView = UIImageView()
-            imageView.contentMode = .scaleAspectFit
-            imageView.translatesAutoresizingMaskIntoConstraints = false
-            imageView.applyShadow()
-            NSLayoutConstraint.activate([
-                imageView.widthAnchor.constraint(equalToConstant: 80),
-                imageView.heightAnchor.constraint(equalToConstant: 80),
-            ])
-            station.getImage { image in
-                imageView.image = image
-            }
-
-            let nameLabel = UILabel()
-            nameLabel.text = station.name
-            nameLabel.font = UIFont.preferredFont(forTextStyle: .headline)
-            nameLabel.textColor = .white
-
-            let textStack = UIStackView(arrangedSubviews: [nameLabel, descLabel])
-            textStack.axis = .vertical
-            textStack.spacing = 4
-
-            let row = UIStackView(arrangedSubviews: [imageView, textStack])
-            row.axis = .horizontal
-            row.spacing = 12
-            row.alignment = .center
-            return row
-        }
-
-        return descLabel
+        let size = wordmark.image?.size ?? CGSize(width: 5112, height: 768)
+        let fillWidth = wordmark.widthAnchor.constraint(equalTo: container.widthAnchor)
+        fillWidth.priority = UILayoutPriority(999)
+        NSLayoutConstraint.activate([
+            wordmark.topAnchor.constraint(equalTo: container.topAnchor),
+            wordmark.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            wordmark.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            fillWidth,
+            wordmark.widthAnchor.constraint(lessThanOrEqualToConstant: LaunchWordmark.maximumWidth),
+            wordmark.widthAnchor.constraint(equalTo: wordmark.heightAnchor, multiplier: size.width / size.height),
+        ])
+        // The header keeps its own height; the credits take what is left.
+        container.setContentHuggingPriority(.required, for: .vertical)
+        container.setContentCompressionResistancePriority(.required, for: .vertical)
+        return container
     }
 
     // MARK: - Rolling Credits
@@ -302,56 +285,8 @@ class AboutViewController: UIViewController {
         stack.alignment = .fill
         stack.translatesAutoresizingMaskIntoConstraints = false
 
-        // First copy
-        for credit in loadedCredits {
-            stack.addArrangedSubview(makeCreditLabel(credit))
-        }
-        // Spacer between copies
-        let spacer = UIView()
-        spacer.translatesAutoresizingMaskIntoConstraints = false
-        spacer.heightAnchor.constraint(equalToConstant: 24).isActive = true
-        stack.addArrangedSubview(spacer)
-        // Second copy (for seamless loop)
-        for credit in loadedCredits {
-            stack.addArrangedSubview(makeCreditLabel(credit))
-        }
-
-        scrollView.addSubview(stack)
-
-        NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-            stack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
-            stack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-            stack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
-        ])
-
-        // Tap to pause/resume
-        let tap = UITapGestureRecognizer(target: self, action: #selector(creditsTapped))
-        scrollView.addGestureRecognizer(tap)
-
-        creditsScrollView = scrollView
-        return scrollView
-    }
-
-    /// Landscape variant: description + credits + attribution all roll together
-    private func makeRollingAll() -> UIView {
-        let scrollView = UIScrollView()
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.showsVerticalScrollIndicator = false
-        scrollView.showsHorizontalScrollIndicator = false
-        scrollView.isUserInteractionEnabled = true
-        scrollView.clipsToBounds = true
-
-        let stack = UIStackView()
-        stack.axis = .vertical
-        stack.spacing = 12
-        stack.alignment = .fill
-        stack.translatesAutoresizingMaskIntoConstraints = false
-
-        // Helper to add one full sequence
+        // One sequence: the credits, then the attribution
         func addSequence() {
-            stack.addArrangedSubview(makeDescription())
             for credit in loadedCredits {
                 stack.addArrangedSubview(makeCreditLabel(credit))
             }
@@ -378,6 +313,7 @@ class AboutViewController: UIViewController {
             stack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
         ])
 
+        // Tap to pause/resume
         let tap = UITapGestureRecognizer(target: self, action: #selector(creditsTapped))
         scrollView.addGestureRecognizer(tap)
 
