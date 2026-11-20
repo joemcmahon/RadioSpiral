@@ -90,9 +90,9 @@ class NowPlayingView: UIView {
         
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: dividerView.bottomAnchor, constant: 8),
-            stackView.rightAnchor.constraint(equalTo: layoutMarginsGuide.rightAnchor, constant: -8),
+            stackView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor, constant: -8),
             stackView.bottomAnchor.constraint(equalTo: layoutMarginsGuide.bottomAnchor, constant: 8),
-            stackView.leftAnchor.constraint(equalTo: layoutMarginsGuide.leftAnchor, constant: 8)
+            stackView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor, constant: 8)
         ])
         
         addSubview(nowPlayingButton)
