@@ -893,14 +893,14 @@ class NowPlayingViewController: UIViewController {
     /// Phone landscape only. Shrinks the labels just enough that the title fits in two lines
     /// without an ellipsis and the labels fit above the volume slider, never below 11 pt (the
     /// iOS minimum in the Human Interface Guidelines). Runs from layout, but only when the text,
-    /// the column width or the toolbar position changed since the last fit.
+    /// the column width, the toolbar position or the top inset changed since the last fit.
     private func fitLabelsToPanel() {
         guard currentLayout == .landscape, currentMetrics(for: view.bounds.size).fitsLabelsToPanel,
               landscapeRightPanel?.superview != nil else { return }
         let width = labelsStackView.bounds.width
         guard width > 0 else { return }
         let key = [songLabel.text, artistLabel.text, releaseLabel.text].map { $0 ?? "" }
-            .joined(separator: "|") + "|\(width)|\(toolsView.frame.minY)"
+            .joined(separator: "|") + "|\(width)|\(toolsView.frame.minY)|\(view.safeAreaInsets.top)"
         guard key != lastFitKey else { return }
         lastFitKey = key
 
