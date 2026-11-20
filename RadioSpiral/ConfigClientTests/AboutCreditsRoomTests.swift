@@ -32,7 +32,7 @@ final class AboutCreditsRoomTests: XCTestCase {
         try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .phone, "Run on an iPhone simulator")
         let controller = AboutViewController()
         controller.traitOverrides.preferredContentSizeCategory = category
-        window = UIWindow(frame: CGRect(origin: .zero, size: size))
+        window = try TestWindow.make(size: size)
         window.rootViewController = controller
         window.makeKeyAndVisible()
         window.layoutIfNeeded()

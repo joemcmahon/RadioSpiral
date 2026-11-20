@@ -25,7 +25,7 @@ final class AboutCreditsStartDelayTests: XCTestCase {
         try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .phone, "Run on an iPhone simulator")
         let controller = AboutViewController()
         controller.traitOverrides.verticalSizeClass = .compact
-        window = UIWindow(frame: CGRect(x: 0, y: 0, width: 874, height: 402))
+        window = try TestWindow.make(size: CGSize(width: 874, height: 402))
         window.rootViewController = controller
         window.makeKeyAndVisible()
         window.layoutIfNeeded()

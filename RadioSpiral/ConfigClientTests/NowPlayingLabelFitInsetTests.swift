@@ -27,7 +27,7 @@ final class NowPlayingLabelFitInsetTests: XCTestCase {
         let controller = Storyboard.viewController as NowPlayingViewController
         // A phone in landscape has a compact height, which is what turns the label fit on.
         controller.traitOverrides.verticalSizeClass = .compact
-        window = UIWindow(frame: CGRect(x: 0, y: 0, width: 874, height: 402))
+        window = try TestWindow.make(size: CGSize(width: 874, height: 402))
         window.rootViewController = controller
         window.makeKeyAndVisible()
         settle()

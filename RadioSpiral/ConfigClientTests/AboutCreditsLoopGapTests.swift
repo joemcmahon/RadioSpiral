@@ -30,7 +30,7 @@ final class AboutCreditsLoopGapTests: XCTestCase {
         try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .phone, "Run on an iPhone simulator")
         let about = AboutViewController()
         about.traitOverrides.verticalSizeClass = .compact
-        window = UIWindow(frame: CGRect(x: 0, y: 0, width: 874, height: 402))
+        window = try TestWindow.make(size: CGSize(width: 874, height: 402))
         window.rootViewController = about
         window.makeKeyAndVisible()
         window.layoutIfNeeded()

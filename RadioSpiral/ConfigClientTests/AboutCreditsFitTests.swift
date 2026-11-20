@@ -26,7 +26,7 @@ final class AboutCreditsFitTests: XCTestCase {
         try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .phone, "Run on an iPhone simulator")
         let controller = AboutViewController()
         if compact { controller.traitOverrides.verticalSizeClass = .compact }
-        window = UIWindow(frame: CGRect(origin: .zero, size: size))
+        window = try TestWindow.make(size: size)
         window.rootViewController = controller
         window.makeKeyAndVisible()
         settle()

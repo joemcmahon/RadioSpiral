@@ -56,7 +56,7 @@ final class AboutScreenHeaderTests: XCTestCase {
         let controller = AboutViewController()
         if compact { controller.traitOverrides.verticalSizeClass = .compact }
         if let category { controller.traitOverrides.preferredContentSizeCategory = category }
-        window = UIWindow(frame: CGRect(origin: .zero, size: size))
+        window = try TestWindow.make(size: size)
         window.rootViewController = controller
         window.makeKeyAndVisible()
         window.layoutIfNeeded()
