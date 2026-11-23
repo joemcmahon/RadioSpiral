@@ -173,18 +173,23 @@ class NowPlayingViewController: UIViewController {
         setupLandscapeConstraints()
         // appliedKey starts nil, so the first pass always applies a layout.
         optimizeForDeviceSize(size: view.bounds.size)
-        // A size class can change with the size staying the same (an iPad window crossing a
-        // class boundary at a size the layout already saw): apply the layout again, keyed on
-        // the metrics as well as the size. The idiom is read too (the Duo check), so it counts.
-        registerForTraitChanges([UITraitHorizontalSizeClass.self, UITraitVerticalSizeClass.self,
-                                 UITraitUserInterfaceIdiom.self]) {
-            (self: Self, _) in
-            self.optimizeForDeviceSize(size: self.view.bounds.size)
-        }
-        // The artwork is downsampled for the display's scale: moving the window to a display
-        // with a different scale (an external screen) loads it again at the right one.
-        registerForTraitChanges([UITraitDisplayScale.self]) { (self: Self, _) in
-            self.updateTrackArtwork()
+        // iOS 17+ delivers trait changes through registerForTraitChanges. iOS 16 has no such API:
+        // it gets the same two reactions from traitCollectionDidChange (below), which does
+        // nothing on 17+, so neither path runs twice.
+        if #available(iOS 17, *) {
+            // A size class can change with the size staying the same (an iPad window crossing a
+            // class boundary at a size the layout already saw): apply the layout again, keyed on
+            // the metrics as well as the size. The idiom is read too (the Duo check), so it counts.
+            registerForTraitChanges([UITraitHorizontalSizeClass.self, UITraitVerticalSizeClass.self,
+                                     UITraitUserInterfaceIdiom.self]) {
+                (self: Self, _) in
+                self.optimizeForDeviceSize(size: self.view.bounds.size)
+            }
+            // The artwork is downsampled for the display's scale: moving the window to a display
+            // with a different scale (an external screen) loads it again at the right one.
+            registerForTraitChanges([UITraitDisplayScale.self]) { (self: Self, _) in
+                self.updateTrackArtwork()
+            }
         }
 
         // Create Now Playing BarItem
@@ -289,6 +294,33 @@ class NowPlayingViewController: UIViewController {
         })
     }
     
+    /// Whether a trait change needs the layout applied again: a size class or the idiom changed
+    /// (the Duo check reads the idiom). Shared by the iOS 17 registration and the iOS 16 fallback.
+    static func layoutTraitsChanged(from old: UITraitCollection, to new: UITraitCollection) -> Bool {
+        old.horizontalSizeClass != new.horizontalSizeClass
+            || old.verticalSizeClass != new.verticalSizeClass
+            || old.userInterfaceIdiom != new.userInterfaceIdiom
+    }
+
+    /// Whether the artwork needs loading again at a different scale.
+    static func displayScaleChanged(from old: UITraitCollection, to new: UITraitCollection) -> Bool {
+        old.displayScale != new.displayScale
+    }
+
+    /// The iOS 16 path for the two trait reactions registered in viewDidLoad. On iOS 17+ those
+    /// registrations do the work, so this returns at once and nothing runs twice.
+    @available(iOS, deprecated: 17.0, message: "Only iOS 16 uses this; iOS 17+ uses registerForTraitChanges")
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        guard #unavailable(iOS 17), let previous = previousTraitCollection else { return }
+        if Self.layoutTraitsChanged(from: previous, to: traitCollection) {
+            optimizeForDeviceSize(size: view.bounds.size)
+        }
+        if Self.displayScaleChanged(from: previous, to: traitCollection) {
+            updateTrackArtwork()
+        }
+    }
+
     func handleMetadataUpdate(_ metadata: UnifiedMetadata?) {
         guard let metadata = metadata else { return }
         

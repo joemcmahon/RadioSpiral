@@ -84,3 +84,51 @@ final class NowPlayingIdiomRefreshTests: XCTestCase {
                           "the fold layout should be replaced once the screen is no longer a phone")
     }
 }
+
+/// The iOS 16 fallback (traitCollectionDidChange) decides what changed with these comparisons;
+/// the iOS 17 registrations name the same traits. The fallback itself only runs on iOS 16, which
+/// no simulator here has, so the comparisons are checked directly: each trait the screens react
+/// to must count, and one they don't react to must not.
+@MainActor
+final class TraitChangeComparisonTests: XCTestCase {
+
+    private let base = UITraitCollection(traitsFrom: [
+        UITraitCollection(horizontalSizeClass: .compact),
+        UITraitCollection(verticalSizeClass: .regular),
+        UITraitCollection(userInterfaceIdiom: .phone),
+        UITraitCollection(displayScale: 3),
+    ])
+
+    private func changing(_ trait: UITraitCollection) -> UITraitCollection {
+        UITraitCollection(traitsFrom: [base, trait])
+    }
+
+    func testTheLayoutCountsEachSizeClassAndTheIdiom() {
+        let layoutChanged = NowPlayingViewController.layoutTraitsChanged(from:to:)
+        XCTAssertTrue(layoutChanged(base, changing(UITraitCollection(horizontalSizeClass: .regular))))
+        XCTAssertTrue(layoutChanged(base, changing(UITraitCollection(verticalSizeClass: .compact))))
+        XCTAssertTrue(layoutChanged(base, changing(UITraitCollection(userInterfaceIdiom: .pad))))
+    }
+
+    func testTheLayoutIgnoresTraitsItDoesNotReadAndNoChange() {
+        let layoutChanged = NowPlayingViewController.layoutTraitsChanged(from:to:)
+        XCTAssertFalse(layoutChanged(base, base))
+        XCTAssertFalse(layoutChanged(base, changing(UITraitCollection(displayScale: 2))))
+        XCTAssertFalse(layoutChanged(base, changing(UITraitCollection(preferredContentSizeCategory: .extraLarge))))
+    }
+
+    func testTheArtworkCountsOnlyTheDisplayScale() {
+        let scaleChanged = NowPlayingViewController.displayScaleChanged(from:to:)
+        XCTAssertTrue(scaleChanged(base, changing(UITraitCollection(displayScale: 2))))
+        XCTAssertFalse(scaleChanged(base, base))
+        XCTAssertFalse(scaleChanged(base, changing(UITraitCollection(horizontalSizeClass: .regular))))
+    }
+
+    func testTheStationColumnsCountOnlyTheHorizontalSizeClass() {
+        let columnsChanged = StationsViewController.columnTraitsChanged(from:to:)
+        XCTAssertTrue(columnsChanged(base, changing(UITraitCollection(horizontalSizeClass: .regular))))
+        XCTAssertFalse(columnsChanged(base, base))
+        XCTAssertFalse(columnsChanged(base, changing(UITraitCollection(verticalSizeClass: .compact))))
+        XCTAssertFalse(columnsChanged(base, changing(UITraitCollection(userInterfaceIdiom: .pad))))
+    }
+}

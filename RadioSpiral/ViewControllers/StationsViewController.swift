@@ -154,9 +154,13 @@ class StationsViewController: BaseController, Handoffable {
         // Setup Search Bar
         setupSearchController()
         
-        // Row shading depends on the column count, which changes with the size class.
-        registerForTraitChanges([UITraitHorizontalSizeClass.self]) { (self: Self, _: UITraitCollection) in
-            self.collectionView.reloadData()
+        // Row shading depends on the column count, which changes with the size class. iOS 17+ uses
+        // registerForTraitChanges; iOS 16 uses traitCollectionDidChange (below), which does nothing
+        // on 17+, so the reload never runs twice.
+        if #available(iOS 17, *) {
+            registerForTraitChanges([UITraitHorizontalSizeClass.self]) { (self: Self, _: UITraitCollection) in
+                self.collectionView.reloadData()
+            }
         }
 
         // Now Playing View
@@ -165,6 +169,21 @@ class StationsViewController: BaseController, Handoffable {
         }
     }
     
+    /// Whether a trait change changes the column count (and so the row shading).
+    static func columnTraitsChanged(from old: UITraitCollection, to new: UITraitCollection) -> Bool {
+        old.horizontalSizeClass != new.horizontalSizeClass
+    }
+
+    /// The iOS 16 path for the registration in viewDidLoad; a no-op on iOS 17+.
+    @available(iOS, deprecated: 17.0, message: "Only iOS 16 uses this; iOS 17+ uses registerForTraitChanges")
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        guard #unavailable(iOS 17), let previous = previousTraitCollection else { return }
+        if Self.columnTraitsChanged(from: previous, to: traitCollection) {
+            collectionView.reloadData()
+        }
+    }
+
     override func viewSafeAreaInsetsDidChange() {
         super.viewSafeAreaInsetsDidChange()
         // Column edges follow the safe area, which can change without a size change.
