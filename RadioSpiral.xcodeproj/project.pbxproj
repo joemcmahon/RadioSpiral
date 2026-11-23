@@ -1131,7 +1131,7 @@
 				);
 				INFOPLIST_FILE = RadioSpiral/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = RadioSpiral;
-				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.7;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1167,7 +1167,7 @@
 				);
 				INFOPLIST_FILE = RadioSpiral/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = RadioSpiral;
-				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.7;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1232,7 +1232,7 @@
 			repositoryURL = "https://github.com/joemcmahon/Spring";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
+				minimumVersion = 2.0.1;
 			};
 		};
 		719678652D27AA4800DCD7CE /* XCRemoteSwiftPackageReference "Kingfisher" */ = {

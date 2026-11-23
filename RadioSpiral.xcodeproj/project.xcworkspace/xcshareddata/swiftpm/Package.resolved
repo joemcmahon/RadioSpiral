@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/joemcmahon/Spring",
       "state" : {
-        "revision" : "1939b18c365521032a95b77860e2da7e17db4a46",
-        "version" : "2.0.0"
+        "revision" : "e8b52dde8552d4a2457ee316dd46f74be7301910",
+        "version" : "2.0.1"
       }
     }
   ],
