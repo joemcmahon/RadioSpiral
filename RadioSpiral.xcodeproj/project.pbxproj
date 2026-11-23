@@ -16,9 +16,9 @@
 		6258DCDA22D93A5400166C65 /* LogoShareView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6258DCD922D93A5400166C65 /* LogoShareView.xib */; };
 		711BB18B2F45A71200B9D8DF /* Credits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711BB18A2F45A71200B9D8DF /* Credits.swift */; };
 		711BB18C2F45A71200B9D8DF /* Credits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711BB18A2F45A71200B9D8DF /* Credits.swift */; };
-		715071FC30AA4C61002B1F31 /* Spring in Frameworks */ = {isa = PBXBuildFile; productRef = 715071FB30AA4C61002B1F31 /* Spring */; };
 		715C87A62B23E141003FC57A /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 715C87A52B23E141003FC57A /* SnapshotHelper.swift */; };
 		7165121C2B35519B00473770 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CF72ACE621F714D000461EED /* Main.storyboard */; };
+		7177DA0330B42B9C0041A0DD /* Spring in Frameworks */ = {isa = PBXBuildFile; productRef = 7177DA0230B42B9C0041A0DD /* Spring */; };
 		717B8C612EC449D30080EFE8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 717B8C5F2EC449D30080EFE8 /* SceneDelegate.swift */; };
 		717B8C662EC44DDD0080EFE8 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 717B8C632EC44DDD0080EFE8 /* CarPlaySceneDelegate.swift */; };
 		719678612D27A72000DCD7CE /* ACStreamStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 719678552D27A72000DCD7CE /* ACStreamStatus.swift */; };
@@ -86,6 +86,16 @@
 		A1C0DE010000000000000111 /* AppFontTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000110 /* AppFontTests.swift */; };
 		A1C0DE010000000000000113 /* LaunchWordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000112 /* LaunchWordmark.swift */; };
 		A1C0DE010000000000000115 /* LaunchWordmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000114 /* LaunchWordmarkTests.swift */; };
+		A1C0DE010000000000000117 /* ViewControllerIdiomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */; };
+		A1C0DE010000000000000119 /* NowPlayingFrameBaselineUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */; };
+		A1C0DE01000000000000011B /* NowPlayingMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011A /* NowPlayingMetrics.swift */; };
+		A1C0DE01000000000000011D /* NowPlayingMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011C /* NowPlayingMetricsTests.swift */; };
+		A1C0DE01000000000000011F /* ScaledValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011E /* ScaledValues.swift */; };
+		A1C0DE010000000000000121 /* ScaledValuesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000120 /* ScaledValuesTests.swift */; };
+		A1C0DE010000000000000123 /* LayoutApplyKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000122 /* LayoutApplyKeyTests.swift */; };
+		A1C0DE010000000000000125 /* NowPlayingRotationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000124 /* NowPlayingRotationUITests.swift */; };
+		A1C0DE010000000000000127 /* DemoLiveShow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000126 /* DemoLiveShow.swift */; };
+		A1C0DE010000000000000129 /* DemoLiveShowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000128 /* DemoLiveShowTests.swift */; };
 		A1C0DE01000000000000012B /* NowPlayingIdiomRefreshTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000012A /* NowPlayingIdiomRefreshTests.swift */; };
 		A1C0DE01000000000000012D /* AboutScreenHeaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000012C /* AboutScreenHeaderTests.swift */; };
 		A1C0DE01000000000000012F /* NowPlayingSideInsetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000012E /* NowPlayingSideInsetTests.swift */; };
@@ -99,16 +109,6 @@
 		A1C0DE01000000000000013F /* AboutTestNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000013E /* AboutTestNetwork.swift */; };
 		A1C0DE010000000000000141 /* AboutCreditsNetworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000140 /* AboutCreditsNetworkTests.swift */; };
 		A1C0DE010000000000000143 /* BuiltInCreditsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000142 /* BuiltInCreditsTests.swift */; };
-		A1C0DE010000000000000117 /* ViewControllerIdiomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */; };
-		A1C0DE010000000000000119 /* NowPlayingFrameBaselineUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */; };
-		A1C0DE01000000000000011B /* NowPlayingMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011A /* NowPlayingMetrics.swift */; };
-		A1C0DE01000000000000011D /* NowPlayingMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011C /* NowPlayingMetricsTests.swift */; };
-		A1C0DE01000000000000011F /* ScaledValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE01000000000000011E /* ScaledValues.swift */; };
-		A1C0DE010000000000000121 /* ScaledValuesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000120 /* ScaledValuesTests.swift */; };
-		A1C0DE010000000000000123 /* LayoutApplyKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000122 /* LayoutApplyKeyTests.swift */; };
-		A1C0DE010000000000000125 /* NowPlayingRotationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000124 /* NowPlayingRotationUITests.swift */; };
-		A1C0DE010000000000000127 /* DemoLiveShow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000126 /* DemoLiveShow.swift */; };
-		A1C0DE010000000000000129 /* DemoLiveShowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE010000000000000128 /* DemoLiveShowTests.swift */; };
 		A1C0DE0200000000000000A1 /* StationChangeMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0200000000000000A2 /* StationChangeMetadataTests.swift */; };
 		B6B0CEB08FFF4CC6A8931B5F /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
 		B6B0CEB08FFF4CC6A8931B60 /* CreditsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */; };
@@ -229,6 +229,16 @@
 		A1C0DE010000000000000110 /* AppFontTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFontTests.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000112 /* LaunchWordmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchWordmark.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000114 /* LaunchWordmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchWordmarkTests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerIdiomTests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingFrameBaselineUITests.swift; sourceTree = "<group>"; };
+		A1C0DE01000000000000011A /* NowPlayingMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetrics.swift; sourceTree = "<group>"; };
+		A1C0DE01000000000000011C /* NowPlayingMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetricsTests.swift; sourceTree = "<group>"; };
+		A1C0DE01000000000000011E /* ScaledValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledValues.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000120 /* ScaledValuesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledValuesTests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000122 /* LayoutApplyKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutApplyKeyTests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000124 /* NowPlayingRotationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingRotationUITests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000126 /* DemoLiveShow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoLiveShow.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000128 /* DemoLiveShowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoLiveShowTests.swift; sourceTree = "<group>"; };
 		A1C0DE01000000000000012A /* NowPlayingIdiomRefreshTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingIdiomRefreshTests.swift; sourceTree = "<group>"; };
 		A1C0DE01000000000000012C /* AboutScreenHeaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutScreenHeaderTests.swift; sourceTree = "<group>"; };
 		A1C0DE01000000000000012E /* NowPlayingSideInsetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingSideInsetTests.swift; sourceTree = "<group>"; };
@@ -240,18 +250,8 @@
 		A1C0DE01000000000000013A /* AboutCreditsRoomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutCreditsRoomTests.swift; sourceTree = "<group>"; };
 		A1C0DE01000000000000013C /* TestWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestWindow.swift; sourceTree = "<group>"; };
 		A1C0DE01000000000000013E /* AboutTestNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutTestNetwork.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000142 /* BuiltInCreditsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuiltInCreditsTests.swift; sourceTree = "<group>"; };
 		A1C0DE010000000000000140 /* AboutCreditsNetworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutCreditsNetworkTests.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000116 /* ViewControllerIdiomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerIdiomTests.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000118 /* NowPlayingFrameBaselineUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingFrameBaselineUITests.swift; sourceTree = "<group>"; };
-		A1C0DE01000000000000011A /* NowPlayingMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetrics.swift; sourceTree = "<group>"; };
-		A1C0DE01000000000000011C /* NowPlayingMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetricsTests.swift; sourceTree = "<group>"; };
-		A1C0DE01000000000000011E /* ScaledValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledValues.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000120 /* ScaledValuesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledValuesTests.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000122 /* LayoutApplyKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutApplyKeyTests.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000124 /* NowPlayingRotationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingRotationUITests.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000126 /* DemoLiveShow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoLiveShow.swift; sourceTree = "<group>"; };
-		A1C0DE010000000000000128 /* DemoLiveShowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoLiveShowTests.swift; sourceTree = "<group>"; };
+		A1C0DE010000000000000142 /* BuiltInCreditsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuiltInCreditsTests.swift; sourceTree = "<group>"; };
 		A1C0DE0200000000000000A2 /* StationChangeMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationChangeMetadataTests.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B5E /* CreditsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsClient.swift; sourceTree = "<group>"; };
 		B6B0CEB08FFF4CC6A8931B61 /* test-credits.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-credits.json"; sourceTree = "<group>"; };
@@ -294,7 +294,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE6036232A48C51A00E15E15 /* NVActivityIndicatorViewExtended in Frameworks */,
-				715071FC30AA4C61002B1F31 /* Spring in Frameworks */,
+				7177DA0330B42B9C0041A0DD /* Spring in Frameworks */,
 				CE6036212A48C51A00E15E15 /* NVActivityIndicatorView in Frameworks */,
 				719678672D27AA6D00DCD7CE /* Kingfisher in Frameworks */,
 			);
@@ -626,7 +626,7 @@
 				CE6036202A48C51A00E15E15 /* NVActivityIndicatorView */,
 				CE6036222A48C51A00E15E15 /* NVActivityIndicatorViewExtended */,
 				719678662D27AA6D00DCD7CE /* Kingfisher */,
-				715071FB30AA4C61002B1F31 /* Spring */,
+				7177DA0230B42B9C0041A0DD /* Spring */,
 			);
 			productName = RadioPro;
 			productReference = 9409E1161ABF6FEA00312E2B /* RadioSpiral.app */;
@@ -641,7 +641,7 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastSwiftMigration = 0700;
 				LastSwiftUpdateCheck = 2610;
-				LastUpgradeCheck = 2710;
+				LastUpgradeCheck = 2720;
 				ORGANIZATIONNAME = matthewfecher.com;
 				TargetAttributes = {
 					2C5545B91C1124DE00728469 = {
@@ -676,7 +676,7 @@
 			packageReferences = (
 				CE60361F2A48C51A00E15E15 /* XCRemoteSwiftPackageReference "NVActivityIndicatorView" */,
 				719678652D27AA4800DCD7CE /* XCRemoteSwiftPackageReference "Kingfisher" */,
-				715071FA30AA4C61002B1F31 /* XCRemoteSwiftPackageReference "Spring" */,
+				7177DA0130B42B9C0041A0DD /* XCRemoteSwiftPackageReference "Spring" */,
 			);
 			productRefGroup = 9409E1171ABF6FEA00312E2B /* Products */;
 			projectDirPath = "";
@@ -1121,7 +1121,7 @@
 				CODE_SIGN_ENTITLEMENTS = RadioSpiral/RadioSpiral.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 88;
+				CURRENT_PROJECT_VERSION = 89;
 				DEFINES_MODULE = YES;
 				ENABLE_MODULE_VERIFIER = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1131,12 +1131,13 @@
 				);
 				INFOPLIST_FILE = RadioSpiral/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = RadioSpiral;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.7;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.4.7;
+				MARKETING_VERSION = 3.4.8;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu99 gnu++11";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pemungkah.radiospiral;
@@ -1157,7 +1158,7 @@
 				CODE_SIGN_ENTITLEMENTS = RadioSpiral/RadioSpiral.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 88;
+				CURRENT_PROJECT_VERSION = 89;
 				DEFINES_MODULE = YES;
 				ENABLE_MODULE_VERIFIER = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1167,12 +1168,13 @@
 				);
 				INFOPLIST_FILE = RadioSpiral/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = RadioSpiral;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.7;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.4.7;
+				MARKETING_VERSION = 3.4.8;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu99 gnu++11";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pemungkah.radiospiral;
@@ -1227,7 +1229,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		715071FA30AA4C61002B1F31 /* XCRemoteSwiftPackageReference "Spring" */ = {
+		7177DA0130B42B9C0041A0DD /* XCRemoteSwiftPackageReference "Spring" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/joemcmahon/Spring";
 			requirement = {
@@ -1254,9 +1256,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		715071FB30AA4C61002B1F31 /* Spring */ = {
+		7177DA0230B42B9C0041A0DD /* Spring */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 715071FA30AA4C61002B1F31 /* XCRemoteSwiftPackageReference "Spring" */;
+			package = 7177DA0130B42B9C0041A0DD /* XCRemoteSwiftPackageReference "Spring" */;
 			productName = Spring;
 		};
 		719678662D27AA6D00DCD7CE /* Kingfisher */ = {
